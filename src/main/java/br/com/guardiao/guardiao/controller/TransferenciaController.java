@@ -1,6 +1,7 @@
 package br.com.guardiao.guardiao.controller;
 
-import br.com.guardiao.guardiao.dto.TransferenciaDTO;
+import br.com.guardiao.guardiao.controller.dto.TransferenciaDTO;
+import br.com.guardiao.guardiao.controller.dto.TransferenciaMassaDTO;
 import br.com.guardiao.guardiao.model.Transferencia;
 import br.com.guardiao.guardiao.service.TransferenciaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,12 @@ public class TransferenciaController {
     @ResponseStatus(HttpStatus.CREATED)
     public Transferencia criarTransferencia(@RequestBody TransferenciaDTO transferenciaDTO) {
         return transferenciaService.registrarTransferencia(transferenciaDTO);
+    }
+
+    @PostMapping("/massa")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void criarTransferenciaEmMassa(@RequestBody TransferenciaMassaDTO request) {
+        transferenciaService.registrarTransferenciaEmMassa(request);
     }
 
     @GetMapping

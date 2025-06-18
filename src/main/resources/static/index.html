@@ -11,8 +11,11 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">🦉 Guardião de Ativos</a>
+            <a class="navbar-brand" href="/">🦉 Guardião de Ativos</a>
             <div class="d-flex align-items-center">
+                <a href="/historico.html" class="btn btn-outline-info me-3">
+                    <i class="bi bi-clock-history me-1"></i> Histórico
+                </a>
                 <button class="btn btn-success me-3" data-bs-toggle="modal" data-bs-target="#modalNovoItem">
                     <i class="bi bi-plus-circle-fill me-1"></i> Novo Item
                 </button>
@@ -23,13 +26,66 @@
             </div>
         </div>
     </nav>
+    <main class="container-fluid mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="mb-0">Itens Disponíveis em Estoque</h2>
+            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#area-de-busca" aria-expanded="false" aria-controls="area-de-busca">
+                <i class="bi bi-search me-1"></i> Pesquisa Avançada
+            </button>
+        </div>
 
-    <main class="container mt-4">
-        <h2 class="mb-3">Itens Disponíveis em Estoque</h2>
+        <div class="collapse" id="area-de-busca">
+            <div class="card card-body mb-3">
+                <form id="form-busca-avancada">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="busca-patrimonio" class="form-label">Nº Patrimonial</label>
+                            <input type="text" class="form-control" id="busca-patrimonio" name="numeroPatrimonial">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="busca-descricao" class="form-label">Descrição</label>
+                            <input type="text" class="form-control" id="busca-descricao" name="descricao">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="busca-nro-serie" class="form-label">Nº de Série</label>
+                            <input type="text" class="form-control" id="busca-nro-serie" name="numeroDeSerie">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="busca-localizacao" class="form-label">Localização</label>
+                            <input type="text" class="form-control" id="busca-localizacao" name="localizacao">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="busca-compartimento" class="form-label">Compartimento</label>
+                            <select class="form-select" id="busca-compartimento" name="compartimento">
+                                <!-- Opções carregadas via JS -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="button" id="btn-limpar-busca" class="btn btn-secondary me-2">Limpar Filtros</button>
+                        <button type="submit" class="btn btn-primary">Buscar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="bulk-actions-wrapper" class="mb-3" style="display: none;">
+            <button id="btn-excluir-selecionados" class="btn btn-danger">
+                <i class="bi bi-trash3-fill me-1"></i> Excluir Selecionados
+            </button>
+            <button id="btn-transferir-selecionados" class="btn btn-info">
+                <i class="bi bi-box-arrow-right me-1"></i> Transferir Selecionados
+            </button>
+            <span id="selection-counter" class="ms-2 text-muted"></span>
+        </div>
         <div class="table-responsive">
             <table class="table table-striped table-hover sortable">
                 <thead class="table-dark">
                 <tr>
+                    <th style="width: 50px;">
+                        <input class="form-check-input" type="checkbox" id="select-all-checkbox" title="Selecionar Todos">
+                    </th>
                     <th data-sortable>ID</th>
                     <th data-sortable>Nº Patrimonial</th>
                     <th data-sortable>Descrição</th>
@@ -46,44 +102,154 @@
         </div>
     </main>
 
-    <div class="modal fade" id="modalNovoItem" tabindex="-1">
+    <!-- 1. MODAL PARA CADASTRAR NOVO ITEM -->
+    <div class="modal fade" id="modalNovoItem" tabindex="-1" aria-labelledby="modalNovoItemLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Cadastrar Novo Item no Inventário</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="modalNovoItemLabel">Cadastrar Novo Item no Inventário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="form-novo-item">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="novo-numeroPatrimonial" class="form-label">Número Patrimonial</label>
+                                <input type="text" class="form-control" id="novo-numeroPatrimonial" name="numeroPatrimonial">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="novo-numeroDeSerie" class="form-label">Número de Série</label>
+                                <input type="text" class="form-control" id="novo-numeroDeSerie" name="numeroDeSerie">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="novo-descricao" class="form-label">Descrição <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="novo-descricao" name="descricao" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="novo-marca" class="form-label">Marca</label>
+                            <input type="text" class="form-control" id="novo-marca" name="marca">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="novo-localizacao" class="form-label">Localização</label>
+                                <input type="text" class="form-control" id="novo-localizacao" name="localizacao">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="novo-compartimento" class="form-label">Compartimento</label>
+                                <select class="form-select" id="novo-compartimento" name="compartimento">
+                                    <option value="">Carregando...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar Item</button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="modalTransferencia" tabindex="-1">
+    <!-- 1.A. MODAL PARA EDITAR UM ITEM -->
+    <div class="modal fade" id="modalEditarItem" tabindex="-1" aria-labelledby="modalEditarItemLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalEditarItemLabel">Editar Item do Inventário</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-editar-item">
+                        <!-- Campo escondido para guardar o patrimônio que está sendo editado -->
+                        <input type="hidden" id="edit-numeroPatrimonial-original">
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Número Patrimonial</label>
+                                <!-- O patrimônio é exibido, mas desabilitado para não ser alterado -->
+                                <input type="text" class="form-control" id="edit-numeroPatrimonial" disabled>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-numeroDeSerie" class="form-label">Número de Série</label>
+                                <input type="text" class="form-control" id="edit-numeroDeSerie" name="numeroDeSerie">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-descricao" class="form-label">Descrição <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="edit-descricao" name="descricao" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-marca" class="form-label">Marca</label>
+                            <input type="text" class="form-control" id="edit-marca" name="marca">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-localizacao" class="form-label">Localização</label>
+                                <input type="text" class="form-control" id="edit-localizacao" name="localizacao">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-compartimento" class="form-label">Compartimento</label>
+                                <select class="form-select" id="edit-compartimento" name="compartimento">
+                                    <option value="">Carregando...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. MODAL PARA REGISTRAR TRANSFERÊNCIA -->
+    <div class="modal fade" id="modalTransferencia" tabindex="-1" aria-labelledby="modalTransferenciaLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Registrar Transferência</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title" id="modalTransferenciaLabel">Registrar Transferência</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p>Você está transferindo o item: <strong id="item-a-transferir-descricao"></strong></p>
                     <form id="form-transferencia">
-                        <input type="hidden" id="transfer-item-id">
+                        <input type="hidden" id="transfer-patrimonio">
+
+                        <div class="mb-3">
+                            <label for="transfer-destino-select" class="form-label">Incumbência de Destino <span class="text-danger">*</span></label>
+                            <select class="form-select" id="transfer-destino-select" required>
+                                <option value="">Carregando...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="outra-om-wrapper" style="display: none;">
+                            <label for="transfer-outra-om-input" class="form-label">Especificar Outra OM <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="transfer-outra-om-input" placeholder="Ex: COM1DN">
+                        </div>
+                        <div class="mb-3">
+                            <label for="transfer-obs" class="form-label">Observação</label>
+                            <textarea class="form-control" id="transfer-obs" rows="3"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Confirmar Transferência</button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="modalConfirmacao" tabindex="-1">
+    <!-- 3. MODAL DE CONFIRMAÇÃO GENÉRICO -->
+    <div class="modal fade" id="modalConfirmacao" tabindex="-1" aria-labelledby="modalConfirmacaoLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="confirm-title">Confirmar Ação</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <p id="confirm-body"></p>

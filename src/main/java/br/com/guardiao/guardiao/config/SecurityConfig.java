@@ -17,7 +17,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         // AQUI ESTÁ A CORREÇÃO: Adicionamos "/" e "/index.html" à lista
-                        .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/fonts/**", "/api/**").permitAll()
+                        .requestMatchers("/", "/index.html", "/historico.html", "/css/**", "/js/**", "/fonts/**", "/api/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

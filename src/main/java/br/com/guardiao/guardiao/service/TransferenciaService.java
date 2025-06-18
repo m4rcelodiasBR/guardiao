@@ -1,6 +1,7 @@
 package br.com.guardiao.guardiao.service;
 
-import br.com.guardiao.guardiao.dto.TransferenciaDTO;
+import br.com.guardiao.guardiao.controller.dto.TransferenciaDTO;
+import br.com.guardiao.guardiao.controller.dto.TransferenciaMassaDTO;
 import br.com.guardiao.guardiao.model.Item;
 import br.com.guardiao.guardiao.model.Transferencia;
 import br.com.guardiao.guardiao.model.Usuario;
@@ -54,4 +55,24 @@ public class TransferenciaService {
         return transferenciaRepository.findByNumeroPatrimonialItemContainingIgnoreCase(patrimonio);
     }
 
+    @Transactional
+    public void registrarTransferenciaEmMassa(TransferenciaMassaDTO transferenciaMassaDTO) {
+        Usuario usuario = usuarioRepository.findById(1)
+                .orElseThrow(() -> new RuntimeException("Usuário padrão não encontrado."));
+
+        for (String patrimonio : transferenciaMassaDTO.getNumerosPatrimoniais()) {
+            Item item = itemRepository.findByNumeroPatrimonial(patrimonio)
+                    .orElseThrow(() -> new RuntimeException("Item com Patrimônio " + patrimonio + " não encontrado."));
+
+            Transferencia transferenciaEmMassa = new Transferencia();
+            transferenciaEmMassa.setItem(item);
+            transferenciaEmMassa.setUsuario(usuario);
+            transferenciaEmMassa.setIncumbenciaDestino(transferenciaMassaDTO.getIncumbenciaDestino());
+            transferenciaEmMassa.setObservacao(transferenciaMassaDTO.getObservacao());
+            transferenciaEmMassa.setNumeroPatrimonialItem(item.getNumeroPatrimonial());
+            transferenciaEmMassa.setDescricaoItem(item.getDescricao());
+
+            transferenciaRepository.save(transferenciaEmMassa);
+        }
+    }
 }

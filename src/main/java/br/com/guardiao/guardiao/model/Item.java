@@ -27,8 +27,9 @@ public class Item {
     @Column
     private String localizacao;
 
+    @Enumerated(EnumType.STRING)
     @Column
-    private String compartimento;
+    private Compartimento compartimento;
 
     @CreationTimestamp
     @Column(name = "data_cadastro", updatable = false)
@@ -82,11 +83,11 @@ public class Item {
         this.localizacao = localizacao;
     }
 
-    public String getCompartimento() {
+    public Compartimento getCompartimento() {
         return compartimento;
     }
 
-    public void setCompartimento(String compartimento) {
+    public void setCompartimento(Compartimento compartimento) {
         this.compartimento = compartimento;
     }
 

@@ -1,17 +1,18 @@
-package br.com.guardiao.guardiao.dto;
+package br.com.guardiao.guardiao.controller.dto;
 
-public class TransferenciaDTO {
+import java.util.List;
 
-    private String numeroPatrimonial;
+public class TransferenciaMassaDTO {
+    private List<String> numerosPatrimoniais;
     private String incumbenciaDestino;
     private String observacao;
 
-    public String getNumeroPatrimonial() {
-        return numeroPatrimonial;
+    public List<String> getNumerosPatrimoniais() {
+        return numerosPatrimoniais;
     }
 
-    public void setNumeroPatrimonial(String numeroPatrimonial) {
-        this.numeroPatrimonial = numeroPatrimonial;
+    public void setNumerosPatrimoniais(List<String> numerosPatrimoniais) {
+        this.numerosPatrimoniais = numerosPatrimoniais;
     }
 
     public String getIncumbenciaDestino() {
@@ -29,4 +30,5 @@ public class TransferenciaDTO {
     public void setObservacao(String observacao) {
         this.observacao = observacao;
     }
+
 }
