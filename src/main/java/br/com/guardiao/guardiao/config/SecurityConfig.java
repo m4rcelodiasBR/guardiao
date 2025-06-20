@@ -3,6 +3,7 @@ package br.com.guardiao.guardiao.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -31,15 +32,20 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(
-                        "/api/auth/**",
-                        "/login.html",
                         "/",
+                        "/login.html",
                         "/index.html",
                         "/historico.html",
+                        "/usuarios.html",
+                        "/api/auth/**",
                         "/css/**",
                         "/js/**")
                 .permitAll()
                 .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+                .requestMatchers("/api/transferencias/**").hasAnyRole("ADMIN", "USUARIO")
+                .requestMatchers(HttpMethod.PUT, "/api/itens/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/itens/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/itens").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

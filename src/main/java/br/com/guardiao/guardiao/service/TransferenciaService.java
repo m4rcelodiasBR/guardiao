@@ -13,6 +13,7 @@ import br.com.guardiao.guardiao.repository.UsuarioRepository;
 import br.com.guardiao.guardiao.repository.specification.TransferenciaSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,14 +34,20 @@ public class TransferenciaService {
     @Autowired
     private TransferenciaSpecification transferenciaSpecification;
 
+    private Usuario getUsuarioLogado() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof Usuario) {
+            return (Usuario) principal;
+        }
+        throw new IllegalStateException("Usuário autenticado não encontrado no contexto de segurança.");
+    }
 
     @Transactional
     public Transferencia registrarTransferencia(TransferenciaDTO transferenciaDTO) {
+        Usuario usuarioLogado = getUsuarioLogado();
         Item item = itemRepository.findByNumeroPatrimonial(transferenciaDTO.getNumeroPatrimonial())
                 .orElseThrow(() -> new RuntimeException("Item com Patrimônio " + transferenciaDTO.getNumeroPatrimonial() + " não encontrado."));
-
-        Usuario usuario = usuarioRepository.findById(1)
-                .orElseThrow(() -> new RuntimeException("Usuário padrão não encontrado."));
 
         if (item.getStatus() != StatusItem.DISPONIVEL) {
             throw new IllegalStateException("O item não está disponível para transferência.");
@@ -49,7 +56,7 @@ public class TransferenciaService {
 
         Transferencia novaTransferencia = new Transferencia();
         novaTransferencia.setItem(item);
-        novaTransferencia.setUsuario(usuario);
+        novaTransferencia.setUsuario(usuarioLogado);
         novaTransferencia.setIncumbenciaDestino(transferenciaDTO.getIncumbenciaDestino());
         novaTransferencia.setObservacao(transferenciaDTO.getObservacao());
         novaTransferencia.setNumeroPatrimonialItem(item.getNumeroPatrimonial());
@@ -64,8 +71,7 @@ public class TransferenciaService {
 
     @Transactional
     public void registrarTransferenciaEmMassa(TransferenciaMassaDTO transferenciaMassaDTO) {
-        Usuario usuario = usuarioRepository.findById(1)
-                .orElseThrow(() -> new RuntimeException("Usuário padrão não encontrado."));
+        Usuario usuarioLogado = getUsuarioLogado();
 
         for (String patrimonio : transferenciaMassaDTO.getNumerosPatrimoniais()) {
             Item item = itemRepository.findByNumeroPatrimonial(patrimonio)
@@ -78,7 +84,7 @@ public class TransferenciaService {
 
             Transferencia transferenciaEmMassa = new Transferencia();
             transferenciaEmMassa.setItem(item);
-            transferenciaEmMassa.setUsuario(usuario);
+            transferenciaEmMassa.setUsuario(usuarioLogado);
             transferenciaEmMassa.setIncumbenciaDestino(transferenciaMassaDTO.getIncumbenciaDestino());
             transferenciaEmMassa.setObservacao(transferenciaMassaDTO.getObservacao());
             transferenciaEmMassa.setNumeroPatrimonialItem(item.getNumeroPatrimonial());

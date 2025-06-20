@@ -13,6 +13,7 @@ import br.com.guardiao.guardiao.repository.UsuarioRepository;
 import br.com.guardiao.guardiao.repository.specification.ItemSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -32,6 +33,15 @@ public class ItemService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    private Usuario getUsuarioLogado() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof Usuario) {
+            return (Usuario) principal;
+        }
+        throw new IllegalStateException("Usuário autenticado não encontrado no contexto de segurança.");
+    }
 
     public Item buscarPorPatrimonio(String numeroPatrimonial) {
         return itemRepository.findByNumeroPatrimonial(numeroPatrimonial)
@@ -101,6 +111,7 @@ public class ItemService {
 
     @Transactional
     public Item registrarDevolucao(DevolucaoDTO devolucaoDTO) {
+        Usuario usuarioLogado = getUsuarioLogado();
         Item item = buscarPorPatrimonio(devolucaoDTO.getNumeroPatrimonial());
 
         if (item.getStatus() != StatusItem.TRANSFERIDO) {
@@ -111,10 +122,9 @@ public class ItemService {
         item.setLocalizacao(devolucaoDTO.getLocalizacao());
         item.setCompartimento(devolucaoDTO.getCompartimento());
 
-        Usuario usuario = usuarioRepository.findById(1).orElseThrow();
         Transferencia registroDevolucao = new Transferencia();
         registroDevolucao.setItem(item);
-        registroDevolucao.setUsuario(usuario);
+        registroDevolucao.setUsuario(usuarioLogado);
         registroDevolucao.setIncumbenciaDestino("DEVOLVIDO AO ESTOQUE");
         registroDevolucao.setObservacao(devolucaoDTO.getObservacao());
         registroDevolucao.setNumeroPatrimonialItem(item.getNumeroPatrimonial());

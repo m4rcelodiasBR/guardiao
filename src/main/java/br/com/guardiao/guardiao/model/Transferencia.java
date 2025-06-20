@@ -18,11 +18,11 @@ public class Transferencia {
     @Column(name = "descricao_item")
     private String descricaoItem;
 
-    @ManyToOne // Anotação que define o relacionamento: Muitas transferências para UM item.
-    @JoinColumn(name = "item_id", nullable = false) // Qual coluna na tabela 'transferencias' faz a ligação.
+    @ManyToOne
+    @JoinColumn(name = "item_id", nullable = false)
     private Item item;
 
-    @ManyToOne // Muitas transferências podem ser feitas por UM usuário.
+    @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 

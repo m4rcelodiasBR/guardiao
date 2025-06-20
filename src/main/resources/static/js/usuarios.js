@@ -52,7 +52,7 @@ $(function() {
         setTimeout(() => $alert.fadeOut(500, () => $alert.remove()), 4000);
     };
 
-    const fetchAndDisplayUsers = () => {
+    const renderUsersTable = () => {
         $.ajax({
             url: '/api/usuarios',
             method: 'GET',
@@ -105,7 +105,7 @@ $(function() {
             success: function() {
                 showAlert('Usuário cadastrado com sucesso!');
                 modalNovoUsuario.hide();
-                fetchAndDisplayUsers();
+                renderUsersTable();
             },
             error: function(xhr) {
                 const errorMsg = xhr.responseJSON && xhr.responseJSON.message
@@ -128,5 +128,5 @@ $(function() {
     // --- INICIALIZAÇÃO ---
     const savedTheme = localStorage.getItem('theme') || 'light';
     applyTheme(savedTheme);
-    fetchAndDisplayUsers();
+    renderUsersTable();
 });
