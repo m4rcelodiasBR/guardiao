@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html data-bs-theme="dark" lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Login - Guardião de Ativos</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="/css/login.css" rel="stylesheet">
+</head>
+<body>
+    <main class="form-signin text-center">
+        <form id="form-login">
+            <h1 class="h3 mb-3 fw-normal">🦉 Guardião de Ativos</h1>
+            <h2 class="h5 mb-3 fw-light">Por favor, efetue o login</h2>
+
+            <div class="alert alert-danger d-none" id="login-alert" role="alert"></div>
+
+            <div class="form-floating mb-3">
+                <input class="form-control" id="email" name="email" placeholder="nome@exemplo.com" required type="email">
+                <label for="email">Endereço de e-mail</label>
+            </div>
+            <div class="form-floating">
+                <input class="form-control" id="senha" name="senha" placeholder="Senha" required type="password">
+                <label for="senha">Senha</label>
+            </div>
+
+            <button class="w-100 btn btn-lg btn-primary mt-3" type="submit">Entrar</button>
+            <p class="mt-5 mb-3 text-muted">&copy; 2024 - Todos os direitos reservados.</p>
+        </form>
+    </main>
+
+    <script src="/js/jquery-3.7.1.min.js"></script>
+    <script src="/js/login.js"></script>
+</body>
+</html>

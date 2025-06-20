@@ -1,38 +1,127 @@
-// Espera o documento carregar antes de executar o código
 $(function() {
 
     // --- SELETORES ---
     const $tabelaHistoricoBody = $('#tabela-historico');
-    const $formBusca = $('#form-busca-historico');
-    const $inputBusca = $('#busca-patrimonio');
+    const $cabecalhoTabelaHistorico = $('#tabela-historico').closest('table').find('thead');
+    const $formBusca = $('#form-busca-historico-avancada');
+    const $btnLimparBusca = $('#btn-limpar-busca-historico');
+    const $themeToggler = $('#theme-toggler');
+    const $formDevolucao = $('#form-devolucao');
+    const modalDevolucao = new bootstrap.Modal(document.getElementById('modalDevolucao'));
+    const $btnLogout = $('#btn-logout');
+
+    // --- VARIÁVEIS DE ESTADO ---
+    let allTransfers = [];
+    let currentSort = { column: 'dataTransferencia', direction: 'desc' };
+
+    // --- FUNÇÃO AUXILIAR PARA LER O TOKEN ---
+    // Esta função decodifica a parte do meio de um token JWT para ler seus dados.
+    const parseJwt = (token) => {
+        try {
+            return JSON.parse(atob(token.split('.')[1]));
+        } catch (e) {
+            return null;
+        }
+    };
+
+    // --- VERIFICAÇÃO DE AUTENTICAÇÃO (EXECUTADO PRIMEIRO) ---
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+        window.location.href = '/login.html';
+        return;
+    };
+
+    const userData = parseJwt(token);
+    const userRole = userData ? userData.role : null;
+
+    $.ajaxSetup({
+        headers: {
+            'Authorization': 'Bearer ' + token
+        },
+        error: function(xhr) {
+            if (xhr.status === 401) {
+                localStorage.removeItem('jwt_token');
+                window.location.href = '/login.html';
+            }
+        }
+    });
+
+    // --- LÓGICA DE CONTROLE DE ACESSO DA INTERFACE (UI) ---
+    const setupUIForRole = (role) => {
+        if (role !== 'ADMIN') {
+            $('#link-gestao-usuarios').hide();
+            $('#select-all-checkbox').prop('disabled', true);
+            $('.btn-devolver').hide();
+        } else {
+            $('#link-gestao-usuarios').show();
+        }
+    };
 
     // --- FUNÇÕES ---
+    const showAlert = (message, type = 'success') => {
+        const $alert = $(`
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert" style="position: fixed; bottom: 20px; right: 20px; z-index: 2000;">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `);
+        $('body').append($alert);
+        setTimeout(() => $alert.fadeOut(500, () => $alert.remove()), 4000);
+    };
 
-    /**
-     * Formata uma data no formato ISO (ex: "2025-06-13T18:20:47.123Z")
-     * para um formato legível em pt-BR (ex: "13/06/2025 15:20:47").
-     */
     const formatarData = (dataISO) => {
         if (!dataISO) return 'N/A';
         const data = new Date(dataISO);
-        // Usamos toLocaleString para formatar data e hora de acordo com a localidade do navegador.
         return data.toLocaleString('pt-BR');
     };
 
-    /**
-     * Renderiza os dados do histórico na tabela.
-     * @param {Array} transferencias - Um array de objetos de transferência.
-     */
-    const renderHistoryTable = (transferencias) => {
+    const renderHistoryTable = () => {
         $tabelaHistoricoBody.empty();
 
-        if (transferencias.length === 0) {
-            const emptyMsg = '<tr><td colspan="6" class="text-center text-muted">Nenhum registro encontrado.</td></tr>';
-            $tabelaHistoricoBody.html(emptyMsg);
+        const ultimoStatusPorItem = {};
+        [...allTransfers].sort((a, b) => a.id - b.id).forEach(t => {
+            const incumbencia = t.incumbenciaDestino || '';
+            const isDevolucao = incumbencia === "DEVOLVIDO AO ESTOQUE";
+            const isBaixaDefinitiva = ["000", "001", "002"].some(prefix => incumbencia.startsWith(prefix));
+
+            if (isDevolucao) {
+                ultimoStatusPorItem[t.numeroPatrimonialItem] = "DISPONIVEL";
+            } else if (isBaixaDefinitiva) {
+                ultimoStatusPorItem[t.numeroPatrimonialItem] = "PERMANENTE";
+            } else {
+                ultimoStatusPorItem[t.numeroPatrimonialItem] = "TRANSFERIDO";
+            }
+        });
+
+        const sortedTransfers = [...allTransfers].sort((a, b) => {
+            let valA = a[currentSort.column];
+            let valB = b[currentSort.column];
+
+            if (currentSort.column === 'usuario') {
+                valA = a.usuario ? a.usuario.nome : '';
+                valB = b.usuario ? b.usuario.nome : '';
+            }
+            valA = valA || '';
+            valB = valB || '';
+
+            return valA.toString().localeCompare(valB.toString()) * (currentSort.direction === 'asc' ? 1 : -1);
+        });
+
+        if (sortedTransfers.length === 0) {
+            $tabelaHistoricoBody.html('<tr><td colspan="7" class="text-center text-muted">Nenhum registro encontrado.</td></tr>');
             return;
         }
 
-        transferencias.forEach(transf => {
+        sortedTransfers.forEach(transf => {
+            const statusFinalDoItem = ultimoStatusPorItem[transf.numeroPatrimonialItem];
+            const podeDevolver = (statusFinalDoItem === 'TRANSFERIDO');
+            const botaoDevolverHtml = podeDevolver ?
+                `<button class="btn btn-sm btn-success btn-devolver" title="Registrar Devolução" 
+                    data-patrimonio="${transf.numeroPatrimonialItem}" 
+                    data-descricao="${transf.descricaoItem}">
+                    <i class="bi bi-box-arrow-in-left"></i>
+                </button>` : '';
+
             const rowHtml = `
                 <tr>
                     <td>${formatarData(transf.dataTransferencia)}</td>
@@ -41,59 +130,130 @@ $(function() {
                     <td>${transf.incumbenciaDestino}</td>
                     <td>${transf.observacao || ''}</td>
                     <td>${transf.usuario ? transf.usuario.nome : 'Usuário desconhecido'}</td>
+                    <td>${botaoDevolverHtml}</td>
                 </tr>
             `;
             $tabelaHistoricoBody.append(rowHtml);
         });
     };
 
-    /**
-     * Busca os dados na API. Se um termo de busca for fornecido,
-     * ele busca por patrimônio. Caso contrário, busca o histórico completo.
-     * @param {string} patrimonio - O número do patrimônio para buscar (opcional).
-     */
-    const fetchHistory = (patrimonio = '') => {
-        let url = '/api/transferencias';
-        let data = {};
-
-        if (patrimonio) {
-            // Se houver um termo de busca, montamos a URL de busca e os dados
-            url = '/api/transferencias/busca';
-            data = { patrimonio: patrimonio };
-        }
-
+    const fetchHistory = (searchParams = {}) => {
+        const queryString = $.param(searchParams);
         $.ajax({
-            url: url,
+            url: `/api/transferencias?${queryString}`,
             method: 'GET',
-            data: data, // jQuery vai montar a query string para nós (ex: ?patrimonio=123)
             dataType: 'json',
-            success: function(data) {
-                renderHistoryTable(data);
+            success: (data) => {
+                allTransfers = data;
+                renderHistoryTable();
             },
-            error: function() {
-                const errorMsg = '<tr><td colspan="6" class="text-center text-danger">Erro ao carregar o histórico.</td></tr>';
-                $tabelaHistoricoBody.html(errorMsg);
+            error: () => {
+                $tabelaHistoricoBody.html('<tr><td colspan="7" class="text-center text-danger">Erro ao carregar o histórico.</td></tr>');
             }
         });
     };
 
-    // --- EVENTOS ---
+    const popularCompartimentosDevolucao = () => {
+        $.ajax({
+            url: '/api/itens/compartimentos',
+            method: 'GET',
+            success: function(compartimentos) {
+                const $select = $('#devolucao-compartimento');
+                $select.empty().append('<option value="">Selecione um compartimento...</option>');
+                compartimentos.forEach(c => {
+                    $select.append(`<option value="${c.name}">${c.descricao}</option>`);
+                });
+            }
+        });
+    };
 
-    // Evento de submissão do formulário de busca
-    $formBusca.on('submit', function(e) {
-        e.preventDefault(); // Impede o recarregamento da página
-        const termoBusca = $inputBusca.val().trim(); // Pega o valor do input e remove espaços
-        fetchHistory(termoBusca);
+    // --- MANIPULADORES DE EVENTOS ---
+    $btnLogout.on('click', function() {
+        localStorage.removeItem('jwt_token');
+        window.location.href = '/login.html';
     });
 
-    // Limpa a busca e recarrega tudo se o usuário apagar o texto do input
-    $inputBusca.on('input', function() {
-        if ($(this).val().trim() === '') {
-            fetchHistory();
-        }
+    $cabecalhoTabelaHistorico.on('click', 'th[data-sortable]', function() {
+        const columnKey = $(this).data('column');
+        if (!columnKey) return;
+        const direction = (currentSort.column === columnKey && currentSort.direction === 'asc') ? 'desc' : 'asc';
+        currentSort = { column: columnKey, direction: direction };
+        $cabecalhoTabelaHistorico.find('i.sort-icon').remove();
+        const iconClass = direction === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill';
+        $(this).append(` <i class="bi ${iconClass} sort-icon text-warning"></i>`);
+        renderHistoryTable();
+    });
+
+    $formBusca.on('submit', function(e) {
+        e.preventDefault();
+        const formDataArray = $(this).serializeArray();
+        let searchParams = {};
+        formDataArray.forEach(item => {
+            if (item.value) {
+                searchParams[item.name] = item.value;
+            }
+        });
+        fetchHistory(searchParams);
+    });
+
+    $btnLimparBusca.on('click', function() {
+        $formBusca[0].reset();
+        fetchHistory();
+    });
+
+    $('body').on('click', '.btn-devolver', function() {
+        const patrimonio = $(this).data('patrimonio');
+        const descricao = $(this).data('descricao');
+
+        // Preenche os dados no modal
+        $('#devolucao-patrimonio').val(patrimonio);
+        $('#devolucao-item-descricao').text(`${descricao} (NumPAT: ${patrimonio})`);
+
+        modalDevolucao.show();
+    });
+
+    $formDevolucao.on('submit', function(e) {
+        e.preventDefault();
+
+        const data = {
+            numeroPatrimonial: $('#devolucao-patrimonio').val(),
+            localizacao: $('#devolucao-localizacao').val(),
+            compartimento: $('#devolucao-compartimento').val(),
+            observacao: $('#devolucao-obs').val()
+        };
+
+        $.ajax({
+            url: '/api/itens/devolver',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function() {
+                modalDevolucao.hide();
+                showAlert('Devolução registrada com sucesso! O item está disponível no inventário.', 'success');
+                fetchHistory();
+            },
+            error: function(xhr) {
+                const errorMsg = xhr.responseJSON ? xhr.responseJSON.message : "Erro ao registrar devolução.";
+                showAlert(errorMsg, 'danger');
+            }
+        });
+    });
+
+    // --- MODO ESCURO ---
+    const applyTheme = (theme) => {
+        $('html').attr('data-bs-theme', theme);
+        localStorage.setItem('theme', theme);
+        $themeToggler.prop('checked', theme === 'dark');
+    };
+
+    $themeToggler.on('change', function() {
+        applyTheme($(this).is(':checked') ? 'dark' : 'light');
     });
 
     // --- INICIALIZAÇÃO ---
-    // Carrega o histórico completo quando a página é aberta pela primeira vez.
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    applyTheme(savedTheme);
     fetchHistory();
+    popularCompartimentosDevolucao();
+    setupUIForRole(userRole);
 });

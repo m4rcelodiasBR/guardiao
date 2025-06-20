@@ -1,10 +1,15 @@
 package br.com.guardiao.guardiao.service;
 
+import br.com.guardiao.guardiao.controller.dto.DevolucaoDTO;
 import br.com.guardiao.guardiao.controller.dto.ItemBuscaDTO;
 import br.com.guardiao.guardiao.controller.dto.ItemUpdateDTO;
 import br.com.guardiao.guardiao.model.Item;
+import br.com.guardiao.guardiao.model.StatusItem;
+import br.com.guardiao.guardiao.model.Transferencia;
+import br.com.guardiao.guardiao.model.Usuario;
 import br.com.guardiao.guardiao.repository.ItemRepository;
 import br.com.guardiao.guardiao.repository.TransferenciaRepository;
+import br.com.guardiao.guardiao.repository.UsuarioRepository;
 import br.com.guardiao.guardiao.repository.specification.ItemSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
@@ -25,25 +30,30 @@ public class ItemService {
     @Autowired
     private TransferenciaRepository transferenciaRepository;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     public Item buscarPorPatrimonio(String numeroPatrimonial) {
         return itemRepository.findByNumeroPatrimonial(numeroPatrimonial)
                 .orElseThrow(() -> new RuntimeException("Item com Patrimônio " + numeroPatrimonial + " não encontrado."));
     }
 
-    public List<Item> listarItensDisponiveis() {
-        return itemRepository.findItensDisponiveis();
-    }
-
     public Item salvarItem(Item item) {
         // Aqui poderíamos adicionar lógicas futuras, como validar se o patrimônio já existe, etc.
+        item.setStatus(StatusItem.DISPONIVEL);
         return itemRepository.save(item);
     }
 
+    @Transactional
     public void deletarItem(String numeroPatrimonial) {
-        Item item = itemRepository.findByNumeroPatrimonial(numeroPatrimonial)
-                .orElseThrow(() -> new RuntimeException("Item com Patrimônio " + numeroPatrimonial + " não encontrado."));
+        Item item = buscarPorPatrimonio(numeroPatrimonial);
 
-        itemRepository.deleteById(item.getId());
+        if (item.getStatus() != StatusItem.DISPONIVEL) {
+            throw new IllegalStateException("Apenas itens com status DISPONIVEL podem ser baixados.");
+        }
+
+        item.setStatus(StatusItem.EXCLUIDO);
+        itemRepository.save(item);
     }
 
     @Transactional
@@ -51,31 +61,29 @@ public class ItemService {
         if (numerosPatrimoniais == null || numerosPatrimoniais.isEmpty()) {
             return;
         }
-        List<Item> itensParaDeletar = numerosPatrimoniais.stream()
-                .map(patrimonio -> itemRepository.findByNumeroPatrimonial(patrimonio)
-                        .orElseThrow(() -> new RuntimeException("Item com Patrimônio " + patrimonio + " não encontrado.")))
+
+        List<Item> itensParaBaixar = numerosPatrimoniais.stream()
+                .map(this::buscarPorPatrimonio)
                 .collect(Collectors.toList());
 
-        itemRepository.deleteAll(itensParaDeletar);
+        for (Item item : itensParaBaixar) {
+            if (item.getStatus() != StatusItem.DISPONIVEL) {
+                throw new IllegalStateException("O item " + item.getNumeroPatrimonial() + " não está disponível para ser baixado.");
+            }
+            item.setStatus(StatusItem.EXCLUIDO);
+        }
+
+        itemRepository.saveAll(itensParaBaixar);
     }
 
-    public List<Item> buscarItensDisponiveis(ItemBuscaDTO itemBuscaDTO) {
-
+    public List<Item> buscarItensAtivos(ItemBuscaDTO itemBuscaDTO) {
         Specification<Item> spec = itemSpecification.getSpecifications(itemBuscaDTO);
 
-        List<Item> itensFiltrados = itemRepository.findAll(spec);
+        Specification<Item> specAtivo = (root, query, criteriaBuilder) ->
+                criteriaBuilder.notEqual(root.get("status"), StatusItem.EXCLUIDO);
 
-        // Em seguida, filtra APENAS os que estão disponíveis (não transferidos)
-        // Isso é feito em memória para simplificar, mas poderia ser uma subquery na especificação.
-        List<Integer> idsTransferidos = transferenciaRepository.findAll().stream()
-                .map(t -> t.getItem().getId())
-                .toList();
-
-        return itensFiltrados.stream()
-                .filter(item -> !idsTransferidos.contains(item.getId()))
-                .collect(Collectors.toList());
+        return itemRepository.findAll(spec.and(specAtivo));
     }
-    // Dentro da classe ItemService
 
     @Transactional
     public Item atualizarItem(String numeroPatrimonial, ItemUpdateDTO dadosAtualizados) {
@@ -89,5 +97,30 @@ public class ItemService {
         itemExistente.setCompartimento(dadosAtualizados.getCompartimento());
 
         return itemRepository.save(itemExistente);
+    }
+
+    @Transactional
+    public Item registrarDevolucao(DevolucaoDTO devolucaoDTO) {
+        Item item = buscarPorPatrimonio(devolucaoDTO.getNumeroPatrimonial());
+
+        if (item.getStatus() != StatusItem.TRANSFERIDO) {
+            throw new IllegalStateException("Este item não está marcado como transferido e não pode ser devolvido.");
+        }
+
+        item.setStatus(StatusItem.DISPONIVEL);
+        item.setLocalizacao(devolucaoDTO.getLocalizacao());
+        item.setCompartimento(devolucaoDTO.getCompartimento());
+
+        Usuario usuario = usuarioRepository.findById(1).orElseThrow();
+        Transferencia registroDevolucao = new Transferencia();
+        registroDevolucao.setItem(item);
+        registroDevolucao.setUsuario(usuario);
+        registroDevolucao.setIncumbenciaDestino("DEVOLVIDO AO ESTOQUE");
+        registroDevolucao.setObservacao(devolucaoDTO.getObservacao());
+        registroDevolucao.setNumeroPatrimonialItem(item.getNumeroPatrimonial());
+        registroDevolucao.setDescricaoItem(item.getDescricao());
+        transferenciaRepository.save(registroDevolucao);
+
+        return itemRepository.save(item);
     }
 }

@@ -1,5 +1,8 @@
 package br.com.guardiao.guardiao.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum Compartimento {
     CP09("CP09 - Sala de Sessões"),
     CP14("CP14 - Sala Fun Coil"),

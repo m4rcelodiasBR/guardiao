@@ -3,22 +3,28 @@ $(function() {
     // Formulários
     const $formBuscaAvancada = $('#form-busca-avancada');
     const $formNovoItem = $('#form-novo-item');
-    const $formTransferencia = $('#form-transferencia');
+
     // Seletores
+    const $cabecalhoTabelaInventario = $('#tabela-inventario').closest('table').find('thead');
     const $tabelaInventarioBody = $('#tabela-inventario');
     const $themeToggler = $('#theme-toggler');
     const $selectIncumbencia = $('#transfer-destino-select');
-    const $outraOmWrapper = $('#outra-om-wrapper');
-    const $inputOutraOm = $('#transfer-outra-om-input');
+    const $destinoExtraWrapper = $('#destino-extra-wrapper');
+    const $inputDestinoExtra = $('#transfer-destino-extra-input');
+    const $labelDestinoExtra = $('#label-destino-extra');
+    const $btnLogout = $('#btn-logout');
+
     // Botões
     const $btnLimparBusca = $('#btn-limpar-busca');
     const $btnConfirmarAcao = $('#btn-confirmar-acao');
+
     // Ações em Massa
     const $selectAllCheckbox = $('#select-all-checkbox');
     const $bulkActionsWrapper = $('#bulk-actions-wrapper');
     const $selectionCounter = $('#selection-counter');
     const $btnExcluirSelecionados = $('#btn-excluir-selecionados');
     const $btnTransferirSelecionados = $('#btn-transferir-selecionados');
+
     // Modais
     const modalNovoItem = new bootstrap.Modal(document.getElementById('modalNovoItem'));
     const modalTransferencia = new bootstrap.Modal(document.getElementById('modalTransferencia'));
@@ -30,11 +36,56 @@ $(function() {
     let allItems = [];
     let acaoConfirmada = null;
     let selectedItems = new Set();
+    let currentSort = { column: 'id', direction: 'asc' };
+
+    // --- FUNÇÃO AUXILIAR PARA LER O TOKEN ---
+    // Esta função decodifica a parte do meio de um token JWT para ler seus dados.
+    const parseJwt = (token) => {
+        try {
+            return JSON.parse(atob(token.split('.')[1]));
+        } catch (e) {
+            return null;
+        }
+    };
+
+    // --- VERIFICAÇÃO DE AUTENTICAÇÃO (EXECUTADO PRIMEIRO) ---
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+        window.location.href = '/login.html';
+        return;
+    };
+
+    const userData = parseJwt(token);
+    const userRole = userData ? userData.role : null;
+
+    $.ajaxSetup({
+        headers: {
+            'Authorization': 'Bearer ' + token
+        },
+        error: function(xhr) {
+            if (xhr.status === 401) {
+                localStorage.removeItem('jwt_token');
+                window.location.href = '/login.html';
+            }
+        }
+    });
+
+    // --- LÓGICA DE CONTROLE DE ACESSO DA INTERFACE (UI) ---
+    const setupUIForRole = (role) => {
+        if (role === 'ADMIN') {
+            $('#link-gestao-usuarios').show();
+        } else {
+            $('#link-gestao-usuarios').hide();
+            $('#btn-novo-item').hide();
+            $('#btn-excluir-selecionados').hide();
+            $('#select-all-checkbox').prop('disabled', true);
+        }
+    };
 
     // --- FUNÇÕES DE LÓGICA ---
     const showAlert = (message, type = 'success') => {
         const $alert = $(`
-            <div class="alert alert-${type} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 2000;">
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert" style="position: fixed; bottom: 20px; right: 20px; z-index: 2000;">
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -81,18 +132,16 @@ $(function() {
     const updateBulkActionUI = () => {
         const count = selectedItems.size;
         const $singleActionButtons = $('.btn-editar, .btn-transferir, .btn-excluir');
-
-        if (count > 1) {
+        if (count > 0) {
             $bulkActionsWrapper.show();
+            if (userRole !== 'ADMIN') { $btnExcluirSelecionados.hide(); }
             $selectionCounter.text(`${count} item(s) selecionado(s)`);
             $singleActionButtons.prop('disabled', true).addClass('opacity-50');
-
         } else {
             $bulkActionsWrapper.hide();
             $singleActionButtons.prop('disabled', false).removeClass('opacity-50');
         }
-
-        $selectAllCheckbox.prop('checked', count > 0 && count === $('.item-checkbox').length);
+        $selectAllCheckbox.prop('checked', count > 0 && count === $('.item-checkbox:not(:disabled)').length);
     };
 
     const fetchAndDisplayItems = (searchParams = {}) => {
@@ -113,40 +162,67 @@ $(function() {
         });
     };
 
-    const renderTable = (items) => {
+    const renderTable = () => {
         $tabelaInventarioBody.empty();
 
-        if (items.length === 0) {
-            $tabelaInventarioBody.html('<tr><td colspan="9" class="text-center text-muted">Nenhum item disponível.</td></tr>');
+        const sortedItems = [...allItems].sort((a, b) => {
+            let valA = a[currentSort.column];
+            let valB = b[currentSort.column];
+
+            if (currentSort.column === 'compartimento') {
+                valA = a.compartimento ? a.compartimento.descricao : '';
+                valB = b.compartimento ? b.compartimento.descricao : '';
+            } else if (currentSort.column === 'status') {
+                valA = a.status || '';
+                valB = b.status || '';
+            }
+
+            valA = valA || '';
+            valB = valB || '';
+
+            return valA.toString().localeCompare(valB.toString()) * (currentSort.direction === 'asc' ? 1 : -1);
+        });
+
+        if (sortedItems.length === 0) {
+            $tabelaInventarioBody.html('<tr><td colspan="9" class="text-center text-muted">Nenhum item ativo encontrado.</td></tr>');
             return;
         }
 
-        items.forEach(item => {
-            const isChecked = selectedItems.has(item.numeroPatrimonial) ? 'checked' : '';
+        sortedItems.forEach(item => {
+            const isDisponivel = item.status === 'DISPONIVEL';
+            const compartimentoDesc = item.compartimento ? item.compartimento.descricao : 'N/A';
+            let statusBadge = '';
+            switch (item.status) {
+                case 'DISPONIVEL': statusBadge = '<span class="badge rounded-pill text-bg-success">Disponível</span>'; break;
+                case 'TRANSFERIDO': statusBadge = '<span class="badge rounded-pill text-bg-warning">Transferido</span>'; break;
+                default: statusBadge = `<span class="badge rounded-pill text-bg-secondary">${item.status}</span>`;
+            }
+            const acoesDesabilitadas = !isDisponivel ? 'disabled' : '';
+
+            let acoesHtml = '';
+            const podeSelecionar = isDisponivel && userRole === 'ADMIN';
+
+            if (userRole === 'ADMIN') {
+                acoesHtml = `
+                    <button class="btn btn-sm btn-primary btn-editar" title="Editar" data-patrimonio="${item.numeroPatrimonial}" ${acoesDesabilitadas}><i class="bi bi-pencil-fill"></i></button>
+                    <button class="btn btn-sm btn-info btn-transferir" title="Transferir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}" ${acoesDesabilitadas}><i class="bi bi-box-arrow-right"></i></button>
+                    <button class="btn btn-sm btn-danger btn-excluir" title="Excluir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}" ${acoesDesabilitadas}><i class="bi bi-trash3-fill"></i></button>
+                `;
+            } else {
+                acoesHtml = `<button class="btn btn-sm btn-info btn-transferir" title="Transferir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}" ${acoesDesabilitadas}><i class="bi bi-box-arrow-right"></i></button>`;
+            }
+
             const rowHtml = `
-                <tr>
-                    <td>
-                        <input class="form-check-input item-checkbox" type="checkbox" 
-                               value="${item.numeroPatrimonial}" ${isChecked}>
-                    </td>
-                    <td>${item.id}</td>
+                <tr class="${!isDisponivel ? 'opacity-50' : ''}">
+                    <td><input class="form-check-input item-checkbox" type="checkbox" value="${item.numeroPatrimonial}" ${!podeSelecionar ? 'disabled' : ''}></td>
+                    <td>${statusBadge}</td>
                     <td>${item.numeroPatrimonial || 'N/A'}</td>
                     <td>${item.descricao}</td>
                     <td>${item.marca || 'N/A'}</td>
                     <td>${item.numeroDeSerie || 'N/A'}</td>
                     <td>${item.localizacao || 'N/A'}</td>
-                    <td>${item.compartimento || 'N/A'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-info btn-transferir" title="Transferir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}">
-                            <i class="bi bi-box-arrow-right"></i>
-                        </button>
-                        <button class="btn btn-sm btn-primary btn-editar" title="Editar" data-patrimonio="${item.numeroPatrimonial}">
-                            <i class="bi bi-pencil-fill"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger btn-excluir" title="Excluir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}">
-                            <i class="bi bi-trash3-fill"></i>
-                        </button>
-                    </td>
+                    <td>${compartimentoDesc}</td>
+                    <td>${acoesHtml}</td>
                 </tr>
             `;
             $tabelaInventarioBody.append(rowHtml);
@@ -154,16 +230,36 @@ $(function() {
     };
 
     // --- MANIPULADORES DE EVENTOS ---
+    $btnLogout.on('click', function() {
+        localStorage.removeItem('jwt_token');
+        window.location.href = '/login.html';
+    });
+
+    $cabecalhoTabelaInventario.on('click', 'th[data-sortable]', function() {
+        const columnKey = $(this).data('column');
+        if (!columnKey) return;
+        const direction = (currentSort.column === columnKey && currentSort.direction === 'asc') ? 'desc' : 'asc';
+        currentSort = { column: columnKey, direction: direction };
+        $cabecalhoTabelaInventario.find('i.sort-icon').remove();
+        const iconClass = direction === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill';
+        $(this).append(` <i class="bi ${iconClass} sort-icon text-warning"></i>`);
+        renderTable();
+    });
 
     $selectIncumbencia.on('change', function() {
         const selectedOption = $(this).val();
         if (selectedOption === 'OUTRA_OM') {
-            $outraOmWrapper.slideDown();
-            $inputOutraOm.prop('required', true);
+            $labelDestinoExtra.text('Especificar OM Destino');
+            $inputDestinoExtra.prop('required', true);
+            $destinoExtraWrapper.slideDown();
+        } else if (selectedOption === 'DOACAO') {
+            $labelDestinoExtra.text('Especificar Destinatário da Doação');
+            $inputDestinoExtra.prop('required', true);
+            $destinoExtraWrapper.slideDown();
         } else {
-            $outraOmWrapper.slideUp();
-            $inputOutraOm.prop('required', false);
-            $inputOutraOm.val('');
+            $destinoExtraWrapper.slideUp();
+            $inputDestinoExtra.prop('required', false);
+            $inputDestinoExtra.val('');
         }
     });
 
@@ -255,7 +351,6 @@ $(function() {
     });
 
     // --- SUBMISSÃO DOS FORMULÁRIOS ---
-
     $formNovoItem.on('submit', function(e) {
         e.preventDefault();
         const formDataArray = $(this).serializeArray();
@@ -309,7 +404,7 @@ $(function() {
         });
     });
 
-    $formTransferencia.on('submit', function(e) {
+    $('#form-transferencia').on('submit', function(e) {
         e.preventDefault();
 
         let destinoFinal = '';
@@ -323,13 +418,14 @@ $(function() {
 
         const descricaoIncumbencia = selectedOption.data('descricao');
 
-        if (codigoIncumbencia === 'OUTRA_OM') {
-            const outraOmTexto = $inputOutraOm.val().trim();
-            if (!outraOmTexto) {
-                showAlert('Por favor, especifique a Outra OM.', 'warning');
+        if (codigoIncumbencia === 'OUTRA_OM' || codigoIncumbencia === 'DOACAO') {
+            const textoExtra = $inputDestinoExtra.val().trim();
+            if (!textoExtra) {
+                const tipo = codigoIncumbencia === 'OUTRA_OM' ? 'a Outra OM' : 'o Destinatário da Doação';
+                showAlert(`Por favor, especifique ${tipo}.`, 'warning');
                 return;
             }
-            destinoFinal = `${descricaoIncumbencia}: ${outraOmTexto}`;
+            destinoFinal = `${descricaoIncumbencia}: ${textoExtra}`;
         } else {
             destinoFinal = descricaoIncumbencia;
         }
@@ -344,6 +440,7 @@ $(function() {
             };
             handleBulkTransfer(data);
         } else {
+            // Ação única
             const data = {
                 numeroPatrimonial: $('#transfer-patrimonio').val(),
                 incumbenciaDestino: destinoFinal,
@@ -354,14 +451,11 @@ $(function() {
     });
 
     $('#modalTransferencia').on('hidden.bs.modal', function () {
-        selectedItems.clear();
-        updateBulkActionUI();
-        $('.item-checkbox').prop('checked', false);
-        $selectAllCheckbox.prop('checked', false);
-        $outraOmWrapper.hide();
-        $inputOutraOm.prop('required', false).val('');
+        // ... (código existente para limpar a seleção em massa) ...
+        $destinoExtraWrapper.hide();
+        $inputDestinoExtra.prop('required', false).val('');
         $selectIncumbencia.val('');
-        $formTransferencia[0].reset();
+        $('#form-transferencia')[0].reset();
     });
 
     $formBuscaAvancada.on('submit', function(e) {
@@ -454,4 +548,5 @@ $(function() {
     popularCompartimentos('#novo-compartimento', 'Selecione um compartimento...');
     popularCompartimentos('#busca-compartimento', 'Todos os compartimentos');
     popularIncumbencias();
+    setupUIForRole(userRole);
 });

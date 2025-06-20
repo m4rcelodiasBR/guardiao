@@ -4,20 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guardião</title>
-
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="/">🦉 Guardião de Ativos</a>
             <div class="d-flex align-items-center">
+                <a id="link-gestao-usuarios" href="/usuarios.html" class="btn btn-outline-warning me-3" style="display: none;">
+                    <i class="bi bi-people-fill me-1"></i> Gerenciar Usuários
+                </a>
                 <a href="/historico.html" class="btn btn-outline-info me-3">
                     <i class="bi bi-clock-history me-1"></i> Histórico
                 </a>
-                <button class="btn btn-success me-3" data-bs-toggle="modal" data-bs-target="#modalNovoItem">
+                <button id="btn-novo-item" class="btn btn-success me-3" data-bs-toggle="modal" data-bs-target="#modalNovoItem">
                     <i class="bi bi-plus-circle-fill me-1"></i> Novo Item
+                </button>
+                <button id="btn-logout" class="btn btn-danger">
+                    <i class="bi bi-box-arrow-right me-1"></i> Sair
                 </button>
                 <div class="form-check form-switch">
                     <input class="form-check-input" type="checkbox" role="switch" id="theme-toggler">
@@ -86,13 +92,13 @@
                     <th style="width: 50px;">
                         <input class="form-check-input" type="checkbox" id="select-all-checkbox" title="Selecionar Todos">
                     </th>
-                    <th data-sortable>ID</th>
-                    <th data-sortable>Nº Patrimonial</th>
-                    <th data-sortable>Descrição</th>
-                    <th data-sortable>Marca</th>
-                    <th data-sortable>Nº de Série</th>
-                    <th data-sortable>Localização</th>
-                    <th data-sortable>Compartimento</th>
+                    <th data-sortable data-column="status">Status</th>
+                    <th data-sortable data-column="numeroPatrimonial">Nº Patrimonial</th>
+                    <th data-sortable data-column="descricao">Descrição</th>
+                    <th data-sortable data-column="marca">Marca</th>
+                    <th data-sortable data-column="numeroDeSerie">Nº de Série</th>
+                    <th data-sortable data-column="localizacao">Localização</th>
+                    <th data-sortable data-column="compartimento">Compartimento</th>
                     <th>Ações</th>
                 </tr>
                 </thead>
@@ -220,18 +226,19 @@
                         <input type="hidden" id="transfer-patrimonio">
 
                         <div class="mb-3">
-                            <label for="transfer-destino-select" class="form-label">Incumbência de Destino <span class="text-danger">*</span></label>
+                            <label for="transfer-destino-select" class="form-label">Incumbência de Destino<span class="text-danger">*</span></label>
                             <select class="form-select" id="transfer-destino-select" required>
                                 <option value="">Carregando...</option>
                             </select>
                         </div>
-                        <div class="mb-3" id="outra-om-wrapper" style="display: none;">
-                            <label for="transfer-outra-om-input" class="form-label">Especificar Outra OM <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="transfer-outra-om-input" placeholder="Ex: COM1DN">
+                        <div class="mb-3" id="destino-extra-wrapper" style="display: none;">
+                            <label for="transfer-destino-extra-input" class="form-label" id="label-destino-extra"></label>
+                            <input type="text" class="form-control" id="transfer-destino-extra-input">
                         </div>
                         <div class="mb-3">
-                            <label for="transfer-obs" class="form-label">Observação</label>
-                            <textarea class="form-control" id="transfer-obs" rows="3"></textarea>
+                            <label for="transfer-obs" class="form-label">Observação<span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="transfer-obs" rows="3" required></textarea>
+                            <small><span class="text-danger">*</span><span class="text-muted"> Campos obrigatórios</span></small>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>

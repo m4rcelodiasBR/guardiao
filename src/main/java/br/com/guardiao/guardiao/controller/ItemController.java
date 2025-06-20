@@ -1,5 +1,6 @@
 package br.com.guardiao.guardiao.controller;
 
+import br.com.guardiao.guardiao.controller.dto.DevolucaoDTO;
 import br.com.guardiao.guardiao.controller.dto.ItemBuscaDTO;
 import br.com.guardiao.guardiao.controller.dto.ItemUpdateDTO;
 import br.com.guardiao.guardiao.model.Compartimento;
@@ -24,7 +25,7 @@ public class ItemController {
 
     @GetMapping
     public List<Item> listarItens(ItemBuscaDTO itemBuscaDTO) {
-        return itemService.buscarItensDisponiveis(itemBuscaDTO);
+        return itemService.buscarItensAtivos(itemBuscaDTO);
     }
 
     @GetMapping("/compartimentos")
@@ -46,6 +47,11 @@ public class ItemController {
     @ResponseStatus(HttpStatus.CREATED)
     public Item adicionarItem(@RequestBody Item item) {
         return itemService.salvarItem(item);
+    }
+
+    @PostMapping("/devolver")
+    public Item devolverItem(@RequestBody DevolucaoDTO devolucaoDTO) {
+        return itemService.registrarDevolucao(devolucaoDTO);
     }
 
     @PutMapping("/{numeroPatrimonial}")

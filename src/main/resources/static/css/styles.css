@@ -1,0 +1,5 @@
+th[data-sortable]:hover {
+    cursor: pointer;
+    background-color: #454d55;
+}
+

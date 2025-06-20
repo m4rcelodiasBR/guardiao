@@ -35,6 +35,10 @@ public class Item {
     @Column(name = "data_cadastro", updatable = false)
     private OffsetDateTime dataCadastro;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StatusItem status;
+
     public Integer getId() {
         return id;
     }
@@ -97,5 +101,13 @@ public class Item {
 
     public void setDataCadastro(OffsetDateTime dataCadastro) {
         this.dataCadastro = dataCadastro;
+    }
+
+    public StatusItem getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusItem status) {
+        this.status = status;
     }
 }

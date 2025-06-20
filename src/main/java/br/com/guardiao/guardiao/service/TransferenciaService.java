@@ -1,14 +1,18 @@
 package br.com.guardiao.guardiao.service;
 
+import br.com.guardiao.guardiao.controller.dto.TransferenciaBuscaDTO;
 import br.com.guardiao.guardiao.controller.dto.TransferenciaDTO;
 import br.com.guardiao.guardiao.controller.dto.TransferenciaMassaDTO;
 import br.com.guardiao.guardiao.model.Item;
+import br.com.guardiao.guardiao.model.StatusItem;
 import br.com.guardiao.guardiao.model.Transferencia;
 import br.com.guardiao.guardiao.model.Usuario;
 import br.com.guardiao.guardiao.repository.ItemRepository;
 import br.com.guardiao.guardiao.repository.TransferenciaRepository;
 import br.com.guardiao.guardiao.repository.UsuarioRepository;
+import br.com.guardiao.guardiao.repository.specification.TransferenciaSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,15 +30,22 @@ public class TransferenciaService {
     @Autowired
     private TransferenciaRepository transferenciaRepository;
 
+    @Autowired
+    private TransferenciaSpecification transferenciaSpecification;
+
+
     @Transactional
     public Transferencia registrarTransferencia(TransferenciaDTO transferenciaDTO) {
-        // PASSO 1 ATUALIZADO: Buscar o item pelo NÚMERO PATRIMONIAL
         Item item = itemRepository.findByNumeroPatrimonial(transferenciaDTO.getNumeroPatrimonial())
                 .orElseThrow(() -> new RuntimeException("Item com Patrimônio " + transferenciaDTO.getNumeroPatrimonial() + " não encontrado."));
 
-        // O resto da lógica continua igual, pois já temos o objeto 'item' completo!
         Usuario usuario = usuarioRepository.findById(1)
                 .orElseThrow(() -> new RuntimeException("Usuário padrão não encontrado."));
+
+        if (item.getStatus() != StatusItem.DISPONIVEL) {
+            throw new IllegalStateException("O item não está disponível para transferência.");
+        }
+        item.setStatus(StatusItem.TRANSFERIDO);
 
         Transferencia novaTransferencia = new Transferencia();
         novaTransferencia.setItem(item);
@@ -51,10 +62,6 @@ public class TransferenciaService {
         return transferenciaRepository.findAll();
     }
 
-    public List<Transferencia> buscarPorNumeroPatrimonial(String patrimonio) {
-        return transferenciaRepository.findByNumeroPatrimonialItemContainingIgnoreCase(patrimonio);
-    }
-
     @Transactional
     public void registrarTransferenciaEmMassa(TransferenciaMassaDTO transferenciaMassaDTO) {
         Usuario usuario = usuarioRepository.findById(1)
@@ -63,6 +70,11 @@ public class TransferenciaService {
         for (String patrimonio : transferenciaMassaDTO.getNumerosPatrimoniais()) {
             Item item = itemRepository.findByNumeroPatrimonial(patrimonio)
                     .orElseThrow(() -> new RuntimeException("Item com Patrimônio " + patrimonio + " não encontrado."));
+
+            if (item.getStatus() != StatusItem.DISPONIVEL) {
+                throw new IllegalStateException("O item " + patrimonio + " não está disponível para transferência.");
+            }
+            item.setStatus(StatusItem.TRANSFERIDO);
 
             Transferencia transferenciaEmMassa = new Transferencia();
             transferenciaEmMassa.setItem(item);
@@ -74,5 +86,10 @@ public class TransferenciaService {
 
             transferenciaRepository.save(transferenciaEmMassa);
         }
+    }
+
+    public List<Transferencia> buscarTransferencias(TransferenciaBuscaDTO request) {
+        Specification<Transferencia> spec = transferenciaSpecification.getSpecifications(request);
+        return transferenciaRepository.findAll(spec);
     }
 }

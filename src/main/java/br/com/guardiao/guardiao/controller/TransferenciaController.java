@@ -1,5 +1,6 @@
 package br.com.guardiao.guardiao.controller;
 
+import br.com.guardiao.guardiao.controller.dto.TransferenciaBuscaDTO;
 import br.com.guardiao.guardiao.controller.dto.TransferenciaDTO;
 import br.com.guardiao.guardiao.controller.dto.TransferenciaMassaDTO;
 import br.com.guardiao.guardiao.model.Transferencia;
@@ -30,12 +31,7 @@ public class TransferenciaController {
     }
 
     @GetMapping
-    public List<Transferencia> listarHistorico() {
-        return transferenciaService.listarTodasTransferencias();
-    }
-
-    @GetMapping("/busca")
-    public List<Transferencia> buscarTransferencias(@RequestParam String numeroPatrimonial) {
-        return transferenciaService.buscarPorNumeroPatrimonial(numeroPatrimonial);
+    public List<Transferencia> listarOuBuscarHistorico(TransferenciaBuscaDTO transferenciaBuscaDTO) {
+        return transferenciaService.buscarTransferencias(transferenciaBuscaDTO);
     }
 }
