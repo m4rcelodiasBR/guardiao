@@ -49,7 +49,6 @@ public class ItemService {
     }
 
     public Item salvarItem(Item item) {
-        // Aqui poderíamos adicionar lógicas futuras, como validar se o patrimônio já existe, etc.
         item.setStatus(StatusItem.DISPONIVEL);
         return itemRepository.save(item);
     }

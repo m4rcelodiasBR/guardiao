@@ -1,6 +1,7 @@
 package br.com.guardiao.guardiao.controller;
 
 import br.com.guardiao.guardiao.controller.dto.RegistroUsuarioDTO;
+import br.com.guardiao.guardiao.controller.dto.UsuarioUpdateDTO;
 import br.com.guardiao.guardiao.model.Usuario;
 import br.com.guardiao.guardiao.service.UsuarioService;
 import jakarta.validation.Valid;
@@ -24,9 +25,29 @@ public class UsuarioController {
         return new ResponseEntity<>(novoUsuario, HttpStatus.CREATED);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Usuario>> listarUsuarios() {
-        List<Usuario> usuarios = usuarioService.listarTodos();
+    @GetMapping("/visiveis")
+    public ResponseEntity<List<Usuario>> listarUsuariosVisiveis() {
+        List<Usuario> usuarios = usuarioService.listarUsuariosVisiveis();
+        usuarios.forEach(user -> user.setSenha(null));
         return ResponseEntity.ok(usuarios);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Integer id, @RequestBody @Valid UsuarioUpdateDTO dados) {
+        Usuario usuarioAtualizado = usuarioService.atualizarUsuario(id, dados);
+        usuarioAtualizado.setSenha(null);
+        return ResponseEntity.ok(usuarioAtualizado);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void excluirUsuario(@PathVariable Integer id) {
+        usuarioService.excluirUsuario(id);
+    }
+
+    @PostMapping("/{id}/reset-senha")
+    public ResponseEntity<Void> resetarSenha(@PathVariable Integer id) {
+        usuarioService.resetarSenha(id);
+        return ResponseEntity.ok().build();
     }
 }

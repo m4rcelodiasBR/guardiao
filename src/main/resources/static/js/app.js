@@ -1,75 +1,5 @@
 $(function() {
 
-    // Formulários
-    const $formBuscaAvancada = $('#form-busca-avancada');
-    const $formNovoItem = $('#form-novo-item');
-
-    // Seletores
-    const $cabecalhoTabelaInventario = $('#tabela-inventario').closest('table').find('thead');
-    const $tabelaInventarioBody = $('#tabela-inventario');
-    const $themeToggler = $('#theme-toggler');
-    const $selectIncumbencia = $('#transfer-destino-select');
-    const $destinoExtraWrapper = $('#destino-extra-wrapper');
-    const $inputDestinoExtra = $('#transfer-destino-extra-input');
-    const $labelDestinoExtra = $('#label-destino-extra');
-    const $btnLogout = $('#btn-logout');
-
-    // Botões
-    const $btnLimparBusca = $('#btn-limpar-busca');
-    const $btnConfirmarAcao = $('#btn-confirmar-acao');
-
-    // Ações em Massa
-    const $selectAllCheckbox = $('#select-all-checkbox');
-    const $bulkActionsWrapper = $('#bulk-actions-wrapper');
-    const $selectionCounter = $('#selection-counter');
-    const $btnExcluirSelecionados = $('#btn-excluir-selecionados');
-    const $btnTransferirSelecionados = $('#btn-transferir-selecionados');
-
-    // Modais
-    const modalNovoItem = new bootstrap.Modal(document.getElementById('modalNovoItem'));
-    const modalTransferencia = new bootstrap.Modal(document.getElementById('modalTransferencia'));
-    const modalConfirmacao = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
-    const $formEditarItem = $('#form-editar-item');
-    const modalEditarItem = new bootstrap.Modal(document.getElementById('modalEditarItem'));
-
-    // --- VARIÁVEIS DE ESTADO ---
-    let allItems = [];
-    let acaoConfirmada = null;
-    let selectedItems = new Set();
-    let currentSort = { column: 'id', direction: 'asc' };
-
-    // --- FUNÇÃO AUXILIAR PARA LER O TOKEN ---
-    // Esta função decodifica a parte do meio de um token JWT para ler seus dados.
-    const parseJwt = (token) => {
-        try {
-            return JSON.parse(atob(token.split('.')[1]));
-        } catch (e) {
-            return null;
-        }
-    };
-
-    // --- VERIFICAÇÃO DE AUTENTICAÇÃO (EXECUTADO PRIMEIRO) ---
-    const token = localStorage.getItem('jwt_token');
-    if (!token) {
-        window.location.href = '/login.html';
-        return;
-    };
-
-    const userData = parseJwt(token);
-    const userRole = userData ? userData.role : null;
-
-    $.ajaxSetup({
-        headers: {
-            'Authorization': 'Bearer ' + token
-        },
-        error: function(xhr) {
-            if (xhr.status === 401) {
-                localStorage.removeItem('jwt_token');
-                window.location.href = '/login.html';
-            }
-        }
-    });
-
     // --- LÓGICA DE CONTROLE DE ACESSO DA INTERFACE (UI) ---
     const setupUIForRole = (role) => {
         if (role === 'ADMIN') {
@@ -77,10 +7,41 @@ $(function() {
         } else {
             $('#link-gestao-usuarios').hide();
             $('#btn-novo-item').hide();
-            $('#btn-excluir-selecionados').hide();
-            $('#select-all-checkbox').prop('disabled', true);
+            $('#select-all-checkbox').closest('th').hide();
+            $bulkActionsWrapper.hide();
         }
     };
+
+    // --- SELETORES ---
+    const $tabelaInventarioBody = $('#tabela-inventario');
+    const $cabecalhoTabelaInventario = $('#tabela-inventario').closest('table').find('thead');
+    const $formNovoItem = $('#form-novo-item');
+    const $formEditarItem = $('#form-editar-item');
+    const $formTransferencia = $('#form-transferencia');
+    const $formBuscaAvancada = $('#form-busca-avancada');
+    const $btnConfirmarAcao = $('#btn-confirmar-acao');
+    const $btnLimparBusca = $('#btn-limpar-busca');
+    const $selectAllCheckbox = $('#select-all-checkbox');
+    const $bulkActionsWrapper = $('#bulk-actions-wrapper');
+    const $selectionCounter = $('#selection-counter');
+    const $btnExcluirSelecionados = $('#btn-excluir-selecionados');
+    const $btnTransferirSelecionados = $('#btn-transferir-selecionados');
+    const $selectIncumbencia = $('#transfer-destino-select');
+    const $destinoExtraWrapper = $('#destino-extra-wrapper');
+    const $inputDestinoExtra = $('#transfer-destino-extra-input');
+    const $labelDestinoExtra = $('#label-destino-extra');
+    const $btnLogout = $('#btn-logout');
+
+    const modalNovoItem = new bootstrap.Modal(document.getElementById('modalNovoItem'));
+    const modalEditarItem = new bootstrap.Modal(document.getElementById('modalEditarItem'));
+    const modalTransferencia = new bootstrap.Modal(document.getElementById('modalTransferencia'));
+    const modalConfirmacao = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
+
+    // --- VARIÁVEIS DE ESTADO ---
+    let allItems = [];
+    let acaoConfirmada = null;
+    let selectedItems = new Set();
+    let currentSort = { column: 'id', direction: 'asc' };
 
     // --- FUNÇÕES DE LÓGICA ---
     const showAlert = (message, type = 'success') => {
@@ -92,6 +53,117 @@ $(function() {
         `);
         $('body').append($alert);
         setTimeout(() => $alert.fadeOut(500, () => $alert.remove()), 4000);
+    };
+
+    // Ações em Massa
+    const updateBulkActionUI = () => {
+        const count = selectedItems.size;
+        const $singleActionButtons = $('.btn-editar, .btn-transferir, .btn-excluir');
+        if (count > 0 && userRole === 'ADMIN') {
+            $bulkActionsWrapper.show();
+            $selectionCounter.text(`${count} item(s) selecionado(s)`);
+            $singleActionButtons.prop('disabled', true).addClass('opacity-50');
+        } else {
+            $bulkActionsWrapper.hide();
+            $singleActionButtons.prop('disabled', false).removeClass('opacity-50');
+        }
+        $selectAllCheckbox.prop('checked', count > 0 && count === $('.item-checkbox:not(:disabled)').length);
+    };
+
+    const fetchAndDisplayItems = (searchParams = {}) => {
+        const queryString = $.param(searchParams);
+
+        $.ajax({
+            url: `/api/itens?${queryString}`,
+            method: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                allItems = data;
+                renderTable();
+                selectedItems.clear();
+                updateBulkActionUI();
+            },
+            error: function() {
+                $tabelaInventarioBody.html('<tr><td colspan="9" class="text-center text-danger">Erro ao carregar inventário.</td></tr>');
+            }
+        });
+    };
+
+    const renderTable = (items) => {
+        $tabelaInventarioBody.empty();
+
+        const sortedItems = [...allItems].sort((a, b) => {
+            let valA = a[currentSort.column], valB = b[currentSort.column];
+            if (currentSort.column === 'compartimento') {
+                valA = a.compartimento ? a.compartimento.descricao : '';
+                valB = b.compartimento ? b.compartimento.descricao : '';
+            }
+            if (currentSort.column === 'status') {
+                valA = a.status || '';
+                valB = b.status || '';
+            }
+            valA = valA || '';
+            valB = valB || '';
+            return valA.toString().localeCompare(valB.toString()) * (currentSort.direction === 'asc' ? 1 : -1);
+        });
+
+        if (sortedItems.length === 0) {
+            const colspan = userRole === 'ADMIN' ? 9 : 8;
+            $tabelaInventarioBody.html(`<tr><td colspan="${colspan}" class="text-center text-muted">Nenhum item ativo encontrado.</td></tr>`);
+            return;
+        }
+
+        sortedItems.forEach(item => {
+            const isDisponivel = item.status === 'DISPONIVEL';
+            const compartimentoDesc = item.compartimento ? item.compartimento.descricao : 'N/A';
+            let statusBadge = '';
+            switch (item.status) {
+                case 'DISPONIVEL': statusBadge = '<span class="badge rounded-pill text-bg-success">Disponível</span>'; break;
+                case 'TRANSFERIDO': statusBadge = '<span class="badge rounded-pill text-bg-warning">Transferido</span>'; break;
+                default: statusBadge = `<span class="badge rounded-pill text-bg-secondary">${item.status}</span>`;
+            }
+
+            let acoesHtml = '';
+            if (userRole === 'ADMIN') {
+                if (isDisponivel) {
+                    acoesHtml = `
+                        <button class="btn btn-sm btn-primary btn-editar" title="Editar" data-patrimonio="${item.numeroPatrimonial}"><i class="bi bi-pencil-fill"></i></button>
+                        <button class="btn btn-sm btn-info btn-transferir" title="Transferir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}"><i class="bi bi-box-arrow-right"></i></button>
+                        <button class="btn btn-sm btn-danger btn-excluir" title="Excluir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}"><i class="bi bi-trash3-fill"></i></button>
+                    `;
+                } else {
+                    acoesHtml = `
+                        <button class="btn btn-sm btn-primary btn-editar" style="opacity: 100%;" title="Editar" data-patrimonio="${item.numeroPatrimonial}"><i class="bi bi-pencil-fill"></i></button>
+                    `;
+                }
+            } else {
+                if (isDisponivel) {
+                    acoesHtml = `<button class="btn btn-sm btn-info btn-transferir" title="Transferir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}"><i class="bi bi-box-arrow-right"></i></button>`;
+                }
+            }
+
+            const checkboxHtml = userRole === 'ADMIN' ? `<td><input class="form-check-input item-checkbox" type="checkbox" value="${item.numeroPatrimonial}" ${!isDisponivel ? 'disabled' : ''}></td>` : '';
+
+            const rowHtml = `
+                <tr class="${!isDisponivel ? 'opacity-50' : ''}">
+                    ${checkboxHtml}
+                    <td>${statusBadge}</td>
+                    <td>${item.numeroPatrimonial || 'N/A'}</td>
+                    <td>${item.descricao}</td>
+                    <td>${item.marca || 'N/A'}</td>
+                    <td>${item.numeroDeSerie || 'N/A'}</td>
+                    <td>${item.localizacao || 'N/A'}</td>
+                    <td>${compartimentoDesc}</td>
+                    <td>${acoesHtml}</td>
+                </tr>
+            `;
+            $tabelaInventarioBody.append(rowHtml);
+        });
+
+        if (userRole !== 'ADMIN') {
+            $('#select-all-checkbox').closest('th').hide();
+            $('.item-checkbox').closest('td').hide();
+        }
     };
 
     const popularCompartimentos = (selectId, placeholder, selectedValue = null) => {
@@ -125,107 +197,6 @@ $(function() {
             error: function() {
                 $selectIncumbencia.empty().append('<option value="">Erro ao carregar</option>');
             }
-        });
-    };
-
-    // Ações em Massa
-    const updateBulkActionUI = () => {
-        const count = selectedItems.size;
-        const $singleActionButtons = $('.btn-editar, .btn-transferir, .btn-excluir');
-        if (count > 0) {
-            $bulkActionsWrapper.show();
-            if (userRole !== 'ADMIN') { $btnExcluirSelecionados.hide(); }
-            $selectionCounter.text(`${count} item(s) selecionado(s)`);
-            $singleActionButtons.prop('disabled', true).addClass('opacity-50');
-        } else {
-            $bulkActionsWrapper.hide();
-            $singleActionButtons.prop('disabled', false).removeClass('opacity-50');
-        }
-        $selectAllCheckbox.prop('checked', count > 0 && count === $('.item-checkbox:not(:disabled)').length);
-    };
-
-    const fetchAndDisplayItems = (searchParams = {}) => {
-        const queryString = $.param(searchParams);
-
-        $.ajax({
-            url: `/api/itens?${queryString}`,
-            method: 'GET',
-            dataType: 'json',
-            success: function(data) {
-                allItems = data;
-                renderTable(allItems);
-            },
-            error: function(xhr, status, error) {
-                console.error("Erro ao buscar itens:", status, error);
-                $tabelaInventarioBody.html('<tr><td colspan="9" class="text-center text-danger">Erro ao carregar inventário.</td></tr>');
-            }
-        });
-    };
-
-    const renderTable = () => {
-        $tabelaInventarioBody.empty();
-
-        const sortedItems = [...allItems].sort((a, b) => {
-            let valA = a[currentSort.column];
-            let valB = b[currentSort.column];
-
-            if (currentSort.column === 'compartimento') {
-                valA = a.compartimento ? a.compartimento.descricao : '';
-                valB = b.compartimento ? b.compartimento.descricao : '';
-            } else if (currentSort.column === 'status') {
-                valA = a.status || '';
-                valB = b.status || '';
-            }
-
-            valA = valA || '';
-            valB = valB || '';
-
-            return valA.toString().localeCompare(valB.toString()) * (currentSort.direction === 'asc' ? 1 : -1);
-        });
-
-        if (sortedItems.length === 0) {
-            $tabelaInventarioBody.html('<tr><td colspan="9" class="text-center text-muted">Nenhum item ativo encontrado.</td></tr>');
-            return;
-        }
-
-        sortedItems.forEach(item => {
-            const isDisponivel = item.status === 'DISPONIVEL';
-            const compartimentoDesc = item.compartimento ? item.compartimento.descricao : 'N/A';
-            let statusBadge = '';
-            switch (item.status) {
-                case 'DISPONIVEL': statusBadge = '<span class="badge rounded-pill text-bg-success">Disponível</span>'; break;
-                case 'TRANSFERIDO': statusBadge = '<span class="badge rounded-pill text-bg-warning">Transferido</span>'; break;
-                default: statusBadge = `<span class="badge rounded-pill text-bg-secondary">${item.status}</span>`;
-            }
-            const acoesDesabilitadas = !isDisponivel ? 'disabled' : '';
-
-            let acoesHtml = '';
-            const podeSelecionar = isDisponivel && userRole === 'ADMIN';
-
-            if (userRole === 'ADMIN') {
-                acoesHtml = `
-                    <button class="btn btn-sm btn-primary btn-editar" title="Editar" data-patrimonio="${item.numeroPatrimonial}" ${acoesDesabilitadas}><i class="bi bi-pencil-fill"></i></button>
-                    <button class="btn btn-sm btn-info btn-transferir" title="Transferir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}" ${acoesDesabilitadas}><i class="bi bi-box-arrow-right"></i></button>
-                    <button class="btn btn-sm btn-danger btn-excluir" title="Excluir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}" ${acoesDesabilitadas}><i class="bi bi-trash3-fill"></i></button>
-                `;
-            } else {
-                acoesHtml = `<button class="btn btn-sm btn-info btn-transferir" title="Transferir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}" ${acoesDesabilitadas}><i class="bi bi-box-arrow-right"></i></button>`;
-            }
-
-            const rowHtml = `
-                <tr class="${!isDisponivel ? 'opacity-50' : ''}">
-                    <td><input class="form-check-input item-checkbox" type="checkbox" value="${item.numeroPatrimonial}" ${!podeSelecionar ? 'disabled' : ''}></td>
-                    <td>${statusBadge}</td>
-                    <td>${item.numeroPatrimonial || 'N/A'}</td>
-                    <td>${item.descricao}</td>
-                    <td>${item.marca || 'N/A'}</td>
-                    <td>${item.numeroDeSerie || 'N/A'}</td>
-                    <td>${item.localizacao || 'N/A'}</td>
-                    <td>${compartimentoDesc}</td>
-                    <td>${acoesHtml}</td>
-                </tr>
-            `;
-            $tabelaInventarioBody.append(rowHtml);
         });
     };
 
@@ -350,6 +321,23 @@ $(function() {
         modalTransferencia.show();
     });
 
+    $formBuscaAvancada.on('submit', function(e) {
+        e.preventDefault();
+        const formDataArray = $(this).serializeArray();
+        let searchParams = {};
+        formDataArray.forEach(item => {
+            if (item.value) { // Só adiciona ao objeto se o campo tiver valor
+                searchParams[item.name] = item.value;
+            }
+        });
+        fetchAndDisplayItems(searchParams);
+    });
+
+    $btnLimparBusca.on('click', function() {
+        $formBuscaAvancada[0].reset(); // Limpa os campos do formulário
+        fetchAndDisplayItems(); // Busca todos os itens novamente, sem filtros
+    });
+
     // --- SUBMISSÃO DOS FORMULÁRIOS ---
     $formNovoItem.on('submit', function(e) {
         e.preventDefault();
@@ -404,7 +392,7 @@ $(function() {
         });
     });
 
-    $('#form-transferencia').on('submit', function(e) {
+    $formTransferencia.on('submit', function(e) {
         e.preventDefault();
 
         let destinoFinal = '';
@@ -458,23 +446,7 @@ $(function() {
         $('#form-transferencia')[0].reset();
     });
 
-    $formBuscaAvancada.on('submit', function(e) {
-        e.preventDefault();
-        const formDataArray = $(this).serializeArray();
-        let searchParams = {};
-        formDataArray.forEach(item => {
-            if (item.value) { // Só adiciona ao objeto se o campo tiver valor
-                searchParams[item.name] = item.value;
-            }
-        });
-        fetchAndDisplayItems(searchParams);
-    });
-
-    $btnLimparBusca.on('click', function() {
-        $formBuscaAvancada[0].reset(); // Limpa os campos do formulário
-        fetchAndDisplayItems(); // Busca todos os itens novamente, sem filtros
-    });
-
+    // --- FUNÇÕES DE AJAX PARA AÇÕES ---
     const handleDelete = (patrimonio) => {
         $.ajax({
             url: `/api/itens/${patrimonio}`,
@@ -531,22 +503,10 @@ $(function() {
         });
     };
 
-    const applyTheme = (theme) => {
-        $('html').attr('data-bs-theme', theme);
-        localStorage.setItem('theme', theme);
-        $themeToggler.prop('checked', theme === 'dark');
-    };
-
-    $themeToggler.on('change', function() {
-        applyTheme($(this).is(':checked') ? 'dark' : 'light');
-    });
-
     // --- INICIALIZAÇÃO ---
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    applyTheme(savedTheme);
+    setupUIForRole(userRole);
     fetchAndDisplayItems();
     popularCompartimentos('#novo-compartimento', 'Selecione um compartimento...');
     popularCompartimentos('#busca-compartimento', 'Todos os compartimentos');
     popularIncumbencias();
-    setupUIForRole(userRole);
 });

@@ -14,38 +14,6 @@ $(function() {
     let allTransfers = [];
     let currentSort = { column: 'dataTransferencia', direction: 'desc' };
 
-    // --- FUNÇÃO AUXILIAR PARA LER O TOKEN ---
-    // Esta função decodifica a parte do meio de um token JWT para ler seus dados.
-    const parseJwt = (token) => {
-        try {
-            return JSON.parse(atob(token.split('.')[1]));
-        } catch (e) {
-            return null;
-        }
-    };
-
-    // --- VERIFICAÇÃO DE AUTENTICAÇÃO (EXECUTADO PRIMEIRO) ---
-    const token = localStorage.getItem('jwt_token');
-    if (!token) {
-        window.location.href = '/login.html';
-        return;
-    };
-
-    const userData = parseJwt(token);
-    const userRole = userData ? userData.role : null;
-
-    $.ajaxSetup({
-        headers: {
-            'Authorization': 'Bearer ' + token
-        },
-        error: function(xhr) {
-            if (xhr.status === 401) {
-                localStorage.removeItem('jwt_token');
-                window.location.href = '/login.html';
-            }
-        }
-    });
-
     // --- LÓGICA DE CONTROLE DE ACESSO DA INTERFACE (UI) ---
     const setupUIForRole = (role) => {
         if (role !== 'ADMIN') {
@@ -78,32 +46,35 @@ $(function() {
     const renderHistoryTable = () => {
         $tabelaHistoricoBody.empty();
 
-        const ultimoStatusPorItem = {};
+        // Passo 1: Calcular o estado final e a ID da última transferência de cada item
+        const itemState = {}; // Guarda o estado { status: '...', lastTransferId: X }
         [...allTransfers].sort((a, b) => a.id - b.id).forEach(t => {
             const incumbencia = t.incumbenciaDestino || '';
             const isDevolucao = incumbencia === "DEVOLVIDO AO ESTOQUE";
             const isBaixaDefinitiva = ["000", "001", "002"].some(prefix => incumbencia.startsWith(prefix));
 
+            let statusFinal = 'TRANSFERIDO';
             if (isDevolucao) {
-                ultimoStatusPorItem[t.numeroPatrimonialItem] = "DISPONIVEL";
+                statusFinal = 'DISPONIVEL';
             } else if (isBaixaDefinitiva) {
-                ultimoStatusPorItem[t.numeroPatrimonialItem] = "PERMANENTE";
-            } else {
-                ultimoStatusPorItem[t.numeroPatrimonialItem] = "TRANSFERIDO";
+                statusFinal = 'PERMANENTE';
             }
+
+            // AQUI ESTÁ A CORREÇÃO: Nós agora guardamos o ID da última transação.
+            itemState[t.numeroPatrimonialItem] = {
+                status: statusFinal,
+                lastTransferId: t.id
+            };
         });
 
+        // Passo 2: Ordenar os dados para exibição
         const sortedTransfers = [...allTransfers].sort((a, b) => {
-            let valA = a[currentSort.column];
-            let valB = b[currentSort.column];
-
+            let valA = a[currentSort.column], valB = b[currentSort.column];
             if (currentSort.column === 'usuario') {
                 valA = a.usuario ? a.usuario.nome : '';
                 valB = b.usuario ? b.usuario.nome : '';
             }
-            valA = valA || '';
-            valB = valB || '';
-
+            valA = valA || ''; valB = valB || '';
             return valA.toString().localeCompare(valB.toString()) * (currentSort.direction === 'asc' ? 1 : -1);
         });
 
@@ -112,22 +83,25 @@ $(function() {
             return;
         }
 
+        // Passo 3: Renderizar a tabela
         sortedTransfers.forEach(transf => {
-            const statusFinalDoItem = ultimoStatusPorItem[transf.numeroPatrimonialItem];
-            const podeDevolver = (statusFinalDoItem === 'TRANSFERIDO');
-            const botaoDevolverHtml = podeDevolver ?
-                `<button class="btn btn-sm btn-success btn-devolver" title="Registrar Devolução" 
-                    data-patrimonio="${transf.numeroPatrimonialItem}" 
-                    data-descricao="${transf.descricaoItem}">
-                    <i class="bi bi-box-arrow-in-left"></i>
-                </button>` : '';
+            const estadoAtualDoItem = itemState[transf.numeroPatrimonialItem];
+
+            // AQUI ESTÁ A CORREÇÃO: A lógica agora funciona corretamente.
+            const podeDevolver = estadoAtualDoItem && estadoAtualDoItem.status === 'TRANSFERIDO' && estadoAtualDoItem.lastTransferId === transf.id;
+
+            const botaoDevolverHtml = podeDevolver ? `<button class="btn btn-sm btn-success btn-devolver" title="Registrar Devolução" data-patrimonio="${transf.numeroPatrimonialItem}" data-descricao="${transf.descricaoItem}"><i class="bi bi-box-arrow-in-left"></i></button>` : '';
+
+            const incumbencia = transf.incumbenciaDestino || '';
+            const isBaixaDefinitiva = ["000", "001", "002"].some(prefix => incumbencia.startsWith(prefix));
+            const incumbenciaHtml = isBaixaDefinitiva ? `<span class="badge rounded-pill text-bg-danger">${incumbencia}</span>` : incumbencia;
 
             const rowHtml = `
                 <tr>
                     <td>${formatarData(transf.dataTransferencia)}</td>
                     <td>${transf.numeroPatrimonialItem || 'N/A'}</td>
                     <td>${transf.descricaoItem || 'N/A'}</td>
-                    <td>${transf.incumbenciaDestino}</td>
+                    <td>${incumbenciaHtml}</td>
                     <td>${transf.observacao || ''}</td>
                     <td>${transf.usuario ? transf.usuario.nome : 'Usuário desconhecido'}</td>
                     <td>${botaoDevolverHtml}</td>
@@ -145,7 +119,7 @@ $(function() {
             dataType: 'json',
             success: (data) => {
                 allTransfers = data;
-                renderHistoryTable();
+                renderHistoryTable(allTransfers);
             },
             error: () => {
                 $tabelaHistoricoBody.html('<tr><td colspan="7" class="text-center text-danger">Erro ao carregar o histórico.</td></tr>');

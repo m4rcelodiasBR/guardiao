@@ -19,21 +19,13 @@ $(function() {
             contentType: 'application/json',
             data: JSON.stringify(data),
             success: function(response) {
-                // Se o login for bem-sucedido, o 'response' contém o token
                 if (response && response.token) {
-                    // Armazena o token no localStorage do navegador.
-                    // O localStorage persiste os dados mesmo após fechar o navegador.
                     localStorage.setItem('jwt_token', response.token);
-
-                    // Redireciona o usuário para a página principal do inventário
                     window.location.href = '/index.html';
                 }
             },
             error: function(xhr) {
-                let errorMsg = "E-mail ou senha inválidos. Tente novamente.";
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMsg = xhr.responseJSON.message;
-                }
+                const errorMsg = xhr.responseText || "E-mail ou senha inválidos. Tente novamente.";
                 $loginAlert.text(errorMsg).removeClass('d-none');
             }
         });

@@ -28,6 +28,10 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private Perfil perfil;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StatusUsuario status;
+
     // Métodos da interface UserDetails
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -61,7 +65,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return this.status == StatusUsuario.ATIVO;
     }
 
     public Integer getId() {
@@ -103,5 +107,14 @@ public class Usuario implements UserDetails {
     public void setPerfil(Perfil perfil) {
         this.perfil = perfil;
     }
+
+    public StatusUsuario getStatus() {
+        return status;
+    }
+
+    public void setStatus(StatusUsuario status) {
+        this.status = status;
+    }
+
 }
     
