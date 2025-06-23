@@ -1,5 +1,6 @@
 package br.com.guardiao.guardiao.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -9,11 +10,15 @@ import java.util.List;
 
 @Entity
 @Table(name = "usuarios")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @Column(nullable = false, unique = true)
+    private String login;
 
     @Column(nullable = false)
     private String nome;
@@ -32,6 +37,9 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private StatusUsuario status;
 
+    @Column(name = "senha_expirada", nullable = false)
+    private boolean senhaExpirada;
+
     // Métodos da interface UserDetails
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -45,7 +53,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.email;
+        return this.login;
     }
 
     @Override
@@ -60,7 +68,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return !this.senhaExpirada;
     }
 
     @Override
@@ -70,6 +78,14 @@ public class Usuario implements UserDetails {
 
     public Integer getId() {
         return id;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
     }
 
     public void setId(Integer id) {
@@ -116,5 +132,12 @@ public class Usuario implements UserDetails {
         this.status = status;
     }
 
+    public boolean isSenhaExpirada() {
+        return senhaExpirada;
+    }
+
+    public void setSenhaExpirada(boolean senhaExpirada) {
+        this.senhaExpirada = senhaExpirada;
+    }
 }
     

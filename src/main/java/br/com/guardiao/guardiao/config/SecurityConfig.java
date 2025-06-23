@@ -37,7 +37,10 @@ public class SecurityConfig {
                         "/index.html",
                         "/historico.html",
                         "/usuarios.html",
+                        "/perfil.html",
+                        "/trocar-senha.html",
                         "/api/auth/**",
+                        "/api/perfil/**",
                         "/css/**",
                         "/js/**")
                 .permitAll()

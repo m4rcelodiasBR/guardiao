@@ -9,7 +9,7 @@ $(function() {
         $loginAlert.addClass('d-none').text('');
 
         const data = {
-            email: $('#email').val(),
+            login: $('#login').val(),
             senha: $('#senha').val()
         };
 
@@ -21,11 +21,15 @@ $(function() {
             success: function(response) {
                 if (response && response.token) {
                     localStorage.setItem('jwt_token', response.token);
-                    window.location.href = '/index.html';
+                    if (response.trocaSenhaObrigatoria) {
+                        window.location.href = '/trocar-senha.html';
+                    } else {
+                        window.location.href = '/index.html';
+                    }
                 }
             },
             error: function(xhr) {
-                const errorMsg = xhr.responseText || "E-mail ou senha inválidos. Tente novamente.";
+                const errorMsg = xhr.responseText || "Login ou senha inválidos. Tente novamente.";
                 $loginAlert.text(errorMsg).removeClass('d-none');
             }
         });

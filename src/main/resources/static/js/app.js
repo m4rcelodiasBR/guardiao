@@ -8,7 +8,7 @@ $(function() {
             $('#link-gestao-usuarios').hide();
             $('#btn-novo-item').hide();
             $('#select-all-checkbox').closest('th').hide();
-            $bulkActionsWrapper.hide();
+            bulkActionsCollapse.hide();
         }
     };
 
@@ -22,7 +22,7 @@ $(function() {
     const $btnConfirmarAcao = $('#btn-confirmar-acao');
     const $btnLimparBusca = $('#btn-limpar-busca');
     const $selectAllCheckbox = $('#select-all-checkbox');
-    const $bulkActionsWrapper = $('#bulk-actions-wrapper');
+    const bulkActionsCollapse = new bootstrap.Collapse($('#bulk-actions-collapse')[0], { toggle: false });
     const $selectionCounter = $('#selection-counter');
     const $btnExcluirSelecionados = $('#btn-excluir-selecionados');
     const $btnTransferirSelecionados = $('#btn-transferir-selecionados');
@@ -38,33 +38,23 @@ $(function() {
     const modalConfirmacao = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
 
     // --- VARIÁVEIS DE ESTADO ---
-    let allItems = [];
+    let allItemDTOs = [];
     let acaoConfirmada = null;
     let selectedItems = new Set();
     let currentSort = { column: 'id', direction: 'asc' };
 
     // --- FUNÇÕES DE LÓGICA ---
-    const showAlert = (message, type = 'success') => {
-        const $alert = $(`
-            <div class="alert alert-${type} alert-dismissible fade show" role="alert" style="position: fixed; bottom: 20px; right: 20px; z-index: 2000;">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `);
-        $('body').append($alert);
-        setTimeout(() => $alert.fadeOut(500, () => $alert.remove()), 4000);
-    };
 
     // Ações em Massa
     const updateBulkActionUI = () => {
         const count = selectedItems.size;
         const $singleActionButtons = $('.btn-editar, .btn-transferir, .btn-excluir');
-        if (count > 0 && userRole === 'ADMIN') {
-            $bulkActionsWrapper.show();
-            $selectionCounter.text(`${count} item(s) selecionado(s)`);
+        if (count > 1 && userRole === 'ADMIN') {
+            $('#selection-counter').text(`${count} item(s) selecionado(s)`);
+            bulkActionsCollapse.show();
             $singleActionButtons.prop('disabled', true).addClass('opacity-50');
         } else {
-            $bulkActionsWrapper.hide();
+            bulkActionsCollapse.hide();
             $singleActionButtons.prop('disabled', false).removeClass('opacity-50');
         }
         $selectAllCheckbox.prop('checked', count > 0 && count === $('.item-checkbox:not(:disabled)').length);
@@ -74,11 +64,11 @@ $(function() {
         const queryString = $.param(searchParams);
 
         $.ajax({
-            url: `/api/itens?${queryString}`,
+            url: `/api/itens/ativos?${queryString}`,
             method: 'GET',
             dataType: 'json',
             success: function(data) {
-                allItems = data;
+                allItemDTOs = data;
                 renderTable();
                 selectedItems.clear();
                 updateBulkActionUI();
@@ -89,38 +79,47 @@ $(function() {
         });
     };
 
-    const renderTable = (items) => {
+    const renderTable = () => {
         $tabelaInventarioBody.empty();
 
-        const sortedItems = [...allItems].sort((a, b) => {
-            let valA = a[currentSort.column], valB = b[currentSort.column];
+        const sortedItemDTOs = [...allItemDTOs].sort((a, b) => {
+            const itemA = a.item;
+            const itemB = b.item;
+
+            let valA = itemA[currentSort.column];
+            let valB = itemB[currentSort.column];
+
             if (currentSort.column === 'compartimento') {
-                valA = a.compartimento ? a.compartimento.descricao : '';
-                valB = b.compartimento ? b.compartimento.descricao : '';
+                valA = itemA.compartimento ? itemA.compartimento.descricao : '';
+                valB = itemB.compartimento ? itemB.compartimento.descricao : '';
             }
-            if (currentSort.column === 'status') {
-                valA = a.status || '';
-                valB = b.status || '';
-            }
+
             valA = valA || '';
             valB = valB || '';
+
             return valA.toString().localeCompare(valB.toString()) * (currentSort.direction === 'asc' ? 1 : -1);
         });
 
-        if (sortedItems.length === 0) {
+        if (sortedItemDTOs.length === 0) {
             const colspan = userRole === 'ADMIN' ? 9 : 8;
             $tabelaInventarioBody.html(`<tr><td colspan="${colspan}" class="text-center text-muted">Nenhum item ativo encontrado.</td></tr>`);
             return;
         }
 
-        sortedItems.forEach(item => {
+        sortedItemDTOs.forEach(dto => {
+            const item = dto.item;
             const isDisponivel = item.status === 'DISPONIVEL';
             const compartimentoDesc = item.compartimento ? item.compartimento.descricao : 'N/A';
+
             let statusBadge = '';
-            switch (item.status) {
-                case 'DISPONIVEL': statusBadge = '<span class="badge rounded-pill text-bg-success">Disponível</span>'; break;
-                case 'TRANSFERIDO': statusBadge = '<span class="badge rounded-pill text-bg-warning">Transferido</span>'; break;
-                default: statusBadge = `<span class="badge rounded-pill text-bg-secondary">${item.status}</span>`;
+            if (item.status === 'DISPONIVEL') {
+                statusBadge = '<span class="badge rounded-pill text-bg-success">Disponível</span>';
+            } else if (item.status === 'TRANSFERIDO') {
+                if (dto.transferenciaPermanente) {
+                    statusBadge = '<a href="/historico.html" title="Transferência permanente"><span class="badge rounded-pill text-bg-danger">Transferido</span></a>';
+                } else {
+                    statusBadge = '<a href="/historico.html" title="Consulte aqui"><span class="badge rounded-pill text-bg-warning">Transferido</span></a>';
+                }
             }
 
             let acoesHtml = '';
@@ -288,10 +287,11 @@ $(function() {
     // Eventos para seleção em massa
     $selectAllCheckbox.on('change', function() {
         const isChecked = $(this).is(':checked');
-        $('.item-checkbox').prop('checked', isChecked);
+        $('.item-checkbox:not(:disabled)').prop('checked', isChecked);
+
         selectedItems.clear();
         if (isChecked) {
-            $('.item-checkbox').each(function() {
+            $('.item-checkbox:not(:disabled)').each(function() {
                 selectedItems.add($(this).val());
             });
         }
@@ -326,7 +326,7 @@ $(function() {
         const formDataArray = $(this).serializeArray();
         let searchParams = {};
         formDataArray.forEach(item => {
-            if (item.value) { // Só adiciona ao objeto se o campo tiver valor
+            if (item.value) {
                 searchParams[item.name] = item.value;
             }
         });

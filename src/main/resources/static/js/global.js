@@ -34,7 +34,12 @@ if (!token) {
 
 // --- FUNÇÕES GLOBAIS ---
 const showAlert = (message, type = 'success') => {
-    const $alert = $(`<div class="alert alert-${type} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 2050;">${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`);
+    const $alert = $(`
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert" style="position: fixed; bottom: 20px; right: 20px; z-index: 2000;">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `);
     $('body').append($alert);
     setTimeout(() => $alert.fadeOut(500, () => $alert.remove()), 4000);
 };

@@ -1,8 +1,6 @@
 package br.com.guardiao.guardiao.service;
 
-import br.com.guardiao.guardiao.controller.dto.DevolucaoDTO;
-import br.com.guardiao.guardiao.controller.dto.ItemBuscaDTO;
-import br.com.guardiao.guardiao.controller.dto.ItemUpdateDTO;
+import br.com.guardiao.guardiao.controller.dto.*;
 import br.com.guardiao.guardiao.model.Item;
 import br.com.guardiao.guardiao.model.StatusItem;
 import br.com.guardiao.guardiao.model.Transferencia;
@@ -48,9 +46,26 @@ public class ItemService {
                 .orElseThrow(() -> new RuntimeException("Item com Patrimônio " + numeroPatrimonial + " não encontrado."));
     }
 
-    public Item salvarItem(Item item) {
-        item.setStatus(StatusItem.DISPONIVEL);
-        return itemRepository.save(item);
+    @Transactional
+    public Item salvarItem(ItemCadastroDTO itemDTO, Usuario usuarioLogado) {
+        if (itemDTO.getNumeroPatrimonial() != null && !itemDTO.getNumeroPatrimonial().isEmpty()) {
+            itemRepository.findByNumeroPatrimonial(itemDTO.getNumeroPatrimonial()).ifPresent(item -> {
+                throw new IllegalStateException("Número patrimonial já cadastrado.");
+            });
+        }
+
+        Item novoItem = new Item();
+        novoItem.setNumeroPatrimonial(itemDTO.getNumeroPatrimonial());
+        novoItem.setDescricao(itemDTO.getDescricao());
+        novoItem.setMarca(itemDTO.getMarca());
+        novoItem.setNumeroDeSerie(itemDTO.getNumeroDeSerie());
+        novoItem.setLocalizacao(itemDTO.getLocalizacao());
+        novoItem.setCompartimento(itemDTO.getCompartimento());
+        novoItem.setStatus(StatusItem.DISPONIVEL);
+        novoItem.setCadastradoPor(usuarioLogado);
+        novoItem.setAtualizadoPor(usuarioLogado);
+
+        return itemRepository.save(novoItem);
     }
 
     @Transactional
@@ -85,25 +100,45 @@ public class ItemService {
         itemRepository.saveAll(itensParaBaixar);
     }
 
-    public List<Item> buscarItensAtivos(ItemBuscaDTO itemBuscaDTO) {
-        Specification<Item> spec = itemSpecification.getSpecifications(itemBuscaDTO);
+    public List<ItemAtivoDTO> buscarItensAtivos(ItemBuscaDTO request) {
+        Specification<Item> spec = itemSpecification.getSpecifications(request);
+        Specification<Item> specAtivo = (root, query, cb) -> cb.notEqual(root.get("status"), StatusItem.EXCLUIDO);
 
-        Specification<Item> specAtivo = (root, query, criteriaBuilder) ->
-                criteriaBuilder.notEqual(root.get("status"), StatusItem.EXCLUIDO);
+        List<Item> itens = itemRepository.findAll(spec.and(specAtivo));
 
-        return itemRepository.findAll(spec.and(specAtivo));
+        return itens.stream().map(item -> {
+            boolean isPermanente = false;
+            if (item.getStatus() == StatusItem.TRANSFERIDO) {
+                transferenciaRepository.findTopByItemIdOrderByIdDesc(item.getId()).ifPresent(ultimaTransferencia -> {
+                    String destino = ultimaTransferencia.getIncumbenciaDestino();
+                    if (destino.startsWith("000") || destino.startsWith("001") || destino.startsWith("002")) {
+                        // Não podemos setar a variável local 'isPermanente' diretamente aqui dentro do lambda.
+                        // A lógica de negócio será tratar isso. Por agora, vamos simplificar.
+                        // Para o frontend funcionar, vamos passar a informação se é permanente.
+                        // A maneira correta seria criar uma variável de instância ou um wrapper.
+                        // Mas para o propósito do DTO, esta lógica será movida.
+                    }
+                });
+                isPermanente = transferenciaRepository.findTopByItemIdOrderByIdDesc(item.getId())
+                        .map(Transferencia::getIncumbenciaDestino)
+                        .map(destino -> destino.startsWith("000") || destino.startsWith("001") || destino.startsWith("002"))
+                        .orElse(false);
+            }
+            return new ItemAtivoDTO(item, isPermanente);
+        }).collect(Collectors.toList());
     }
 
     @Transactional
-    public Item atualizarItem(String numeroPatrimonial, ItemUpdateDTO dadosAtualizados) {
+    public Item atualizarItem(String numeroPatrimonial, ItemUpdateDTO itemUpdateDTO, Usuario usuarioLogado) {
 
         Item itemExistente = buscarPorPatrimonio(numeroPatrimonial);
 
-        itemExistente.setDescricao(dadosAtualizados.getDescricao());
-        itemExistente.setMarca(dadosAtualizados.getMarca());
-        itemExistente.setNumeroDeSerie(dadosAtualizados.getNumeroDeSerie());
-        itemExistente.setLocalizacao(dadosAtualizados.getLocalizacao());
-        itemExistente.setCompartimento(dadosAtualizados.getCompartimento());
+        itemExistente.setDescricao(itemUpdateDTO.getDescricao());
+        itemExistente.setMarca(itemUpdateDTO.getMarca());
+        itemExistente.setNumeroDeSerie(itemUpdateDTO.getNumeroDeSerie());
+        itemExistente.setLocalizacao(itemUpdateDTO.getLocalizacao());
+        itemExistente.setCompartimento(itemUpdateDTO.getCompartimento());
+        itemExistente.setAtualizadoPor(usuarioLogado);
 
         return itemRepository.save(itemExistente);
     }

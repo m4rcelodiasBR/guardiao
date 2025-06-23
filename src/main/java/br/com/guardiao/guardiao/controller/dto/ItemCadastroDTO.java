@@ -2,24 +2,31 @@ package br.com.guardiao.guardiao.controller.dto;
 
 import br.com.guardiao.guardiao.model.Compartimento;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public class ItemUpdateDTO {
+public class ItemCadastroDTO {
+
+    // Regex para validar exatamente 9 dígitos numéricos.
+    @Pattern(regexp = "^[0-9]{9}$", message = "O número patrimonial deve conter exatamente 9 dígitos.")
+    private String numeroPatrimonial;
 
     @NotBlank(message = "A descrição não pode ser vazia.")
     @Size(max = 255, message = "A descrição não pode exceder 255 caracteres.")
     private String descricao;
 
-    @Size(max = 100, message = "A marca não pode exceder 100 caracteres.")
     private String marca;
-
-    @Size(max = 100, message = "O número de série não pode exceder 100 caracteres.")
     private String numeroDeSerie;
-
-    @Size(max = 150, message = "A localização não pode exceder 150 caracteres.")
     private String localizacao;
-
     private Compartimento compartimento;
+
+    public String getNumeroPatrimonial() {
+        return numeroPatrimonial;
+    }
+
+    public void setNumeroPatrimonial(String numeroPatrimonial) {
+        this.numeroPatrimonial = numeroPatrimonial;
+    }
 
     public String getDescricao() {
         return descricao;

@@ -4,7 +4,6 @@ import br.com.guardiao.guardiao.model.Usuario;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,24 +34,28 @@ public class TokenService {
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         if (userDetails instanceof Usuario) {
-            claims.put("role", ((Usuario) userDetails).getPerfil());
+            Usuario usuario = (Usuario) userDetails;
+            claims.put("role", usuario.getPerfil());
+            String subject = String.format("%d,%s", usuario.getId(), usuario.getLogin());
+            return generateTokenWithSubject(claims, subject);
         }
-        return generateToken(claims, userDetails);
+        return generateTokenWithSubject(claims, userDetails.getUsername());
     }
 
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+    private String generateTokenWithSubject(Map<String, Object> extraClaims, String subject) {
         return Jwts.builder()
                 .setClaims(extraClaims)
-                .setSubject(userDetails.getUsername())
+                .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 horas de validade
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // 24 horas
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        final String subject = extractUsername(token);
+        final String loginFromToken = subject.contains(",") ? subject.split(",")[1] : subject;
+        return (loginFromToken.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
@@ -75,4 +78,3 @@ public class TokenService {
         return Keys.hmacShaKeyFor(this.secretKey.getBytes(StandardCharsets.UTF_8));
     }
 }
-    

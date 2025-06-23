@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alterar Senha - Guardião de Ativos</title>
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/login.css">
+</head>
+</head>
+<body>
+<main class="form-signin text-center">
+  <h1 class="h3 mb-3 fw-normal">🦉 Guardião de Ativos</h1>
+  <form id="form-trocar-senha">
+    <h2 class="h5 mb-3 fw-light">Por segurança, defina uma nova senha.</h2>
+    <div id="troca-senha-alert" class="alert alert-danger d-none" role="alert"></div>
+    <div class="form-floating mb-3">
+      <input type="password" class="form-control" id="nova-senha" required>
+      <label for="nova-senha">Nova Senha</label>
+      <small class="form-text text-muted text-start d-block">
+        Mínimo 6 caracteres, com maiúscula, minúscula, número e especial (@#$%^&+=!).
+      </small>
+    </div>
+    <div class="form-floating">
+      <input type="password" class="form-control" id="confirmar-nova-senha" required>
+      <label for="confirmar-nova-senha">Confirmar Nova Senha</label>
+    </div>
+
+    <button class="w-100 btn btn-lg btn-primary mt-3" type="submit">Definir Nova Senha</button>
+    <p class="mt-5 mb-3 text-muted">&copy; 2024</p>
+  </form>
+</main>
+
+<script src="/js/jquery-3.7.1.min.js"></script>
+<script src="/js/global.js"></script>
+<script src="/js/trocar-senha.js"></script>
+</body>
+</html>

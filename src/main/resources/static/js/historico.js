@@ -46,7 +46,6 @@ $(function() {
     const renderHistoryTable = () => {
         $tabelaHistoricoBody.empty();
 
-        // Passo 1: Calcular o estado final e a ID da última transferência de cada item
         const itemState = {}; // Guarda o estado { status: '...', lastTransferId: X }
         [...allTransfers].sort((a, b) => a.id - b.id).forEach(t => {
             const incumbencia = t.incumbenciaDestino || '';
@@ -86,15 +85,11 @@ $(function() {
         // Passo 3: Renderizar a tabela
         sortedTransfers.forEach(transf => {
             const estadoAtualDoItem = itemState[transf.numeroPatrimonialItem];
-
-            // AQUI ESTÁ A CORREÇÃO: A lógica agora funciona corretamente.
             const podeDevolver = estadoAtualDoItem && estadoAtualDoItem.status === 'TRANSFERIDO' && estadoAtualDoItem.lastTransferId === transf.id;
-
             const botaoDevolverHtml = podeDevolver ? `<button class="btn btn-sm btn-success btn-devolver" title="Registrar Devolução" data-patrimonio="${transf.numeroPatrimonialItem}" data-descricao="${transf.descricaoItem}"><i class="bi bi-box-arrow-in-left"></i></button>` : '';
-
             const incumbencia = transf.incumbenciaDestino || '';
             const isBaixaDefinitiva = ["000", "001", "002"].some(prefix => incumbencia.startsWith(prefix));
-            const incumbenciaHtml = isBaixaDefinitiva ? `<span class="badge rounded-pill text-bg-danger">${incumbencia}</span>` : incumbencia;
+            const incumbenciaHtml = isBaixaDefinitiva ? `<span class="badge rounded-pill text-bg-danger">${incumbencia}</span>` : `<span class="badge rounded-pill text-bg-warning">${incumbencia}</span>`;
 
             const rowHtml = `
                 <tr>

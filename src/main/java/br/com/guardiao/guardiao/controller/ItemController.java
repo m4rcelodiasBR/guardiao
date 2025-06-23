@@ -1,15 +1,15 @@
 package br.com.guardiao.guardiao.controller;
 
-import br.com.guardiao.guardiao.controller.dto.DevolucaoDTO;
-import br.com.guardiao.guardiao.controller.dto.ItemBuscaDTO;
-import br.com.guardiao.guardiao.controller.dto.ItemUpdateDTO;
+import br.com.guardiao.guardiao.controller.dto.*;
 import br.com.guardiao.guardiao.model.Compartimento;
 import br.com.guardiao.guardiao.model.Item;
-import br.com.guardiao.guardiao.repository.ItemRepository;
+import br.com.guardiao.guardiao.model.Usuario;
 import br.com.guardiao.guardiao.service.ItemService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,8 +23,8 @@ public class ItemController {
     @Autowired
     private ItemService itemService;
 
-    @GetMapping
-    public List<Item> listarItens(ItemBuscaDTO itemBuscaDTO) {
+    @GetMapping("/ativos")
+    public List<ItemAtivoDTO> listarItensAtivos(ItemBuscaDTO itemBuscaDTO) {
         return itemService.buscarItensAtivos(itemBuscaDTO);
     }
 
@@ -45,8 +45,9 @@ public class ItemController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Item adicionarItem(@RequestBody Item item) {
-        return itemService.salvarItem(item);
+    public Item adicionarItem(@RequestBody @Valid ItemCadastroDTO itemCadastroDTO, Authentication authentication) {
+        Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
+        return itemService.salvarItem(itemCadastroDTO, usuarioLogado);
     }
 
     @PostMapping("/devolver")
@@ -55,8 +56,11 @@ public class ItemController {
     }
 
     @PutMapping("/{numeroPatrimonial}")
-    public Item atualizarItem(@PathVariable String numeroPatrimonial, @RequestBody ItemUpdateDTO dadosAtualizados) {
-        return itemService.atualizarItem(numeroPatrimonial, dadosAtualizados);
+    public Item atualizarItem(@PathVariable String numeroPatrimonial,
+                              @RequestBody @Valid ItemUpdateDTO itemUpdateDTO,
+                              Authentication authentication) {
+        Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
+        return itemService.atualizarItem(numeroPatrimonial, itemUpdateDTO, usuarioLogado);
     }
 
     @DeleteMapping("/{numeroPatrimonial}")

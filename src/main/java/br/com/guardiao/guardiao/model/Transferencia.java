@@ -1,11 +1,13 @@
 package br.com.guardiao.guardiao.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "transferencias")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Transferencia {
 
     @Id

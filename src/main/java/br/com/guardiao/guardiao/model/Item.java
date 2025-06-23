@@ -1,11 +1,15 @@
 package br.com.guardiao.guardiao.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "itens")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Item {
 
     @Id
@@ -34,6 +38,19 @@ public class Item {
     @CreationTimestamp
     @Column(name = "data_cadastro", updatable = false)
     private OffsetDateTime dataCadastro;
+
+    @UpdateTimestamp
+    @Column(name = "data_atualizacao")
+    private OffsetDateTime dataAtualizacao;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cadastrado_por_id")
+    private Usuario cadastradoPor;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "atualizado_por_id")
+    private Usuario atualizadoPor;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -101,6 +118,30 @@ public class Item {
 
     public void setDataCadastro(OffsetDateTime dataCadastro) {
         this.dataCadastro = dataCadastro;
+    }
+
+    public OffsetDateTime getDataAtualizacao() {
+        return dataAtualizacao;
+    }
+
+    public void setDataAtualizacao(OffsetDateTime dataAtualizacao) {
+        this.dataAtualizacao = dataAtualizacao;
+    }
+
+    public Usuario getCadastradoPor() {
+        return cadastradoPor;
+    }
+
+    public void setCadastradoPor(Usuario cadastradoPor) {
+        this.cadastradoPor = cadastradoPor;
+    }
+
+    public Usuario getAtualizadoPor() {
+        return atualizadoPor;
+    }
+
+    public void setAtualizadoPor(Usuario atualizadoPor) {
+        this.atualizadoPor = atualizadoPor;
     }
 
     public StatusItem getStatus() {

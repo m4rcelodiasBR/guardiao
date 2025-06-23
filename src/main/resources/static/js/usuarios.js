@@ -66,6 +66,7 @@ $(function() {
 
                     const rowHtml = `
                         <tr>
+                            <td class="${!isAtivo ? 'opacity-50' : ''}">${user.login}</td>
                             <td class="${!isAtivo ? 'opacity-50' : ''}">${user.nome}</td>
                             <td class="${!isAtivo ? 'opacity-50' : ''}">${user.email}</td>
                             <td class="${!isAtivo ? 'opacity-50' : ''}">${perfilBadge}</td>
@@ -102,10 +103,11 @@ $(function() {
         const user = allUsers.find(u => u.id === userId);
         if (user) {
             $('#edit-usuario-id').val(user.id);
+            $('#edit-usuario-login').val(user.login);
             $('#edit-usuario-nome').val(user.nome);
             $('#edit-usuario-email').val(user.email);
             $('#edit-usuario-perfil').val(user.perfil);
-            $('#edit-usuario-status').val(user.status); // Preenche o status
+            $('#edit-usuario-status').val(user.status);
             modalEditarUsuario.show();
         }
     });
@@ -123,7 +125,7 @@ $(function() {
         const userId = $(this).data('id');
         const userName = $(this).data('nome');
         $('#confirm-title-usuario').text('Confirmar Reset de Senha');
-        $('#confirm-body-usuario').text(`Tem certeza que deseja resetar a senha do usuário ${userName}? A nova senha padrão será "mudar123".`);
+        $('#confirm-body-usuario').text(`Tem certeza que deseja resetar a senha do usuário ${userName}? A nova senha padrão será "guardiao".`);
         acaoConfirmada = () => handleResetSenha(userId);
         modalConfirmacaoUsuario.show();
     });
@@ -159,6 +161,7 @@ $(function() {
         e.preventDefault();
         const userId = $('#edit-usuario-id').val();
         const data = {
+            login: $('#edit-usuario-login').val(),
             nome: $('#edit-usuario-nome').val(),
             email: $('#edit-usuario-email').val(),
             perfil: $('#edit-usuario-perfil').val(),
@@ -196,7 +199,7 @@ $(function() {
             url: `/api/usuarios/${id}/reset-senha`,
             method: 'POST',
             success: function() {
-                showAlert('Senha do usuário resetada para "mudar123".');
+                showAlert('Senha do usuário resetada para "guardiao".');
             },
             error: function() { showAlert('Erro ao resetar a senha.', 'danger'); }
         });
