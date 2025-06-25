@@ -23,7 +23,7 @@ $(function() {
     const $btnLimparBusca = $('#btn-limpar-busca');
     const $selectAllCheckbox = $('#select-all-checkbox');
     const bulkActionsCollapse = new bootstrap.Collapse($('#bulk-actions-collapse')[0], { toggle: false });
-    const $selectionCounter = $('#selection-counter');
+    const $filtrosStatus = $('#filtros-status');
     const $btnExcluirSelecionados = $('#btn-excluir-selecionados');
     const $btnTransferirSelecionados = $('#btn-transferir-selecionados');
     const $selectIncumbencia = $('#transfer-destino-select');
@@ -60,11 +60,24 @@ $(function() {
         $selectAllCheckbox.prop('checked', count > 0 && count === $('.item-checkbox:not(:disabled)').length);
     };
 
+    // --- FUNÇÃO MESTRE DE BUSCA E FILTRAGEM ---
+    const performSearch = () => {
+        const formDataArray = $formBuscaAvancada.serializeArray();
+        let searchParams = {};
+        formDataArray.forEach(item => { if (item.value) { searchParams[item.name] = item.value; } });
+
+        const status = $filtrosStatus.find('input:checked').val();
+        if (status) {
+            searchParams.status = status;
+        }
+
+        fetchAndDisplayItems(searchParams);
+    };
+
     const fetchAndDisplayItems = (searchParams = {}) => {
         const queryString = $.param(searchParams);
-
         $.ajax({
-            url: `/api/itens/ativos?${queryString}`,
+            url: `/api/itens/filtrar?${queryString}`,
             method: 'GET',
             dataType: 'json',
             success: function(data) {
@@ -118,7 +131,7 @@ $(function() {
                 if (dto.transferenciaPermanente) {
                     statusBadge = '<a href="/historico.html" title="Transferência permanente"><span class="badge rounded-pill text-bg-danger">Transferido</span></a>';
                 } else {
-                    statusBadge = '<a href="/historico.html" title="Consulte aqui"><span class="badge rounded-pill text-bg-warning">Transferido</span></a>';
+                    statusBadge = '<a href="/historico.html" title="Transfeiro. Clique para consultar"><span class="badge rounded-pill text-bg-warning">Transferido</span></a>';
                 }
             }
 
@@ -141,7 +154,7 @@ $(function() {
                 }
             }
 
-            const checkboxHtml = userRole === 'ADMIN' ? `<td><input class="form-check-input item-checkbox" type="checkbox" value="${item.numeroPatrimonial}" ${!isDisponivel ? 'disabled' : ''}></td>` : '';
+            const checkboxHtml = userRole === 'ADMIN' ? `<td><input id="check-box-${item.numeroPatrimonial}" class="form-check-input item-checkbox" type="checkbox" value="${item.numeroPatrimonial}" ${!isDisponivel ? 'disabled' : ''}></td>` : '';
 
             const rowHtml = `
                 <tr class="${!isDisponivel ? 'opacity-50' : ''}">
@@ -168,7 +181,7 @@ $(function() {
     const popularCompartimentos = (selectId, placeholder, selectedValue = null) => {
         const $select = $(selectId);
         $.ajax({
-            url: '/api/itens/compartimentos',
+            url: '/api/util/compartimentos',
             method: 'GET',
             success: function(compartimentos) {
                 $select.empty().append(`<option value="">${placeholder}</option>`);
@@ -321,21 +334,17 @@ $(function() {
         modalTransferencia.show();
     });
 
+    $filtrosStatus.on('change', 'input[name="status-filter"]', performSearch);
+
     $formBuscaAvancada.on('submit', function(e) {
         e.preventDefault();
-        const formDataArray = $(this).serializeArray();
-        let searchParams = {};
-        formDataArray.forEach(item => {
-            if (item.value) {
-                searchParams[item.name] = item.value;
-            }
-        });
-        fetchAndDisplayItems(searchParams);
+        performSearch();
     });
 
     $btnLimparBusca.on('click', function() {
-        $formBuscaAvancada[0].reset(); // Limpa os campos do formulário
-        fetchAndDisplayItems(); // Busca todos os itens novamente, sem filtros
+        $formBuscaAvancada[0].reset();
+        $('#filter-todos').prop('checked', true);
+        performSearch();
     });
 
     // --- SUBMISSÃO DOS FORMULÁRIOS ---
@@ -439,7 +448,6 @@ $(function() {
     });
 
     $('#modalTransferencia').on('hidden.bs.modal', function () {
-        // ... (código existente para limpar a seleção em massa) ...
         $destinoExtraWrapper.hide();
         $inputDestinoExtra.prop('required', false).val('');
         $selectIncumbencia.val('');
@@ -509,4 +517,5 @@ $(function() {
     popularCompartimentos('#novo-compartimento', 'Selecione um compartimento...');
     popularCompartimentos('#busca-compartimento', 'Todos os compartimentos');
     popularIncumbencias();
+    performSearch();
 });

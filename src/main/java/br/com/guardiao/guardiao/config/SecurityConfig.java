@@ -41,6 +41,7 @@ public class SecurityConfig {
                         "/trocar-senha.html",
                         "/api/auth/**",
                         "/api/perfil/**",
+                        "/api/util/**",
                         "/css/**",
                         "/js/**")
                 .permitAll()

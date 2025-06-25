@@ -46,10 +46,10 @@ $(function() {
     const renderHistoryTable = () => {
         $tabelaHistoricoBody.empty();
 
-        const itemState = {}; // Guarda o estado { status: '...', lastTransferId: X }
+        const itemState = {};
         [...allTransfers].sort((a, b) => a.id - b.id).forEach(t => {
             const incumbencia = t.incumbenciaDestino || '';
-            const isDevolucao = incumbencia === "DEVOLVIDO AO ESTOQUE";
+            const isDevolucao = incumbencia === "Devolvido ao inventário";
             const isBaixaDefinitiva = ["000", "001", "002"].some(prefix => incumbencia.startsWith(prefix));
 
             let statusFinal = 'TRANSFERIDO';
@@ -58,15 +58,12 @@ $(function() {
             } else if (isBaixaDefinitiva) {
                 statusFinal = 'PERMANENTE';
             }
-
-            // AQUI ESTÁ A CORREÇÃO: Nós agora guardamos o ID da última transação.
             itemState[t.numeroPatrimonialItem] = {
                 status: statusFinal,
                 lastTransferId: t.id
             };
         });
 
-        // Passo 2: Ordenar os dados para exibição
         const sortedTransfers = [...allTransfers].sort((a, b) => {
             let valA = a[currentSort.column], valB = b[currentSort.column];
             if (currentSort.column === 'usuario') {
@@ -82,7 +79,6 @@ $(function() {
             return;
         }
 
-        // Passo 3: Renderizar a tabela
         sortedTransfers.forEach(transf => {
             const estadoAtualDoItem = itemState[transf.numeroPatrimonialItem];
             const podeDevolver = estadoAtualDoItem && estadoAtualDoItem.status === 'TRANSFERIDO' && estadoAtualDoItem.lastTransferId === transf.id;
@@ -124,7 +120,7 @@ $(function() {
 
     const popularCompartimentosDevolucao = () => {
         $.ajax({
-            url: '/api/itens/compartimentos',
+            url: '/api/util/compartimentos',
             method: 'GET',
             success: function(compartimentos) {
                 const $select = $('#devolucao-compartimento');

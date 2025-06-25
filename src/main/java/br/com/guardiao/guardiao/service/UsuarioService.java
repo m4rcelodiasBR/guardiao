@@ -22,7 +22,7 @@ public class UsuarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private String senhaPadrao = "guardiao";
+    private final String senhaPadrao = "guardiao";
 
     @Transactional
     public Usuario registrarNovoUsuario(RegistroUsuarioDTO registroUsuarioDTO) {

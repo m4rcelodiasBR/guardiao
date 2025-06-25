@@ -1,5 +1,6 @@
 package br.com.guardiao.guardiao.controller;
 
+import br.com.guardiao.guardiao.model.Compartimento;
 import br.com.guardiao.guardiao.model.Incumbencia;
 import br.com.guardiao.guardiao.model.Usuario;
 import br.com.guardiao.guardiao.repository.UsuarioRepository;
@@ -31,6 +32,16 @@ public class UtilController {
                 .map(i -> Map.of(
                         "codigo", i.name(),
                         "descricao", i.getDescricao()
+                ))
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/compartimentos")
+    public List<Map<String, String>> getCompartimentos() {
+        return Arrays.stream(Compartimento.values())
+                .map(c -> Map.of(
+                        "name", c.name(),
+                        "descricao", c.getDescricao()
                 ))
                 .collect(Collectors.toList());
     }

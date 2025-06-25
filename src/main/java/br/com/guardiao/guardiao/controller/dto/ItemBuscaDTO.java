@@ -5,9 +5,11 @@ public class ItemBuscaDTO {
     private String numeroPatrimonial;
     private String descricao;
     private String numeroDeSerie;
+    private String localizacao;
     private String compartimento;
-    private String localizacao; // Adicionado conforme solicitado
+    private String status;
 
+    // Getters e Setters para todos os campos
     public String getNumeroPatrimonial() {
         return numeroPatrimonial;
     }
@@ -32,6 +34,14 @@ public class ItemBuscaDTO {
         this.numeroDeSerie = numeroDeSerie;
     }
 
+    public String getLocalizacao() {
+        return localizacao;
+    }
+
+    public void setLocalizacao(String localizacao) {
+        this.localizacao = localizacao;
+    }
+
     public String getCompartimento() {
         return compartimento;
     }
@@ -40,11 +50,11 @@ public class ItemBuscaDTO {
         this.compartimento = compartimento;
     }
 
-    public String getLocalizacao() {
-        return localizacao;
+    public String getStatus() {
+        return status;
     }
 
-    public void setLocalizacao(String localizacao) {
-        this.localizacao = localizacao;
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
