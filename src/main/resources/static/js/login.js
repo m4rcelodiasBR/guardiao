@@ -29,7 +29,7 @@ $(function() {
                 }
             },
             error: function(xhr) {
-                const errorMsg = xhr.responseText || "Login ou senha inválidos. Tente novamente.";
+                const errorMsg = xhr.responseJSON?.message || "Login ou senha inválidos. Tente novamente.";
                 $loginAlert.text(errorMsg).removeClass('d-none');
             }
         });

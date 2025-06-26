@@ -81,7 +81,16 @@ $(function() {
                 $formAlterarSenha[0].reset();
             },
             error: function(xhr) {
-                const errorMsg = xhr.responseJSON?.message || 'Erro ao alterar a senha.';
+                let errorMsg = 'Ocorreu um erro inesperado ao tentar alterar a senha.';
+                if (xhr.responseJSON) {
+                    if (xhr.responseJSON.errors && xhr.responseJSON.errors.length > 0) {
+                        errorMsg = xhr.responseJSON.errors[0];
+                    } else if (xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    }
+                } else if (xhr.responseText) {
+                    errorMsg = xhr.responseText;
+                }
                 showAlert(errorMsg, 'danger');
             }
         });

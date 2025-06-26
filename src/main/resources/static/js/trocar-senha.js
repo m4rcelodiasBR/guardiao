@@ -41,7 +41,6 @@ $(function() {
                 }, 4000);
             },
             error: function(xhr) {
-                let errorMsg = 'Ocorreu um erro inesperado ao tentar alterar a senha.';
                 if (xhr.responseJSON) {
                     if (xhr.responseJSON.errors && xhr.responseJSON.errors.length > 0) {
                         errorMsg = xhr.responseJSON.errors[0];

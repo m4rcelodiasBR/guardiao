@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum Compartimento {
-    CP09("CP09 - Sala de Sessões"),
+    CP09("CP09 - Sala dos Servidores"),
     CP14("CP14 - Sala Fun Coil"),
     CP18("CP18 - Sala de Computação"),
     CP19("CP19 - Sala do Encarregado"),
-    CP40("CP40 - Sala de Servidores"),
-    CP41("CP41 - Armário de Sobressalentes");
+    CP40("CP40 - Sala de Sessões"),
+    CP41("CP41 - Armário de Sobressalentes CPD");
 
     private final String descricao;
 
@@ -20,4 +20,9 @@ public enum Compartimento {
     public String getDescricao() {
         return descricao;
     }
+
+    public String getName() {
+        return this.name();
+    }
+
 }

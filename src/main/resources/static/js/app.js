@@ -143,13 +143,7 @@ $(function() {
                         <button class="btn btn-sm btn-info btn-transferir" title="Transferir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}"><i class="bi bi-box-arrow-right"></i></button>
                         <button class="btn btn-sm btn-danger btn-excluir" title="Excluir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}"><i class="bi bi-trash3-fill"></i></button>
                     `;
-                } else {
-                    acoesHtml = `
-                        <button class="btn btn-sm btn-primary btn-editar" style="opacity: 100%;" title="Editar" data-patrimonio="${item.numeroPatrimonial}"><i class="bi bi-pencil-fill"></i></button>
-                    `;
-                }
-            } else {
-                if (isDisponivel) {
+            } else if (isDisponivel) {
                     acoesHtml = `<button class="btn btn-sm btn-info btn-transferir" title="Transferir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}"><i class="bi bi-box-arrow-right"></i></button>`;
                 }
             }
@@ -259,9 +253,9 @@ $(function() {
                 $('#edit-marca').val(item.marca);
                 $('#edit-numeroDeSerie').val(item.numeroDeSerie);
                 $('#edit-localizacao').val(item.localizacao);
-
-                popularCompartimentos('#edit-compartimento', 'Selecione...', item.compartimento);
-
+                const compartimentoAtual = item.compartimento ? item.compartimento.name : null;
+                console.log(item.compartimento, item.compartimento.name);
+                popularCompartimentos('#edit-compartimento', 'Selecione...', compartimentoAtual);
                 modalEditarItem.show();
             },
             error: function() {
@@ -376,7 +370,6 @@ $(function() {
     $formEditarItem.on('submit', function(e) {
         e.preventDefault();
         const patrimonioOriginal = $('#edit-numeroPatrimonial-original').val();
-
         const dadosAtualizados = {
             descricao: $('#edit-descricao').val(),
             marca: $('#edit-marca').val(),

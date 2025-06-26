@@ -7,8 +7,9 @@ $(function() {
     const $btnLimparBusca = $('#btn-limpar-busca-historico');
     const $themeToggler = $('#theme-toggler');
     const $formDevolucao = $('#form-devolucao');
-    const modalDevolucao = new bootstrap.Modal(document.getElementById('modalDevolucao'));
     const $btnLogout = $('#btn-logout');
+    const modalDevolucao = new bootstrap.Modal(document.getElementById('modalDevolucao'));
+    const modalObservacoes = new bootstrap.Modal(document.getElementById('modalObservacoes'));
 
     // --- VARIÁVEIS DE ESTADO ---
     let allTransfers = [];
@@ -86,14 +87,19 @@ $(function() {
             const incumbencia = transf.incumbenciaDestino || '';
             const isBaixaDefinitiva = ["000", "001", "002"].some(prefix => incumbencia.startsWith(prefix));
             const incumbenciaHtml = isBaixaDefinitiva ? `<span class="badge rounded-pill text-bg-danger">${incumbencia}</span>` : `<span class="badge rounded-pill text-bg-warning">${incumbencia}</span>`;
-
+            const observacao = transf.observacao || '';
+            const observacaoHtml = observacao
+                ? `<button class="btn btn-sm btn-outline-light btn-ver-obs" data-obs="${observacao}" title="Ver observação do item">
+                     <i class="bi bi-eye-fill"></i>
+                   </button>`
+                : '';
             const rowHtml = `
                 <tr>
                     <td>${formatarData(transf.dataTransferencia)}</td>
                     <td>${transf.numeroPatrimonialItem || 'N/A'}</td>
                     <td>${transf.descricaoItem || 'N/A'}</td>
                     <td>${incumbenciaHtml}</td>
-                    <td>${transf.observacao || ''}</td>
+                    <td>${observacaoHtml}</td>
                     <td>${transf.usuario ? transf.usuario.nome : 'Usuário desconhecido'}</td>
                     <td>${botaoDevolverHtml}</td>
                 </tr>
@@ -133,6 +139,13 @@ $(function() {
     };
 
     // --- MANIPULADORES DE EVENTOS ---
+    $('body').on('click', '.btn-ver-obs', function() {
+        const observacaoTexto = $(this).data('obs');
+        $('#modalObservacoesLabel').text('Observação da Transferência');
+        $('#modalObservacoesBody').text(observacaoTexto);
+        modalObservacoes.show();
+    });
+
     $btnLogout.on('click', function() {
         localStorage.removeItem('jwt_token');
         window.location.href = '/login.html';
