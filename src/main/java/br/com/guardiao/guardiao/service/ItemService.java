@@ -1,10 +1,6 @@
 package br.com.guardiao.guardiao.service;
 
-import br.com.guardiao.guardiao.controller.dto.DevolucaoDTO;
-import br.com.guardiao.guardiao.controller.dto.ItemAtivoDTO;
-import br.com.guardiao.guardiao.controller.dto.ItemBuscaDTO;
-import br.com.guardiao.guardiao.controller.dto.ItemCadastroDTO;
-import br.com.guardiao.guardiao.controller.dto.ItemUpdateDTO;
+import br.com.guardiao.guardiao.controller.dto.*;
 import br.com.guardiao.guardiao.model.Item;
 import br.com.guardiao.guardiao.model.StatusItem;
 import br.com.guardiao.guardiao.model.Transferencia;
@@ -13,6 +9,8 @@ import br.com.guardiao.guardiao.repository.ItemRepository;
 import br.com.guardiao.guardiao.repository.TransferenciaRepository;
 import br.com.guardiao.guardiao.repository.specification.ItemSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,13 +30,12 @@ public class ItemService {
     @Autowired
     private ItemSpecification itemSpecification;
 
-    public List<ItemAtivoDTO> buscarItensAtivos(ItemBuscaDTO itemBuscaDTO) {
+    public PageDTO<ItemAtivoDTO> buscarItensAtivos(ItemBuscaDTO itemBuscaDTO, Pageable pageable) {
         Specification<Item> specFromRequest = itemSpecification.getSpecifications(itemBuscaDTO);
         Specification<Item> specBase = (root, query, cb) -> cb.notEqual(root.get("status"), StatusItem.EXCLUIDO);
         Specification<Item> finalSpec = specBase.and(specFromRequest);
-        List<Item> itens = itemRepository.findAll(finalSpec);
-
-        return itens.stream().map(item -> {
+        Page<Item> itensPaginados = itemRepository.findAll(finalSpec, pageable);
+        Page<ItemAtivoDTO> dtoPage = itensPaginados.map(item -> {
             boolean isPermanente = false;
             if (item.getStatus() == StatusItem.TRANSFERIDO) {
                 isPermanente = transferenciaRepository.findTopByItemIdOrderByIdDesc(item.getId())
@@ -49,7 +46,8 @@ public class ItemService {
                         .orElse(false);
             }
             return new ItemAtivoDTO(item, isPermanente);
-        }).collect(Collectors.toList());
+        });
+        return new PageDTO<>(dtoPage);
     }
 
     @Transactional

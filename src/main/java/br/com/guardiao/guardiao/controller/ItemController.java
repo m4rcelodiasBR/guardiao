@@ -1,15 +1,12 @@
 package br.com.guardiao.guardiao.controller;
 
-import br.com.guardiao.guardiao.controller.dto.DevolucaoDTO;
-import br.com.guardiao.guardiao.controller.dto.ItemAtivoDTO;
-import br.com.guardiao.guardiao.controller.dto.ItemBuscaDTO;
-import br.com.guardiao.guardiao.controller.dto.ItemCadastroDTO;
-import br.com.guardiao.guardiao.controller.dto.ItemUpdateDTO;
+import br.com.guardiao.guardiao.controller.dto.*;
 import br.com.guardiao.guardiao.model.Item;
 import br.com.guardiao.guardiao.model.Usuario;
 import br.com.guardiao.guardiao.service.ItemService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -24,11 +21,13 @@ public class ItemController {
     private ItemService itemService;
 
     /**
-     * Endpoint ÚNICO para listar e filtrar itens, agora numa rota específica e inequívoca.
+     * Endpoint ÚNICO para listar e filtrar itens de forma paginada.
+     * O Spring cria automaticamente o objeto 'pageable' a partir de parâmetros
+     * na URL como ?page=0&size=10&sort=descricao,asc
      */
     @GetMapping("/filtrar")
-    public List<ItemAtivoDTO> buscarItensAtivos(ItemBuscaDTO itemBuscaDTO) {
-        return itemService.buscarItensAtivos(itemBuscaDTO);
+    public PageDTO<ItemAtivoDTO> buscarItensAtivos(ItemBuscaDTO itemBuscaDTO, Pageable pageable) {
+        return itemService.buscarItensAtivos(itemBuscaDTO, pageable);
     }
 
     /**

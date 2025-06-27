@@ -157,7 +157,7 @@ $(function() {
         const direction = (currentSort.column === columnKey && currentSort.direction === 'asc') ? 'desc' : 'asc';
         currentSort = { column: columnKey, direction: direction };
         $cabecalhoTabelaHistorico.find('i.sort-icon').remove();
-        const iconClass = direction === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill';
+        const iconClass = direction === 'asc' ? 'bi-arrow-up-short' : 'bi-arrow-down-short';
         $(this).append(` <i class="bi ${iconClass} sort-icon text-warning"></i>`);
         renderHistoryTable();
     });

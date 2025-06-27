@@ -57,7 +57,6 @@
                 <i class="bi bi-plus-circle-fill me-1"></i>Novo item
             </button>
         </div>
-        <!-- Área de busca colapsável -->
         <div class="collapse" id="area-de-busca">
             <div class="card card-body mb-3">
                 <form id="form-busca-avancada">
@@ -126,6 +125,21 @@
                 <tbody id="tabela-inventario">
                 </tbody>
             </table>
+        </div>
+        <div id="pagination-controls" class="d-flex justify-content-between align-items-center mt-3" style="display: none;">
+            <div class="d-flex align-items-center">
+                <span class="me-2">Itens por página:</span>
+                <select class="form-select form-select-sm" id="page-size-select" style="width: 75px;">
+                    <option value="10" selected>10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+                <span id="page-info" class="ms-3 text-muted"></span>
+            </div>
+            <nav>
+                <ul class="pagination mb-0" id="pagination-nav">
+                </ul>
+            </nav>
         </div>
     </main>
 

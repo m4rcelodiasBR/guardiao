@@ -31,6 +31,10 @@ $(function() {
     const $inputDestinoExtra = $('#transfer-destino-extra-input');
     const $labelDestinoExtra = $('#label-destino-extra');
     const $btnLogout = $('#btn-logout');
+    const $paginationControls = $('#pagination-controls');
+    const $paginationNav = $('#pagination-nav');
+    const $pageInfo = $('#page-info');
+    const $pageSizeSelect = $('#page-size-select');
 
     const modalNovoItem = new bootstrap.Modal(document.getElementById('modalNovoItem'));
     const modalEditarItem = new bootstrap.Modal(document.getElementById('modalEditarItem'));
@@ -42,9 +46,9 @@ $(function() {
     let acaoConfirmada = null;
     let selectedItems = new Set();
     let currentSort = { column: 'id', direction: 'asc' };
+    let currentPage = 0;
 
     // --- FUNÇÕES DE LÓGICA ---
-
     // Ações em Massa
     const updateBulkActionUI = () => {
         const count = selectedItems.size;
@@ -61,16 +65,15 @@ $(function() {
     };
 
     // --- FUNÇÃO MESTRE DE BUSCA E FILTRAGEM ---
-    const performSearch = () => {
+    const performSearch = (page = 0) => {
         const formDataArray = $formBuscaAvancada.serializeArray();
         let searchParams = {};
         formDataArray.forEach(item => { if (item.value) { searchParams[item.name] = item.value; } });
-
         const status = $filtrosStatus.find('input:checked').val();
-        if (status) {
-            searchParams.status = status;
-        }
-
+        if (status) { searchParams.status = status; }
+        searchParams.page = page;
+        searchParams.size = $pageSizeSelect.val();
+        searchParams.sort = `${currentSort.column},${currentSort.direction}`;
         fetchAndDisplayItems(searchParams);
     };
 
@@ -80,16 +83,52 @@ $(function() {
             url: `/api/itens/filtrar?${queryString}`,
             method: 'GET',
             dataType: 'json',
-            success: function(data) {
-                allItemDTOs = data;
+            success: function(pageData) {
+                allItemDTOs = pageData.content;
+                console.log(pageData.content);
                 renderTable();
+                currentPage = pageData.currentPage;
+                renderPaginationControls(pageData);
                 selectedItems.clear();
                 updateBulkActionUI();
             },
             error: function() {
                 $tabelaInventarioBody.html('<tr><td colspan="9" class="text-center text-danger">Erro ao carregar inventário.</td></tr>');
+                $('#pagination-controls').hide();
             }
         });
+    };
+
+    const renderPaginationControls = (pageData) => {
+        $paginationNav.empty();
+        if (pageData.totalPages <= 1) {
+            $paginationControls.hide();
+            return;
+        }
+        $paginationControls.show();
+        const totalItems = pageData.totalItems;
+        const pageNumber = pageData.currentPage;
+        const pageSize = pageData.size || $pageSizeSelect.val();
+        const startItem = totalItems > 0 ? (pageNumber * pageSize) + 1 : 0;
+        const endItem = Math.min(startItem + pageSize - 1, totalItems);
+        $pageInfo.text(`Exibindo ${startItem}-${endItem} de ${totalItems} itens`);
+        $paginationNav.append(`
+            <li class="page-item ${pageData.first ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${pageNumber - 1}">Anterior</a>
+            </li>
+        `);
+        for (let i = 0; i < pageData.totalPages; i++) {
+            $paginationNav.append(`
+                <li class="page-item ${i === pageNumber ? 'active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i + 1}</a>
+                </li>
+            `);
+        }
+        $paginationNav.append(`
+            <li class="page-item ${pageData.last ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${pageNumber + 1}">Próximo</a>
+            </li>
+        `);
     };
 
     const renderTable = () => {
@@ -207,6 +246,19 @@ $(function() {
     };
 
     // --- MANIPULADORES DE EVENTOS ---
+    $paginationNav.on('click', 'a.page-link', function(e) {
+        e.preventDefault();
+        if ($(this).parent().hasClass('disabled') || $(this).parent().hasClass('active')) {
+            return;
+        }
+        const page = $(this).data('page');
+        performSearch(page);
+    });
+
+    $pageSizeSelect.on('change', function() {
+        performSearch(0);
+    });
+
     $btnLogout.on('click', function() {
         localStorage.removeItem('jwt_token');
         window.location.href = '/login.html';
@@ -218,7 +270,7 @@ $(function() {
         const direction = (currentSort.column === columnKey && currentSort.direction === 'asc') ? 'desc' : 'asc';
         currentSort = { column: columnKey, direction: direction };
         $cabecalhoTabelaInventario.find('i.sort-icon').remove();
-        const iconClass = direction === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill';
+        const iconClass = direction === 'asc' ? 'bi-arrow-up-short' : 'bi-arrow-down-short';
         $(this).append(` <i class="bi ${iconClass} sort-icon text-warning"></i>`);
         renderTable();
     });
@@ -291,7 +343,6 @@ $(function() {
         acaoConfirmada = null;
     });
 
-    // Eventos para seleção em massa
     $selectAllCheckbox.on('change', function() {
         const isChecked = $(this).is(':checked');
         $('.item-checkbox:not(:disabled)').prop('checked', isChecked);
@@ -328,11 +379,11 @@ $(function() {
         modalTransferencia.show();
     });
 
-    $filtrosStatus.on('change', 'input[name="status-filter"]', performSearch);
+    $filtrosStatus.on('change', 'input[name="status-filter"]', () => performSearch(0));
 
-    $formBuscaAvancada.on('submit', function(e) {
+    $formBuscaAvancada.on('submit', (e) => {
         e.preventDefault();
-        performSearch();
+        performSearch(0);
     });
 
     $btnLimparBusca.on('click', function() {
