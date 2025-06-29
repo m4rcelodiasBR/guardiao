@@ -55,9 +55,25 @@
             </tr>
             </thead>
             <tbody id="tabela-usuarios">
-            <!-- Conteúdo dinâmico via JS -->
             </tbody>
         </table>
+    </div>
+    <div id="pagination-controls-usuarios" class="d-flex justify-content-between align-items-center mt-3" style="display: none;">
+        <div class="d-flex align-items-center">
+            <span class="me-2">Itens por página:</span>
+            <select class="form-select form-select-sm" id="page-size-select-usuarios" style="width: 75px;">
+                <option value="5" selected>5</option>
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            <span id="page-info-usuarios" class="ms-3 text-muted"></span>
+        </div>
+        <nav>
+            <ul class="pagination mb-0" id="pagination-nav-usuarios">
+            </ul>
+        </nav>
     </div>
 </main>
 

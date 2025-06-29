@@ -161,7 +161,9 @@ $(function() {
         sortedItemDTOs.forEach(dto => {
             const item = dto.item;
             const isDisponivel = item.status === 'DISPONIVEL';
-            const compartimentoDesc = item.compartimento ? item.compartimento.descricao : 'N/A';
+            const compartimentoCodigo = item.compartimento.codigo;
+            const compartimentoDescricao = item.compartimento.descricao;
+            console.log(item.compartimento)
 
             let statusBadge = '';
             if (item.status === 'DISPONIVEL') {
@@ -198,7 +200,7 @@ $(function() {
                     <td>${item.marca || 'N/A'}</td>
                     <td>${item.numeroDeSerie || 'N/A'}</td>
                     <td>${item.localizacao || 'N/A'}</td>
-                    <td>${compartimentoDesc}</td>
+                    <td title="${compartimentoDescricao}">${compartimentoCodigo}</td>
                     <td>${acoesHtml}</td>
                 </tr>
             `;
@@ -219,8 +221,8 @@ $(function() {
             success: function(compartimentos) {
                 $select.empty().append(`<option value="">${placeholder}</option>`);
                 compartimentos.forEach(c => {
-                    const isSelected = c.name === selectedValue ? 'selected' : '';
-                    $select.append(`<option value="${c.name}" ${isSelected}>${c.descricao}</option>`);
+                    const isSelected = c.codigo === selectedValue ? 'selected' : '';
+                    $select.append(`<option value="${c.codigo}" ${isSelected}>${c.codigoDescricao}</option>`);
                 });
             },
             error: function() {

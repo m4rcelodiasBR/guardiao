@@ -14,6 +14,10 @@ $(function() {
     const $btnLogout = $('#btn-logout');
     const $themeToggler = $('#theme-toggler');
     const $btnConfirmarAcaoUsuario = $('#btn-confirmar-acao-usuario');
+    const $paginationControls = $('#pagination-controls-usuarios');
+    const $paginationNav = $('#pagination-nav-usuarios');
+    const $pageInfo = $('#page-info-usuarios');
+    const $pageSizeSelect = $('#page-size-select-usuarios');
 
     const modalNovoUsuario = new bootstrap.Modal(document.getElementById('modalNovoUsuario'));
     const modalEditarUsuario = new bootstrap.Modal(document.getElementById('modalEditarUsuario'));
@@ -22,6 +26,7 @@ $(function() {
     // --- VARIÁVEIS DE ESTADO ---
     let acaoConfirmada = null;
     let allUsers = [];
+    let currentPage = 0;
 
     // --- FUNÇÕES ---
     const showAlert = (message, type = 'success') => {
@@ -30,60 +35,76 @@ $(function() {
         setTimeout(() => $alert.fadeOut(500, () => $alert.remove()), 4000);
     };
 
-    const fetchAndDisplayUsers = () => {
+    const fetchAndDisplayUsers = (page = 0, size = 10) => {
         $.ajax({
-            url: '/api/usuarios/visiveis',
+            url: `/api/usuarios/visiveis?page=${page}&size=${size}&sort=nome,asc`,
             method: 'GET',
-            success: function(users) {
-                allUsers = users;
-                $tabelaUsuariosBody.empty();
-                users.forEach(user => {
-                    const isAtivo = user.status === 'ATIVO';
-
-                    let statusBadge = isAtivo
-                        ? '<span class="badge rounded-pill text-bg-success">Ativo</span>'
-                        : '<span class="badge rounded-pill text-bg-secondary">Inativo</span>';
-
-                    const perfilBadge = user.perfil === 'ADMIN'
-                        ? '<span class="badge rounded-pill text-bg-primary">Administrador</span>'
-                        : '<span class="badge rounded-pill text-bg-secondary">Usuário</span>';
-
-                    const isSelf = user.id === loggedInUserId;
-                    const disabledAttr = isSelf ? 'hidden' : '';
-
-                    const btnResetSenha = isAtivo ?
-                        `<button class="btn btn-sm btn-secondary btn-reset-senha opacity-100" title="Resetar Senha" data-id="${user.id}" data-nome="${user.nome}" ${disabledAttr}>
-                            <i class="bi bi-key-fill"></i>
-                        </button>` : '';
-
-                    const btnEditar = `<button class="btn btn-sm btn-primary btn-editar-usuario opacity-100" title="Editar" data-id="${user.id}" ${disabledAttr}>
-                                        <i class="bi bi-pencil-fill"></i>
-                                      </button>`;
-
-                    const btnExcluir = `<button class="btn btn-sm btn-danger btn-excluir-usuario opacity-100" title="Excluir" data-id="${user.id}" data-nome="${user.nome}" ${disabledAttr}>
-                                        <i class="bi bi-trash3-fill"></i>
-                                       </button>`;
-
-                    const rowHtml = `
-                        <tr>
-                            <td class="${!isAtivo ? 'opacity-50' : ''}">${user.login}</td>
-                            <td class="${!isAtivo ? 'opacity-50' : ''}">${user.nome}</td>
-                            <td class="${!isAtivo ? 'opacity-50' : ''}">${user.email}</td>
-                            <td class="${!isAtivo ? 'opacity-50' : ''}">${perfilBadge}</td>
-                            <td class="${!isAtivo ? 'opacity-50' : ''}">${statusBadge}</td>
-                            <td>
-                                ${btnResetSenha}
-                                ${btnEditar}
-                                ${btnExcluir}
-                            </td>
-                        </tr>
-                    `;
-                    $tabelaUsuariosBody.append(rowHtml);
-                });
+            success: function(pageData) {
+                allUsers = pageData.content;
+                renderTable(allUsers);
+                currentPage = pageData.number;
+                renderPaginationControls(pageData);
             },
             error: function() {
-                $tabelaUsuariosBody.html('<tr><td colspan="5" class="text-center text-danger">Erro ao carregar usuários.</td></tr>');
+                $tabelaUsuariosBody.html('<tr><td colspan="6" class="text-center text-danger">Erro ao carregar utilizadores.</td></tr>');
+                $paginationControls.hide();
             }
+        });
+    };
+
+    const renderPaginationControls = (pageData) => {
+        $paginationNav.empty();
+        if (pageData.totalPages <= 1) {
+            $paginationControls.hide();
+            return;
+        }
+        $paginationControls.show();
+        const totalItems = pageData.totalElements;
+        const pageNumber = pageData.number;
+        const pageSize = pageData.size;
+        const startItem = totalItems > 0 ? (pageNumber * pageSize) + 1 : 0;
+        const endItem = Math.min(startItem + pageSize - 1, totalItems);
+        $pageInfo.text(`Exibindo ${startItem}-${endItem} de ${totalItems} utilizadores`);
+        $paginationNav.append(`
+            <li class="page-item ${pageData.first ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${pageNumber - 1}">Anterior</a>
+            </li>`);
+        for (let i = 0; i < pageData.totalPages; i++) {
+            $paginationNav.append(`
+            <li class="page-item ${i === pageNumber ? 'active' : ''}">
+                <a class="page-link" href="#" data-page="${i}">${i + 1}</a>
+            </li>`);
+        }
+        $paginationNav.append(`
+            <li class="page-item ${pageData.last ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${pageNumber + 1}">Próximo</a>
+            </li>`);
+    };
+
+    const renderTable = (users) => {
+        $tabelaUsuariosBody.empty();
+        users.forEach(user => {
+            const isAtivo = user.status === 'ATIVO';
+            let statusBadge = isAtivo ? '<span class="badge rounded-pill text-bg-success">Ativo</span>' : '<span class="badge rounded-pill text-bg-secondary">Inativo</span>';
+            const perfilBadge = user.perfil === 'ADMIN' ? '<span class="badge rounded-pill text-bg-primary">Administrador</span>' : '<span class="badge rounded-pill text-bg-info">Usuário</span>';
+
+            const isSelf = user.id === loggedInUserId;
+            const disabledAttr = isSelf ? 'disabled' : '';
+
+            const btnResetSenha = isAtivo ? `<button class="btn btn-sm btn-secondary btn-reset-senha opacity-100" title="Resetar Senha" data-id="${user.id}" data-nome="${user.nome}" ${disabledAttr}><i class="bi bi-key-fill"></i></button>` : '';
+            const btnEditar = `<button class="btn btn-sm btn-primary btn-editar-usuario opacity-100" title="Editar" data-id="${user.id}" ${disabledAttr}><i class="bi bi-pencil-fill"></i></button>`;
+            const btnExcluir = `<button class="btn btn-sm btn-danger btn-excluir-usuario opacity-100" title="Excluir" data-id="${user.id}" data-nome="${user.nome}" ${disabledAttr}><i class="bi bi-trash3-fill"></i></button>`;
+
+            const rowHtml = `
+                <tr class="${!isAtivo ? 'opacity-50' : ''}">
+                    <td>${user.nome}</td>
+                    <td>${user.login}</td>
+                    <td>${user.email}</td>
+                    <td>${perfilBadge}</td>
+                    <td>${statusBadge}</td>
+                    <td>${btnResetSenha} ${btnEditar} ${btnExcluir}</td>
+                </tr>`;
+            $tabelaUsuariosBody.append(rowHtml);
         });
     };
 
@@ -179,6 +200,17 @@ $(function() {
             },
             error: function() { showAlert('Erro ao atualizar usuário.', 'danger'); }
         });
+    });
+
+    $paginationNav.on('click', 'a.page-link', function(e) {
+        e.preventDefault();
+        if ($(this).parent().hasClass('disabled') || $(this).parent().hasClass('active')) { return; }
+        const page = $(this).data('page');
+        fetchAndDisplayUsers(page, $pageSizeSelect.val());
+    });
+
+    $pageSizeSelect.on('change', function() {
+        fetchAndDisplayUsers(0, $(this).val());
     });
 
     // --- FUNÇÕES DE AJAX PARA AÇÕES ---

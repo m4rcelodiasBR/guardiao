@@ -5,6 +5,8 @@ import br.com.guardiao.guardiao.model.StatusUsuario;
 import br.com.guardiao.guardiao.model.Usuario;
 import br.com.guardiao.guardiao.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,7 +34,6 @@ public class UsuarioService {
         if (usuarioRepository.findByEmail(registroUsuarioDTO.getEmail()).isPresent()) {
             throw new IllegalStateException("O e-mail informado já está cadastrado.");
         }
-
         Usuario novoUsuario = new Usuario();
         novoUsuario.setNome(registroUsuarioDTO.getNome());
         novoUsuario.setLogin(registroUsuarioDTO.getLogin());
@@ -41,23 +42,18 @@ public class UsuarioService {
         novoUsuario.setSenhaExpirada(true);
         novoUsuario.setPerfil(registroUsuarioDTO.getPerfil());
         novoUsuario.setStatus(StatusUsuario.ATIVO);
-
         return usuarioRepository.save(novoUsuario);
     }
 
-    public List<Usuario> listarUsuariosVisiveis() {
-        return usuarioRepository.findAll()
-                .stream()
-                .filter(usuario -> usuario.getStatus() != StatusUsuario.EXCLUIDO)
-                .collect(Collectors.toList());
+    public Page<UsuarioDTO> listarUsuariosAtivos(Pageable pageable) {
+        Page<Usuario> usuariosPaginados = usuarioRepository.findAllByStatusNot(StatusUsuario.EXCLUIDO, pageable);
+        return usuariosPaginados.map(UsuarioDTO::new);
     }
 
-    // O metodo de atualização agora também gerencia o status ATIVO/INATIVO
     @Transactional
     public Usuario atualizarUsuario(Integer id, UsuarioUpdateDTO dados) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
-
         usuarioRepository.findByLogin(dados.getLogin()).ifPresent(u -> {
             if (!u.getId().equals(id)) {
                 throw new IllegalStateException("O nome de usuário (login) informado já está em uso.");
@@ -68,17 +64,14 @@ public class UsuarioService {
                 throw new IllegalStateException("O e-mail informado já está em uso por outro usuário.");
             }
         });
-
         usuario.setNome(dados.getNome());
         usuario.setLogin(dados.getLogin());
         usuario.setEmail(dados.getEmail());
         usuario.setPerfil(dados.getPerfil());
         usuario.setStatus(dados.getStatus());
-
         return usuarioRepository.save(usuario);
     }
 
-    // A exclusão agora é uma exclusão lógica, mudando o status para EXCLUIDO
     @Transactional
     public void excluirUsuario(Integer id) {
         Usuario usuario = usuarioRepository.findById(id)
@@ -101,7 +94,6 @@ public class UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
         usuario.setSenha(passwordEncoder.encode(senhaPadrao));
         usuario.setSenhaExpirada(true);
-
         usuarioRepository.save(usuario);
     }
 
@@ -114,7 +106,6 @@ public class UsuarioService {
         });
         usuarioLogado.setNome(dados.getNome());
         usuarioLogado.setEmail(dados.getEmail());
-
         return usuarioRepository.save(usuarioLogado);
     }
 

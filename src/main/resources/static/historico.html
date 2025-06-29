@@ -84,9 +84,25 @@
                 </tbody>
             </table>
         </div>
+        <div id="pagination-controls-historico" class="d-flex justify-content-between align-items-center mt-3" style="display: none;">
+            <div class="d-flex align-items-center">
+                <span class="me-2">Itens por página:</span>
+                <select class="form-select form-select-sm" id="page-size-select-historico" style="width: 75px;">
+                    <option value="5" selected>5</option>
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+                <span id="page-info-historico" class="ms-3 text-muted"></span>
+            </div>
+            <nav>
+                <ul class="pagination mb-0" id="pagination-nav-historico">
+                </ul>
+            </nav>
+        </div>
     </main>
 
-    <!-- NOVO MODAL DE DEVOLUÇÃO -->
+    <!-- MODAL DE DEVOLUÇÃO -->
     <div class="modal fade" id="modalDevolucao" tabindex="-1" aria-labelledby="modalDevolucaoLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -137,7 +153,6 @@
             </div>
         </div>
     </div>
-
 
     <script src="/js/jquery-3.7.1.min.js"></script>
     <script src="/js/bootstrap.bundle.min.js"></script>

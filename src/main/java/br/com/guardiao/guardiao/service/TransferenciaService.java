@@ -1,8 +1,6 @@
 package br.com.guardiao.guardiao.service;
 
-import br.com.guardiao.guardiao.controller.dto.TransferenciaBuscaDTO;
-import br.com.guardiao.guardiao.controller.dto.TransferenciaDTO;
-import br.com.guardiao.guardiao.controller.dto.TransferenciaMassaDTO;
+import br.com.guardiao.guardiao.controller.dto.*;
 import br.com.guardiao.guardiao.model.Item;
 import br.com.guardiao.guardiao.model.StatusItem;
 import br.com.guardiao.guardiao.model.Transferencia;
@@ -12,12 +10,16 @@ import br.com.guardiao.guardiao.repository.TransferenciaRepository;
 import br.com.guardiao.guardiao.repository.UsuarioRepository;
 import br.com.guardiao.guardiao.repository.specification.TransferenciaSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class TransferenciaService {
@@ -36,7 +38,6 @@ public class TransferenciaService {
 
     private Usuario getUsuarioLogado() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
         if (principal instanceof Usuario) {
             return (Usuario) principal;
         }
@@ -53,7 +54,8 @@ public class TransferenciaService {
             throw new IllegalStateException("O item não está disponível para transferência.");
         }
         item.setStatus(StatusItem.TRANSFERIDO);
-
+        item.setAtualizadoPor(usuarioLogado);
+        itemRepository.save(item);
         Transferencia novaTransferencia = new Transferencia();
         novaTransferencia.setItem(item);
         novaTransferencia.setUsuario(usuarioLogado);
@@ -61,12 +63,7 @@ public class TransferenciaService {
         novaTransferencia.setObservacao(transferenciaDTO.getObservacao());
         novaTransferencia.setNumeroPatrimonialItem(item.getNumeroPatrimonial());
         novaTransferencia.setDescricaoItem(item.getDescricao());
-
         return transferenciaRepository.save(novaTransferencia);
-    }
-
-    public List<Transferencia> listarTodasTransferencias() {
-        return transferenciaRepository.findAll();
     }
 
     @Transactional
@@ -81,21 +78,37 @@ public class TransferenciaService {
                 throw new IllegalStateException("O item " + patrimonio + " não está disponível para transferência.");
             }
             item.setStatus(StatusItem.TRANSFERIDO);
-
-            Transferencia transferenciaEmMassa = new Transferencia();
-            transferenciaEmMassa.setItem(item);
-            transferenciaEmMassa.setUsuario(usuarioLogado);
-            transferenciaEmMassa.setIncumbenciaDestino(transferenciaMassaDTO.getIncumbenciaDestino());
-            transferenciaEmMassa.setObservacao(transferenciaMassaDTO.getObservacao());
-            transferenciaEmMassa.setNumeroPatrimonialItem(item.getNumeroPatrimonial());
-            transferenciaEmMassa.setDescricaoItem(item.getDescricao());
-
-            transferenciaRepository.save(transferenciaEmMassa);
+            item.setAtualizadoPor(usuarioLogado);
+            itemRepository.save(item);
+            Transferencia transferencia = new Transferencia();
+            transferencia.setItem(item);
+            transferencia.setUsuario(usuarioLogado);
+            transferencia.setIncumbenciaDestino(transferenciaMassaDTO.getIncumbenciaDestino());
+            transferencia.setObservacao(transferenciaMassaDTO.getObservacao());
+            transferencia.setNumeroPatrimonialItem(item.getNumeroPatrimonial());
+            transferencia.setDescricaoItem(item.getDescricao());
+            transferenciaRepository.save(transferencia);
         }
     }
 
-    public List<Transferencia> buscarTransferencias(TransferenciaBuscaDTO request) {
-        Specification<Transferencia> spec = transferenciaSpecification.getSpecifications(request);
-        return transferenciaRepository.findAll(spec);
+    public PageDTO<TransferenciaDetalheDTO> buscarTransferencias(TransferenciaBuscaDTO transferenciaBuscaDTO, Pageable pageable) {
+        Specification<Transferencia> spec = transferenciaSpecification.getSpecifications(transferenciaBuscaDTO);
+        Page<Transferencia> paginaDeTransferencias = transferenciaRepository.findAll(spec, pageable);
+
+        Page<TransferenciaDetalheDTO> dtoPage = paginaDeTransferencias.map(transferencia -> {
+            Item itemDaTransferencia = transferencia.getItem();
+            boolean podeDevolver = false;
+            if (itemDaTransferencia.getStatus() == StatusItem.TRANSFERIDO) {
+                boolean isUltimaTransferencia = transferenciaRepository.findTopByItemIdOrderByIdDesc(itemDaTransferencia.getId())
+                        .map(ultima -> ultima.getId().equals(transferencia.getId()))
+                        .orElse(false);
+                String destino = transferencia.getIncumbenciaDestino();
+                boolean isTransferenciaPermanente = destino.startsWith("000") || destino.startsWith("001") || destino.startsWith("002");
+
+                podeDevolver = isUltimaTransferencia && !isTransferenciaPermanente;
+            }
+            return new TransferenciaDetalheDTO(transferencia, podeDevolver);
+        });
+        return new PageDTO<>(dtoPage);
     }
 }

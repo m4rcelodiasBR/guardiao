@@ -1,11 +1,14 @@
 package br.com.guardiao.guardiao.controller;
 
 import br.com.guardiao.guardiao.controller.dto.RegistroUsuarioDTO;
+import br.com.guardiao.guardiao.controller.dto.UsuarioDTO;
 import br.com.guardiao.guardiao.controller.dto.UsuarioUpdateDTO;
 import br.com.guardiao.guardiao.model.Usuario;
 import br.com.guardiao.guardiao.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,10 +29,9 @@ public class UsuarioController {
     }
 
     @GetMapping("/visiveis")
-    public ResponseEntity<List<Usuario>> listarUsuariosVisiveis() {
-        List<Usuario> usuarios = usuarioService.listarUsuariosVisiveis();
-        usuarios.forEach(user -> user.setSenha(null));
-        return ResponseEntity.ok(usuarios);
+    public ResponseEntity<Page<UsuarioDTO>> listarUsuariosVisiveis(Pageable pageable) {
+        Page<UsuarioDTO> paginaDeUsuarios = usuarioService.listarUsuariosAtivos(pageable);
+        return ResponseEntity.ok(paginaDeUsuarios);
     }
 
     @PutMapping("/{id}")

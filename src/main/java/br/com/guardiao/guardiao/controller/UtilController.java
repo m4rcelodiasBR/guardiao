@@ -40,8 +40,9 @@ public class UtilController {
     public List<Map<String, String>> getCompartimentos() {
         return Arrays.stream(Compartimento.values())
                 .map(c -> Map.of(
-                        "name", c.name(),
-                        "descricao", c.getDescricao()
+                        "codigo", c.getCodigo(),
+                        "descricao", c.getDescricao(),
+                        "codigoDescricao", c.getCodigoDescricao()
                 ))
                 .collect(Collectors.toList());
     }
