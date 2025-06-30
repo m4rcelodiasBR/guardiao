@@ -60,6 +60,16 @@ public class ItemController {
     }
 
     /**
+     * Endpoint para atualizar vários itens.
+     */
+    @PutMapping("/massa")
+    @ResponseStatus(HttpStatus.OK)
+    public void atualizarVariosItens(@RequestBody @Valid ItemEdicaoMassaDTO itemEdicaoMassaDTO, Authentication authentication) {
+        Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
+        itemService.atualizarVariosItens(itemEdicaoMassaDTO, usuarioLogado);
+    }
+
+    /**
      * Endpoint para a exclusão lógica de um item.
      */
     @DeleteMapping("/{numeroPatrimonial}")

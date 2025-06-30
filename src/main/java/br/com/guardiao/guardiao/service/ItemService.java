@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -138,5 +139,25 @@ public class ItemService {
         transferenciaRepository.save(registroDevolucao);
 
         return itemRepository.save(item);
+    }
+
+    @Transactional
+    public void atualizarVariosItens(ItemEdicaoMassaDTO edicaoMassaDTO, Usuario usuarioLogado) {
+        List<Item> itensParaAtualizar = edicaoMassaDTO.getNumerosPatrimoniais().stream()
+                .map(this::buscarPorPatrimonio)
+                .collect(Collectors.toList());
+        for (Item item : itensParaAtualizar) {
+            if (item.getStatus() != StatusItem.DISPONIVEL) {
+                throw new IllegalStateException("O item com patrimônio " + item.getNumeroPatrimonial() + " não está disponível para edição em massa.");
+            }
+            if (StringUtils.hasText(edicaoMassaDTO.getLocalizacao())) {
+                item.setLocalizacao(edicaoMassaDTO.getLocalizacao());
+            }
+            if (edicaoMassaDTO.getCompartimento() != null) {
+                item.setCompartimento(edicaoMassaDTO.getCompartimento());
+            }
+            item.setAtualizadoPor(usuarioLogado);
+        }
+        itemRepository.saveAll(itensParaAtualizar);
     }
 }

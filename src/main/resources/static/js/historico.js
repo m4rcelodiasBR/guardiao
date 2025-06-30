@@ -55,7 +55,7 @@ $(function() {
                 const $select = $('#devolucao-compartimento');
                 $select.empty().append('<option value="">Selecione um compartimento...</option>');
                 compartimentos.forEach(c => {
-                    $select.append(`<option value="${c.name}">${c.descricao}</option>`);
+                    $select.append(`<option value="${c.codigo}">${c.codigoDescricao}</option>`);
                 });
             }
         });
@@ -232,20 +232,7 @@ $(function() {
         });
     });
 
-    // --- MODO ESCURO ---
-    const applyTheme = (theme) => {
-        $('html').attr('data-bs-theme', theme);
-        localStorage.setItem('theme', theme);
-        $themeToggler.prop('checked', theme === 'dark');
-    };
-
-    $themeToggler.on('change', function() {
-        applyTheme($(this).is(':checked') ? 'dark' : 'light');
-    });
-
     // --- INICIALIZAÇÃO ---
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    applyTheme(savedTheme);
     performSearch();
     popularCompartimentosDevolucao();
     setupUIForRole(userRole);

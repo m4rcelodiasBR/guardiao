@@ -57,12 +57,10 @@ $(function() {
         window.location.href = '/login.html';
     });
 
-    // Lógica do tema é global
     $('#theme-toggler').on('change', function() {
         applyTheme($(this).is(':checked') ? 'dark' : 'light');
     });
 
-    // Aplica o tema salvo na inicialização
     const savedTheme = localStorage.getItem('theme') || 'light';
     applyTheme(savedTheme);
 });

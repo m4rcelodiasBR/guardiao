@@ -237,14 +237,6 @@ $(function() {
         });
     };
 
-    // --- MODO ESCURO ---
-    const applyTheme = (theme) => {
-        $('html').attr('data-bs-theme', theme);
-        localStorage.setItem('theme', theme);
-        $themeToggler.prop('checked', theme === 'dark');
-    };
-    $themeToggler.on('change', function() { applyTheme($(this).is(':checked') ? 'dark' : 'light'); });
-
     // --- INICIALIZAÇÃO ---
     const savedTheme = localStorage.getItem('theme') || 'light';
     applyTheme(savedTheme);

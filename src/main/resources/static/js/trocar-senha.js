@@ -54,7 +54,4 @@ $(function() {
             }
         });
     });
-
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    $('html').attr('data-bs-theme', savedTheme);
 });

@@ -17,6 +17,7 @@ $(function() {
     const $cabecalhoTabelaInventario = $('#tabela-inventario').closest('table').find('thead');
     const $formNovoItem = $('#form-novo-item');
     const $formEditarItem = $('#form-editar-item');
+    const $formEdicaoMassa = $('#form-edicao-massa');
     const $formTransferencia = $('#form-transferencia');
     const $formBuscaAvancada = $('#form-busca-avancada');
     const $btnConfirmarAcao = $('#btn-confirmar-acao');
@@ -24,6 +25,7 @@ $(function() {
     const $selectAllCheckbox = $('#select-all-checkbox');
     const bulkActionsCollapse = new bootstrap.Collapse($('#bulk-actions-collapse')[0], { toggle: false });
     const $filtrosStatus = $('#filtros-status');
+    const $btnEditarSelecionados = $('#btn-editar-selecionados');
     const $btnExcluirSelecionados = $('#btn-excluir-selecionados');
     const $btnTransferirSelecionados = $('#btn-transferir-selecionados');
     const $selectIncumbencia = $('#transfer-destino-select');
@@ -36,6 +38,7 @@ $(function() {
     const $pageInfo = $('#page-info');
     const $pageSizeSelect = $('#page-size-select');
 
+    const modalEdicaoMassa = new bootstrap.Modal(document.getElementById('modalEdicaoMassa'));
     const modalNovoItem = new bootstrap.Modal(document.getElementById('modalNovoItem'));
     const modalEditarItem = new bootstrap.Modal(document.getElementById('modalEditarItem'));
     const modalTransferencia = new bootstrap.Modal(document.getElementById('modalTransferencia'));
@@ -368,6 +371,13 @@ $(function() {
         updateBulkActionUI();
     });
 
+    $btnEditarSelecionados.on('click', function() {
+        if (selectedItems.size === 0) return;
+        $('#edicao-massa-counter').text(selectedItems.size);
+        $formEdicaoMassa[0].reset();
+        modalEdicaoMassa.show();
+    });
+
     $btnExcluirSelecionados.on('click', function() {
         $('#confirm-title').text('Confirmar Exclusão em Massa');
         $('#confirm-body').text(`Tem certeza que deseja excluir os ${selectedItems.size} itens selecionados? Esta ação não pode ser desfeita.`);
@@ -443,6 +453,35 @@ $(function() {
             },
             error: function() {
                 showAlert('Erro ao atualizar o item.', 'danger');
+            }
+        });
+    });
+
+    $formEdicaoMassa.on('submit', function(e) {
+        e.preventDefault();
+        const data = {
+            numerosPatrimoniais: Array.from(selectedItems),
+            localizacao: $('#massa-localizacao').val(),
+            compartimento: $('#massa-compartimento').val()
+        };
+
+        if (!data.localizacao && !data.compartimento) {
+            showAlert('Preencha pelo menos um campo (Localização ou Compartimento) para atualizar.', 'warning');
+            return;
+        }
+
+        $.ajax({
+            url: '/api/itens/massa',
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function() {
+                showAlert(`${selectedItems.size} itens atualizados com sucesso!`);
+                modalEdicaoMassa.hide();
+                performSearch(currentPage);
+            },
+            error: function(xhr) {
+                showAlert(xhr.responseJSON?.message || 'Erro ao atualizar itens selecionados.', 'danger');
             }
         });
     });
@@ -562,6 +601,7 @@ $(function() {
     fetchAndDisplayItems();
     popularCompartimentos('#novo-compartimento', 'Selecione um compartimento...');
     popularCompartimentos('#busca-compartimento', 'Todos os compartimentos');
+    popularCompartimentos('#massa-compartimento', 'Manter o compartimento atual');
     popularIncumbencias();
     performSearch();
 });
