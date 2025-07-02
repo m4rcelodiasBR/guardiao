@@ -39,6 +39,7 @@ public class SecurityConfig {
                         "/usuarios.html",
                         "/perfil.html",
                         "/trocar-senha.html",
+                        "/importacao.html",
                         "/api/auth/**",
                         "/api/perfil/**",
                         "/api/util/**",
@@ -46,6 +47,7 @@ public class SecurityConfig {
                         "/js/**")
                 .permitAll()
                 .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+                .requestMatchers("/api/importacao/**").hasRole("ADMIN")
                 .requestMatchers("/api/transferencias/**").hasAnyRole("ADMIN", "USUARIO")
                 .requestMatchers(HttpMethod.PUT, "/api/itens/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/itens/**").hasRole("ADMIN")

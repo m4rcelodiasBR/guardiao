@@ -89,7 +89,7 @@ $(function() {
             const perfilBadge = user.perfil === 'ADMIN' ? '<span class="badge rounded-pill text-bg-primary">Administrador</span>' : '<span class="badge rounded-pill text-bg-info">Usuário</span>';
 
             const isSelf = user.id === loggedInUserId;
-            const disabledAttr = isSelf ? 'disabled' : '';
+            const disabledAttr = isSelf ? 'hidden' : '';
 
             const btnResetSenha = isAtivo ? `<button class="btn btn-sm btn-secondary btn-reset-senha opacity-100" title="Resetar Senha" data-id="${user.id}" data-nome="${user.nome}" ${disabledAttr}><i class="bi bi-key-fill"></i></button>` : '';
             const btnEditar = `<button class="btn btn-sm btn-primary btn-editar-usuario opacity-100" title="Editar" data-id="${user.id}" ${disabledAttr}><i class="bi bi-pencil-fill"></i></button>`;

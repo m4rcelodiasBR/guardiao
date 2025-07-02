@@ -92,26 +92,80 @@ $(function() {
     };
 
     const renderPaginationControls = (pageData) => {
+        const $paginationNav = $('#pagination-nav-historico');
+        const $paginationControls = $('#pagination-controls-historico');
+        const $pageInfo = $('#page-info-historico');
+        const $pageSizeSelect = $('#page-size-select-historico');
+
         $paginationNav.empty();
+
         if (pageData.totalPages <= 1) {
             $paginationControls.hide();
             return;
         }
-        $paginationControls.show();
 
+        $paginationControls.show();
         const totalItems = pageData.totalItems;
         const pageNumber = pageData.currentPage;
-        const pageSize = $pageSizeSelect.val();
+
+        const pageSize = parseInt(pageData.size || $pageSizeSelect.val(), 10);
+
         const startItem = totalItems > 0 ? (pageNumber * pageSize) + 1 : 0;
         const endItem = Math.min(startItem + pageSize - 1, totalItems);
-
         $pageInfo.text(`Exibindo ${startItem}-${endItem} de ${totalItems} registos`);
 
-        $paginationNav.append(`<li class="page-item ${pageData.first ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${pageNumber - 1}">Anterior</a></li>`);
-        for (let i = 0; i < pageData.totalPages; i++) {
-            $paginationNav.append(`<li class="page-item ${i === pageNumber ? 'active' : ''}"><a class="page-link" href="#" data-page="${i}">${i + 1}</a></li>`);
+        const totalPages = pageData.totalPages;
+        const currentPage = pageData.currentPage;
+        const maxPagesToShow = 7;
+        const createPageItem = (page, text, isActive = false, isDisabled = false) => {
+            return `
+            <li class="page-item ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${page}">${text}</a>
+            </li>
+        `;
+        };
+
+        $paginationNav.append(createPageItem(currentPage - 1, 'Anterior', false, pageData.first));
+
+        if (totalPages <= maxPagesToShow) {
+            for (let i = 0; i < totalPages; i++) {
+                $paginationNav.append(createPageItem(i, i + 1, i === currentPage));
+            }
+        } else {
+            let startPage, endPage;
+            const pagesToShowBeforeAndAfter = Math.floor((maxPagesToShow - 2) / 2);
+
+            if (currentPage <= pagesToShowBeforeAndAfter) {
+                startPage = 0;
+                endPage = maxPagesToShow - 2;
+            } else if (currentPage + pagesToShowBeforeAndAfter >= totalPages - 1) {
+                startPage = totalPages - (maxPagesToShow - 1);
+                endPage = totalPages - 1;
+            } else {
+                startPage = currentPage - pagesToShowBeforeAndAfter;
+                endPage = currentPage + pagesToShowBeforeAndAfter;
+            }
+
+            $paginationNav.append(createPageItem(0, '1', 0 === currentPage));
+
+            if (startPage > 1) {
+                $paginationNav.append(createPageItem(currentPage - 3, '...', false, true));
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                if (i > 0 && i < totalPages - 1) {
+                    $paginationNav.append(createPageItem(i, i + 1, i === currentPage));
+                }
+            }
+
+            if (endPage < totalPages - 2) {
+                $paginationNav.append(createPageItem(currentPage + 3, '...', false, true));
+            }
+
+            $paginationNav.append(createPageItem(totalPages - 1, totalPages, totalPages - 1 === currentPage));
         }
-        $paginationNav.append(`<li class="page-item ${pageData.last ? 'disabled' : ''}"><a class="page-link" href="#" data-page="${pageNumber + 1}">Próximo</a></li>`);
+
+        $paginationNav.append(createPageItem(currentPage + 1, 'Próximo', false, pageData.last));
     };
 
     const renderHistoryTable = (detalhesTransferencia) => {

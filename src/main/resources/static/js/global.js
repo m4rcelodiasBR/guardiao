@@ -47,7 +47,12 @@ const showAlert = (message, type = 'success') => {
 const applyTheme = (theme) => {
     $('html').attr('data-bs-theme', theme);
     localStorage.setItem('theme', theme);
-    $('#theme-toggler').prop('checked', theme === 'dark');
+    const $themeIcon = $('#theme-icon');
+    if (theme === 'dark') {
+        $themeIcon.removeClass('bi-moon-stars-fill').addClass('bi-sun-fill');
+    } else {
+        $themeIcon.removeClass('bi-sun-fill').addClass('bi-moon-stars-fill');
+    }
 };
 
 // --- EVENTOS GLOBAIS ---
@@ -57,8 +62,10 @@ $(function() {
         window.location.href = '/login.html';
     });
 
-    $('#theme-toggler').on('change', function() {
-        applyTheme($(this).is(':checked') ? 'dark' : 'light');
+    $('#btn-theme-toggler').on('click', function() {
+        const currentTheme = $('html').attr('data-bs-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        applyTheme(newTheme);
     });
 
     const savedTheme = localStorage.getItem('theme') || 'light';

@@ -103,35 +103,75 @@ $(function() {
     };
 
     const renderPaginationControls = (pageData) => {
+        const $paginationNav = $('#pagination-nav'); // Garante que temos o seletor correto
         $paginationNav.empty();
+
         if (pageData.totalPages <= 1) {
-            $paginationControls.hide();
+            $('#pagination-controls').hide();
             return;
         }
-        $paginationControls.show();
+
+        $('#pagination-controls').show();
         const totalItems = pageData.totalItems;
-        const pageNumber = pageData.currentPage;
-        const pageSize = pageData.size || $pageSizeSelect.val();
+        const pageNumber = pageData.currentPage; // Lembre-se que currentPage é baseado em 0 (0, 1, 2...)
+        const pageSize = parseInt(pageData.size || $pageSizeSelect.val(), 10);
         const startItem = totalItems > 0 ? (pageNumber * pageSize) + 1 : 0;
         const endItem = Math.min(startItem + pageSize - 1, totalItems);
-        $pageInfo.text(`Exibindo ${startItem}-${endItem} de ${totalItems} itens`);
-        $paginationNav.append(`
-            <li class="page-item ${pageData.first ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${pageNumber - 1}">Anterior</a>
+        $('#page-info').text(`Exibindo ${startItem}-${endItem} de ${totalItems} itens`);
+
+        const totalPages = pageData.totalPages;
+        const currentPage = pageData.currentPage;
+        const maxPagesToShow = 7;
+
+        const createPageItem = (page, text, isActive = false, isDisabled = false) => {
+            return `
+            <li class="page-item ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${page}">${text}</a>
             </li>
-        `);
-        for (let i = 0; i < pageData.totalPages; i++) {
-            $paginationNav.append(`
-                <li class="page-item ${i === pageNumber ? 'active' : ''}">
-                    <a class="page-link" href="#" data-page="${i}">${i + 1}</a>
-                </li>
-            `);
+        `;
+        };
+
+        $paginationNav.append(createPageItem(currentPage - 1, 'Anterior', false, pageData.first));
+
+        if (totalPages <= maxPagesToShow) {
+            for (let i = 0; i < totalPages; i++) {
+                $paginationNav.append(createPageItem(i, i + 1, i === currentPage));
+            }
+        } else {
+            let startPage, endPage;
+            const pagesToShowBeforeAndAfter = Math.floor((maxPagesToShow - 2) / 2); // Quantas páginas mostrar antes e depois da atual
+
+            if (currentPage <= pagesToShowBeforeAndAfter) {
+                startPage = 0;
+                endPage = maxPagesToShow - 2;
+            } else if (currentPage + pagesToShowBeforeAndAfter >= totalPages - 1) {
+                startPage = totalPages - (maxPagesToShow - 1);
+                endPage = totalPages - 1;
+            } else {
+                startPage = currentPage - pagesToShowBeforeAndAfter;
+                endPage = currentPage + pagesToShowBeforeAndAfter;
+            }
+
+            $paginationNav.append(createPageItem(0, '1', 0 === currentPage));
+
+            if (startPage > 1) {
+                $paginationNav.append(createPageItem(currentPage - 3, '...', false, true)); // O data-page aqui pode ser ajustado
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                if (i > 0 && i < totalPages - 1) {
+                    $paginationNav.append(createPageItem(i, i + 1, i === currentPage));
+                }
+            }
+
+            if (endPage < totalPages - 2) {
+                $paginationNav.append(createPageItem(currentPage + 3, '...', false, true)); // O data-page aqui pode ser ajustado
+            }
+
+            $paginationNav.append(createPageItem(totalPages - 1, totalPages, totalPages - 1 === currentPage));
         }
-        $paginationNav.append(`
-            <li class="page-item ${pageData.last ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${pageNumber + 1}">Próximo</a>
-            </li>
-        `);
+
+        $paginationNav.append(createPageItem(currentPage + 1, 'Próximo', false, pageData.last));
     };
 
     const renderTable = () => {
@@ -187,7 +227,9 @@ $(function() {
                         <button class="btn btn-sm btn-info btn-transferir" title="Transferir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}"><i class="bi bi-box-arrow-right"></i></button>
                         <button class="btn btn-sm btn-danger btn-excluir" title="Excluir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}"><i class="bi bi-trash3-fill"></i></button>
                     `;
-            } else if (isDisponivel) {
+                }
+            } else {
+                if (isDisponivel) {
                     acoesHtml = `<button class="btn btn-sm btn-info btn-transferir" title="Transferir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}"><i class="bi bi-box-arrow-right"></i></button>`;
                 }
             }
@@ -310,8 +352,7 @@ $(function() {
                 $('#edit-marca').val(item.marca);
                 $('#edit-numeroDeSerie').val(item.numeroDeSerie);
                 $('#edit-localizacao').val(item.localizacao);
-                const compartimentoAtual = item.compartimento ? item.compartimento.name : null;
-                console.log(item.compartimento, item.compartimento.name);
+                const compartimentoAtual = item.compartimento ? item.compartimento.codigo : null;
                 popularCompartimentos('#edit-compartimento', 'Selecione...', compartimentoAtual);
                 modalEditarItem.show();
             },
