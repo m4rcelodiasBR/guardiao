@@ -33,9 +33,7 @@ $(function() {
     const $inputDestinoExtra = $('#transfer-destino-extra-input');
     const $labelDestinoExtra = $('#label-destino-extra');
     const $btnLogout = $('#btn-logout');
-    const $paginationControls = $('#pagination-controls');
     const $paginationNav = $('#pagination-nav');
-    const $pageInfo = $('#page-info');
     const $pageSizeSelect = $('#page-size-select');
 
     const modalEdicaoMassa = new bootstrap.Modal(document.getElementById('modalEdicaoMassa'));

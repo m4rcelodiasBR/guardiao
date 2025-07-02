@@ -16,12 +16,10 @@ $(function() {
     const $cabecalhoTabelaHistorico = $('#tabela-historico').closest('table').find('thead');
     const $formBusca = $('#form-busca-historico-avancada');
     const $btnLimparBusca = $('#btn-limpar-busca-historico');
-    const $themeToggler = $('#theme-toggler');
     const $formDevolucao = $('#form-devolucao');
     const $btnLogout = $('#btn-logout');
     const $paginationControls = $('#pagination-controls-historico');
     const $paginationNav = $('#pagination-nav-historico');
-    const $pageInfo = $('#page-info-historico');
     const $pageSizeSelect = $('#page-size-select-historico');
     const modalDevolucao = new bootstrap.Modal(document.getElementById('modalDevolucao'));
     const modalObservacoes = new bootstrap.Modal(document.getElementById('modalObservacoes'));

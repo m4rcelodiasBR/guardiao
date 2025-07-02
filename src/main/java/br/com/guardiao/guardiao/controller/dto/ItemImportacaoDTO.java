@@ -15,8 +15,4 @@ public class ItemImportacaoDTO {
     public List<String> getColunas() {
         return colunas;
     }
-
-    public void setColunas(List<String> colunas) {
-        this.colunas = colunas;
-    }
 }

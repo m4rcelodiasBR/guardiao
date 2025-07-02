@@ -12,7 +12,6 @@ $(function() {
     const $formEditarUsuario = $('#form-editar-usuario');
     const $btnAbrirModal = $('#btn-abrir-modal-novo-usuario');
     const $btnLogout = $('#btn-logout');
-    const $themeToggler = $('#theme-toggler');
     const $btnConfirmarAcaoUsuario = $('#btn-confirmar-acao-usuario');
     const $paginationControls = $('#pagination-controls-usuarios');
     const $paginationNav = $('#pagination-nav-usuarios');

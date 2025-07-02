@@ -19,7 +19,7 @@ public class DataInitializer implements CommandLineRunner {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         if (usuarioRepository.findByLogin("admin").isEmpty()) {
 
             System.out.println("Nenhum usuário 'admin' encontrado, criando usuário padrão...");
