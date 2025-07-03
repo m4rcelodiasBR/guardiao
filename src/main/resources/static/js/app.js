@@ -1,17 +1,5 @@
 $(function() {
 
-    // --- LÓGICA DE CONTROLE DE ACESSO DA INTERFACE (UI) ---
-    const setupUIForRole = (role) => {
-        if (role === 'ADMIN') {
-            $('#link-gestao-usuarios').show();
-        } else {
-            $('#link-gestao-usuarios').hide();
-            $('#btn-novo-item').hide();
-            $('#select-all-checkbox').closest('th').hide();
-            bulkActionsCollapse.hide();
-        }
-    };
-
     // --- SELETORES ---
     const $tabelaInventarioBody = $('#tabela-inventario');
     const $cabecalhoTabelaInventario = $('#tabela-inventario').closest('table').find('thead');
@@ -80,13 +68,16 @@ $(function() {
 
     const fetchAndDisplayItems = (searchParams = {}) => {
         const queryString = $.param(searchParams);
+        const $overlay = $('.table-loading-overlay');
         $.ajax({
             url: `/api/itens/filtrar?${queryString}`,
             method: 'GET',
             dataType: 'json',
+            beforeSend: function() {
+                $overlay.removeClass('d-none');
+            },
             success: function(pageData) {
                 allItemDTOs = pageData.content;
-                console.log(pageData.content);
                 renderTable();
                 currentPage = pageData.currentPage;
                 renderPaginationControls(pageData);
@@ -96,6 +87,9 @@ $(function() {
             error: function() {
                 $tabelaInventarioBody.html('<tr><td colspan="9" class="text-center text-danger">Erro ao carregar inventário.</td></tr>');
                 $('#pagination-controls').hide();
+            },
+            complete: function() {
+                $overlay.addClass('d-none');
             }
         });
     };
@@ -204,7 +198,6 @@ $(function() {
             const isDisponivel = item.status === 'DISPONIVEL';
             const compartimentoCodigo = item.compartimento.codigo;
             const compartimentoDescricao = item.compartimento.descricao;
-            console.log(item.compartimento)
 
             let statusBadge = '';
             if (item.status === 'DISPONIVEL') {
@@ -636,7 +629,6 @@ $(function() {
     };
 
     // --- INICIALIZAÇÃO ---
-    setupUIForRole(userRole);
     fetchAndDisplayItems();
     popularCompartimentos('#novo-compartimento', 'Selecione um compartimento...');
     popularCompartimentos('#busca-compartimento', 'Todos os compartimentos');

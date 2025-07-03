@@ -35,9 +35,13 @@ $(function() {
     };
 
     const fetchAndDisplayUsers = (page = 0, size = 10) => {
+        const $overlay = $('.table-loading-overlay');
         $.ajax({
             url: `/api/usuarios/visiveis?page=${page}&size=${size}&sort=nome,asc`,
             method: 'GET',
+            beforeSend: function() {
+                $overlay.removeClass('d-none');
+            },
             success: function(pageData) {
                 allUsers = pageData.content;
                 renderTable(allUsers);
@@ -47,6 +51,9 @@ $(function() {
             error: function() {
                 $tabelaUsuariosBody.html('<tr><td colspan="6" class="text-center text-danger">Erro ao carregar utilizadores.</td></tr>');
                 $paginationControls.hide();
+            },
+            complete: function() {
+                $overlay.addClass('d-none');
             }
         });
     };
@@ -96,8 +103,8 @@ $(function() {
 
             const rowHtml = `
                 <tr class="${!isAtivo ? 'opacity-50' : ''}">
-                    <td>${user.nome}</td>
                     <td>${user.login}</td>
+                    <td>${user.nome}</td>
                     <td>${user.email}</td>
                     <td>${perfilBadge}</td>
                     <td>${statusBadge}</td>
@@ -237,7 +244,5 @@ $(function() {
     };
 
     // --- INICIALIZAÇÃO ---
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    applyTheme(savedTheme);
     fetchAndDisplayUsers();
 });

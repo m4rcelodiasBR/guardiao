@@ -9,28 +9,7 @@
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">🦉 Guardião de Ativos</a>
-            <div class="d-flex align-items-center">
-                <a id="link-gestao-usuarios" href="/usuarios.html" class="btn btn-outline-warning me-3" style="display: none;">
-                    <i class="bi bi-people-fill me-1"></i> Gerenciar Usuários
-                </a>
-                <a href="/" class="btn btn-outline-light me-3">
-                    <i class="bi bi-clock-history me-1"></i> Inventário
-                </a>
-                <a href="/perfil.html" class="btn btn-outline-primary me-3">
-                    <i class="bi bi-person-circle me-1"></i> Meu Perfil
-                </a>
-                <button id="btn-logout" class="btn btn-outline-danger me-3">
-                    <i class="bi bi-box-arrow-right me-1"></i> Sair
-                </button>
-                <button id="btn-theme-toggler" class="btn btn-outline-light me-3">
-                    <i id="theme-icon" class="bi bi-moon-stars-fill"></i>
-                </button>
-            </div>
-        </div>
-    </nav>
+    <div id="navbar-placeholder"></div>
     <main class="container-fluid mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="mb-0">Histórico de Transferências</h2>
@@ -81,9 +60,15 @@
                 </ul>
             </nav>
         </div>
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
+        <div class="table-wrapper position-relative">
+            <div class="table-loading-overlay d-none">
+                <div class="progress w-75" role="progressbar" aria-label="Animated striped example" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%">Carregando Dados...</div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover sortable">
+                    <thead class="table-dark">
                     <tr>
                         <th data-sortable data-column="dataTransferencia">Data</th>
                         <th data-sortable data-column="numeroPatrimonialItem">Nº Patrimonial</th>
@@ -91,12 +76,13 @@
                         <th data-sortable data-column="incumbenciaDestino">Incumbência de Destino</th>
                         <th data-sortable data-column="observacao">Observação</th>
                         <th data-sortable data-column="usuario">Realizado por</th>
-                      <th>Ações</th>
+                        <th>Ações</th>
                     </tr>
-                </thead>
-                <tbody id="tabela-historico">
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody id="tabela-historico">
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 

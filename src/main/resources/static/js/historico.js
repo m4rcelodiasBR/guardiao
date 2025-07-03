@@ -1,16 +1,5 @@
 $(function() {
 
-    // --- LÓGICA DE CONTROLE DE ACESSO DA INTERFACE (UI) ---
-    const setupUIForRole = (role) => {
-        if (role !== 'ADMIN') {
-            $('#link-gestao-usuarios').hide();
-            $('#select-all-checkbox').prop('disabled', true);
-            $('.btn-devolver').hide();
-        } else {
-            $('#link-gestao-usuarios').show();
-        }
-    };
-
     // --- SELETORES ---
     const $tabelaHistoricoBody = $('#tabela-historico');
     const $cabecalhoTabelaHistorico = $('#tabela-historico').closest('table').find('thead');
@@ -71,11 +60,15 @@ $(function() {
         searchParams.size = size;
         searchParams.sort = `${currentSort.column},${currentSort.direction}`;
         const queryString = $.param(searchParams);
+        const $overlay = $('.table-loading-overlay');
 
         $.ajax({
             url: `/api/transferencias?${queryString}`,
             method: 'GET',
             dataType: 'json',
+            beforeSend: function() {
+                $overlay.removeClass('d-none');
+            },
             success: (pageData) => {
                 const detalhesTransferencia = pageData.content;
                 renderHistoryTable(detalhesTransferencia);
@@ -85,6 +78,9 @@ $(function() {
             error: () => {
                 $tabelaHistoricoBody.html('<tr><td colspan="7" class="text-center text-danger">Erro ao carregar o histórico.</td></tr>');
                 $paginationControls.hide();
+            },
+            complete: function() {
+                $overlay.addClass('d-none');
             }
         });
     };
@@ -287,5 +283,4 @@ $(function() {
     // --- INICIALIZAÇÃO ---
     performSearch();
     popularCompartimentosDevolucao();
-    setupUIForRole(userRole);
 });
