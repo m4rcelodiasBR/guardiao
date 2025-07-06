@@ -28,12 +28,6 @@ $(function() {
     let currentPage = 0;
 
     // --- FUNÇÕES ---
-    const showAlert = (message, type = 'success') => {
-        const $alert = $(`<div class="alert alert-${type} alert-dismissible fade show" role="alert" style="position: fixed; bottom: 20px; right: 20px; z-index: 2050;">${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`);
-        $('body').append($alert);
-        setTimeout(() => $alert.fadeOut(500, () => $alert.remove()), 4000);
-    };
-
     const fetchAndDisplayUsers = (page = 0, size = 10) => {
         const $overlay = $('.table-loading-overlay');
         $.ajax({
@@ -165,6 +159,8 @@ $(function() {
 
     $formNovoUsuario.on('submit', function(e) {
         e.preventDefault();
+        const $form = $(this);
+        const $submitButton = $form.find('button[type="submit"]');
         const formDataArray = $(this).serializeArray();
         let data = {};
         formDataArray.forEach(item => { data[item.name] = item.value; });
@@ -173,6 +169,9 @@ $(function() {
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(data),
+            beforeSend: function() {
+                $submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...');
+            },
             success: function() {
                 showAlert('Usuário cadastrado com sucesso!');
                 modalNovoUsuario.hide();
@@ -180,12 +179,17 @@ $(function() {
             },
             error: function(xhr) {
                 showAlert(xhr.responseJSON?.message || 'Erro ao cadastrar usuário.', 'danger');
+            },
+            complete: function() {
+                $submitButton.prop('disabled', false).text('Salvar Usuário');
             }
         });
     });
 
     $formEditarUsuario.on('submit', function(e) {
         e.preventDefault();
+        const $form = $(this);
+        const $submitButton = $form.find('button[type="submit"]');
         const userId = $('#edit-usuario-id').val();
         const data = {
             login: $('#edit-usuario-login').val(),
@@ -199,12 +203,20 @@ $(function() {
             method: 'PUT',
             contentType: 'application/json',
             data: JSON.stringify(data),
+            beforeSend: function() {
+                $submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...');
+            },
             success: function() {
                 showAlert('Usuário atualizado com sucesso!');
                 modalEditarUsuario.hide();
-                fetchAndDisplayUsers();
+                fetchAndDisplayUsers(currentPage);
             },
-            error: function() { showAlert('Erro ao atualizar usuário.', 'danger'); }
+            error: function() {
+                showAlert('Erro ao atualizar usuário.', 'danger');
+            },
+            complete: function() {
+                $submitButton.prop('disabled', false).text('Salvar Alterações');
+            }
         });
     });
 

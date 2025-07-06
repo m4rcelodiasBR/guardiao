@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+    <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
     <div id="navbar-placeholder"></div>
     <main class="container mt-4">
         <h2 class="mb-4">Meu Perfil</h2>
@@ -57,15 +58,30 @@
                             <div class="mb-3">
                                 <label for="nova-senha" class="form-label">Nova Senha</label>
                                 <input type="password" class="form-control" id="nova-senha" required>
-                                <small class="form-text text-muted">
-                                    Mínimo 8 caracteres, com maiúscula, minúscula, número e especial.
-                                </small>
                             </div>
+                            <ul class="list-unstyled password-rules" id="password-rules">
+                                <li id="rule-length">
+                                    <i class="bi bi-x"></i> Pelo menos 6 caracteres
+                                </li>
+                                <li id="rule-uppercase">
+                                    <i class="bi bi-x"></i> Uma letra maiúscula
+                                </li>
+                                <li id="rule-lowercase">
+                                    <i class="bi bi-x"></i> Uma letra minúscula
+                                </li>
+                                <li id="rule-number">
+                                    <i class="bi bi-x"></i> Um número
+                                </li>
+                                <li id="rule-special">
+                                    <i class="bi bi-x"></i> Um caractere especial (@#$%^&+=!)
+                                </li>
+                            </ul>
                             <div class="mb-3">
                                 <label for="confirmar-nova-senha" class="form-label">Confirmar Nova Senha</label>
                                 <input type="password" class="form-control" id="confirmar-nova-senha" required>
+                                <div class="invalid-feedback" id="password-match-error" style="display: none;">As senhas não coincidem.</div>
                             </div>
-                            <button type="submit" class="btn btn-warning">Alterar Senha</button>
+                            <button type="submit" class="btn btn-warning" id="btn-alterar-senha" disabled>Alterar Senha</button>
                         </form>
                     </div>
                 </div>

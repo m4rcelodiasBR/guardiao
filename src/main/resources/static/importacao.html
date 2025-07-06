@@ -9,64 +9,69 @@
     <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-
-<div id="navbar-placeholder"></div>
-
-<main class="container-fluid mt-4">
-    <h2 class="mb-3">Importação de Itens em Massa</h2>
-    <div class="card mb-4">
-        <div class="card-header">
-            Passo 1: Selecione o Ficheiro XML
+    <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+    <div id="navbar-placeholder"></div>
+    <main class="container-fluid mt-4">
+        <h2 class="mb-3">Importação de Itens em Massa</h2>
+        <div class="card mb-4">
+            <div class="card-header">
+                Passo 1: Selecione o Ficheiro XML
+            </div>
+            <div class="card-body">
+                <form id="form-upload">
+                    <div class="input-group">
+                        <input type="file" class="form-control" id="xml-file-input" accept=".xml" required>
+                        <button class="btn btn-primary" type="submit" id="btn-validar-arquivo">
+                            <i class="bi bi-shield-check me-1"></i> Validar Ficheiro
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <div class="card-body">
-            <form id="form-upload">
-                <div class="input-group">
-                    <input type="file" class="form-control" id="xml-file-input" accept=".xml" required>
-                    <button class="btn btn-primary" type="submit" id="btn-validar-arquivo">
-                        <i class="bi bi-shield-check me-1"></i> Validar Ficheiro
-                    </button>
+        <div id="area-resultados" style="display: none;">
+            <div class="progress mb-3" role="progressbar" style="height: 25px;">
+                <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%;">0%</div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h4 class="mt-4">Passo 2: Pré-visualização e Confirmação</h4>
+                    <p>Reveja os itens do ficheiro. Apenas os itens válidos podem ser selecionados para importação.</p>
                 </div>
-            </form>
-        </div>
-    </div>
-    <div id="area-resultados" style="display: none;">
-        <div class="progress mb-3" role="progressbar" style="height: 25px;">
-            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%;">0%</div>
-        </div>
-        <h4 class="mt-4">Passo 2: Pré-visualização e Confirmação</h4>
-        <p>Reveja os itens do ficheiro. Apenas os itens válidos podem ser selecionados para importação.</p>
-        <div class="table-responsive">
-            <table class="table table-bordered">
-                <thead class="table-light">
-                <tr>
-                    <th style="width: 50px;">
-                        <input class="form-check-input" type="checkbox" id="select-all-valid-checkbox" title="Selecionar Todos os Válidos">
-                    </th>
-                    <th>Nº Patrimonial</th>
-                    <th>Descrição</th>
-                    <th>Marca</th>
-                    <th>Nº de Série</th>
-                    <th>Compartimento</th>
-                    <th>Status da Validação</th>
-                </tr>
-                </thead>
-                <tbody id="tabela-validacao">
-                </tbody>
-            </table>
-        </div>
+                <button class="btn btn-success btn-lg btn-confirmar-importacao" disabled>
+                    <i class="bi bi-check-circle-fill me-1"></i> Confirmar Importação dos Itens Selecionados
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="table-light">
+                    <tr>
+                        <th style="width: 50px;">
+                            <input class="form-check-input" type="checkbox" id="select-all-valid-checkbox" title="Selecionar Todos os Válidos">
+                        </th>
+                        <th>NumPAT</th>
+                        <th>Descrição</th>
+                        <th>Marca</th>
+                        <th>N/S</th>
+                        <th>Compartimento</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tabela-validacao">
+                    </tbody>
+                </table>
+            </div>
 
-        <!-- Botão de Confirmação Final -->
-        <div class="text-end mt-3">
-            <button id="btn-confirmar-importacao" class="btn btn-success btn-lg" disabled>
-                <i class="bi bi-check-circle-fill me-1"></i> Confirmar Importação dos Itens Selecionados
-            </button>
+            <!-- Botão de Confirmação Final -->
+            <div class="text-end mt-3">
+                <button class="btn btn-success btn-lg btn-confirmar-importacao" disabled>
+                    <i class="bi bi-check-circle-fill me-1"></i> Confirmar Importação dos Itens Selecionados
+                </button>
+            </div>
         </div>
-    </div>
-</main>
-
-<script src="/js/jquery-3.7.1.min.js"></script>
-<script src="/js/bootstrap.bundle.min.js"></script>
-<script src="/js/global.js"></script>
-<script src="/js/importacao.js"></script>
+    </main>
+    <script src="/js/jquery-3.7.1.min.js"></script>
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/global.js"></script>
+    <script src="/js/importacao.js"></script>
 </body>
 </html>

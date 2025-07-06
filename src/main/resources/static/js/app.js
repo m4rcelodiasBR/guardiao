@@ -38,7 +38,40 @@ $(function() {
     let currentPage = 0;
 
     // --- FUNÇÕES DE LÓGICA ---
-    // Ações em Massa
+    const highlightResults = (tableSelector, searchTerm) => {
+        const tableBody = $(tableSelector);
+
+        tableBody.find('mark').each(function() {
+            $(this).replaceWith($(this).html());
+        });
+
+        if (!searchTerm || !searchTerm.trim()) {
+            return;
+        }
+
+        const searchRegEx = new RegExp(searchTerm.trim(), "gi");
+
+        const walk = (node) => {
+            if (node.nodeType === 3) {
+                const text = node.nodeValue;
+                const match = searchRegEx.exec(text);
+                if (match) {
+                    const newNode = document.createElement('span');
+                    newNode.innerHTML = text.replace(searchRegEx, (match) => `<mark>${match}</mark>`);
+                    node.parentNode.replaceChild(newNode, node);
+                }
+            } else if (node.nodeType === 1 && node.childNodes && !/(script|style)/i.test(node.tagName)) { // Nó do tipo Elemento
+                for (let i = 0; i < node.childNodes.length; i++) {
+                    walk(node.childNodes[i]);
+                }
+            }
+        };
+
+        tableBody.find('td').each(function() {
+            walk(this);
+        });
+    };
+
     const updateBulkActionUI = () => {
         const count = selectedItems.size;
         const $singleActionButtons = $('.btn-editar, .btn-transferir, .btn-excluir');
@@ -53,7 +86,6 @@ $(function() {
         $selectAllCheckbox.prop('checked', count > 0 && count === $('.item-checkbox:not(:disabled)').length);
     };
 
-    // --- FUNÇÃO MESTRE DE BUSCA E FILTRAGEM ---
     const performSearch = (page = 0) => {
         const formDataArray = $formBuscaAvancada.serializeArray();
         let searchParams = {};
@@ -83,6 +115,8 @@ $(function() {
                 renderPaginationControls(pageData);
                 selectedItems.clear();
                 updateBulkActionUI();
+                const termoBuscaDescricao = $('#busca-descricao').val();
+                highlightResults('#tabela-inventario', termoBuscaDescricao);
             },
             error: function() {
                 $tabelaInventarioBody.html('<tr><td colspan="9" class="text-center text-danger">Erro ao carregar inventário.</td></tr>');
@@ -232,7 +266,7 @@ $(function() {
                     ${checkboxHtml}
                     <td>${statusBadge}</td>
                     <td>${item.numeroPatrimonial || 'N/A'}</td>
-                    <td>${item.descricao}</td>
+                    <td><span class="truncate-text" title="${item.descricao}">${item.descricao}</span></td>
                     <td>${item.marca || 'N/A'}</td>
                     <td>${item.numeroDeSerie || 'N/A'}</td>
                     <td>${item.localizacao || 'N/A'}</td>
@@ -439,31 +473,41 @@ $(function() {
     // --- SUBMISSÃO DOS FORMULÁRIOS ---
     $formNovoItem.on('submit', function(e) {
         e.preventDefault();
-        const formDataArray = $(this).serializeArray();
+        const $form = $(this);
+        const $submitButton = $form.find('button[type="submit"]');
+        const formDataArray = $form.serializeArray();
         let data = {};
         formDataArray.forEach(item => {
             if (item.value) { data[item.name] = item.value; }
         });
-
         $.ajax({
             url: '/api/itens',
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(data),
+            beforeSend: function() {
+                $submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...');
+            },
             success: function() {
                 showAlert('Item cadastrado com sucesso!');
                 $formNovoItem[0].reset();
                 modalNovoItem.hide();
-                fetchAndDisplayItems();
+                performSearch();
             },
-            error: function() {
-                showAlert('Erro ao cadastrar item. Verifique se o patrimônio ou nº de série já existem.', 'danger');
+            error: function(xhr) {
+                const errorMessage = xhr.responseJSON?.message || 'Erro ao cadastrar item. Verifique se o patrimônio ou nº de série já existem.';
+                showAlert(errorMessage, 'danger');
+            },
+            complete: function() {
+                $submitButton.prop('disabled', false).text('Salvar Item');
             }
         });
     });
 
     $formEditarItem.on('submit', function(e) {
         e.preventDefault();
+        const $form = $(this);
+        const $submitButton = $form.find('button[type="submit"]');
         const patrimonioOriginal = $('#edit-numeroPatrimonial-original').val();
         const dadosAtualizados = {
             descricao: $('#edit-descricao').val(),
@@ -478,35 +522,45 @@ $(function() {
             method: 'PUT',
             contentType: 'application/json',
             data: JSON.stringify(dadosAtualizados),
+            beforeSend: function() {
+                $submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...');
+            },
             success: function() {
                 showAlert('Item atualizado com sucesso!');
                 modalEditarItem.hide();
-                fetchAndDisplayItems();
+                performSearch(currentPage);
             },
-            error: function() {
-                showAlert('Erro ao atualizar o item.', 'danger');
+            error: function(xhr) {
+                const errorMessage = xhr.responseJSON?.message || 'Erro ao atualizar o item.';
+                showAlert(errorMessage, 'danger');
+            },
+            complete: function() {
+                $submitButton.prop('disabled', false).text('Salvar Alterações');
             }
         });
     });
 
     $formEdicaoMassa.on('submit', function(e) {
         e.preventDefault();
+        const $form = $(this);
+        const $submitButton = $form.find('button[type="submit"]');
         const data = {
             numerosPatrimoniais: Array.from(selectedItems),
             localizacao: $('#massa-localizacao').val(),
             compartimento: $('#massa-compartimento').val()
         };
-
         if (!data.localizacao && !data.compartimento) {
             showAlert('Preencha pelo menos um campo (Localização ou Compartimento) para atualizar.', 'warning');
             return;
         }
-
         $.ajax({
             url: '/api/itens/massa',
             method: 'PUT',
             contentType: 'application/json',
             data: JSON.stringify(data),
+            beforeSend: function() {
+                $submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...');
+            },
             success: function() {
                 showAlert(`${selectedItems.size} itens atualizados com sucesso!`);
                 modalEdicaoMassa.hide();
@@ -514,12 +568,17 @@ $(function() {
             },
             error: function(xhr) {
                 showAlert(xhr.responseJSON?.message || 'Erro ao atualizar itens selecionados.', 'danger');
+            },
+            complete: function() {
+                $submitButton.prop('disabled', false).text('Salvar itens selecionados');
             }
         });
     });
 
     $formTransferencia.on('submit', function(e) {
         e.preventDefault();
+        const $form = $(this);
+        const $submitButton = $form.find('button[type="submit"]');
 
         let destinoFinal = '';
         const selectedOption = $selectIncumbencia.find('option:selected');
@@ -546,21 +605,22 @@ $(function() {
 
         const observacao = $('#transfer-obs').val();
 
+        $submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Confirmando...');
+
         if (selectedItems.size > 0) {
             const data = {
                 numerosPatrimoniais: Array.from(selectedItems),
                 incumbenciaDestino: destinoFinal,
                 observacao: observacao
             };
-            handleBulkTransfer(data);
+            handleBulkTransfer(data, $submitButton);
         } else {
-            // Ação única
             const data = {
                 numeroPatrimonial: $('#transfer-patrimonio').val(),
                 incumbenciaDestino: destinoFinal,
                 observacao: observacao
             };
-            handleSingleTransfer(data);
+            handleSingleTransfer(data, $submitButton);
         }
     });
 
@@ -609,7 +669,12 @@ $(function() {
                 modalTransferencia.hide();
                 fetchAndDisplayItems();
             },
-            error: function() { showAlert('Erro ao transferir itens.', 'danger'); }
+            error: function() {
+                showAlert('Erro ao transferir itens.', 'danger');
+            },
+            complete: function() {
+                $submitButton.prop('disabled', false).text('Confirmar Transferência');
+            }
         });
     };
 
@@ -624,7 +689,12 @@ $(function() {
                 modalTransferencia.hide();
                 fetchAndDisplayItems();
             },
-            error: function() { showAlert('Erro ao registrar transferência.', 'danger'); }
+            error: function() {
+                showAlert('Erro ao registrar transferência.', 'danger');
+            },
+            complete: function() {
+                $submitButton.prop('disabled', false).text('Confirmar Transferência');
+            }
         });
     };
 

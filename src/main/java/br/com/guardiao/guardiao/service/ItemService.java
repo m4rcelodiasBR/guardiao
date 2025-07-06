@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -74,12 +75,27 @@ public class ItemService {
     @Transactional
     public Item atualizarItem(String numeroPatrimonial, ItemUpdateDTO dadosAtualizados, Usuario usuarioLogado) {
         Item itemExistente = buscarPorPatrimonio(numeroPatrimonial);
+
+        String novoNumeroDeSerie = dadosAtualizados.getNumeroDeSerie();
+
+        if (StringUtils.hasText(novoNumeroDeSerie)) {
+            itemRepository.findByNumeroDeSerieAndIdNot(novoNumeroDeSerie, itemExistente.getId())
+                    .ifPresent(itemEncontrado -> {
+                        throw new IllegalStateException("Erro: Número de Série já cadastrado no item com NumPAT " + itemEncontrado.getNumeroPatrimonial());
+                    });
+        }
+
         itemExistente.setDescricao(dadosAtualizados.getDescricao());
         itemExistente.setMarca(dadosAtualizados.getMarca());
-        itemExistente.setNumeroDeSerie(dadosAtualizados.getNumeroDeSerie());
+        if (Objects.equals(novoNumeroDeSerie, "")) {
+            itemExistente.setNumeroDeSerie(null);
+        } else {
+            itemExistente.setNumeroDeSerie(novoNumeroDeSerie);
+        }
         itemExistente.setLocalizacao(dadosAtualizados.getLocalizacao());
         itemExistente.setCompartimento(dadosAtualizados.getCompartimento());
         itemExistente.setAtualizadoPor(usuarioLogado);
+
         return itemRepository.save(itemExistente);
     }
 
@@ -159,5 +175,22 @@ public class ItemService {
             item.setAtualizadoPor(usuarioLogado);
         }
         itemRepository.saveAll(itensParaAtualizar);
+    }
+
+    @Transactional
+    public void salvarOuReativarItem(ItemCadastroDTO itemCadastroDTO, Usuario usuarioLogado) {
+        var itemExistenteOpt = itemRepository.findByNumeroPatrimonial(itemCadastroDTO.getNumeroPatrimonial());
+
+        if (itemExistenteOpt.isPresent() && itemExistenteOpt.get().getStatus() == StatusItem.EXCLUIDO) {
+            Item itemParaReativar = itemExistenteOpt.get();
+            itemParaReativar.setDescricao(itemCadastroDTO.getDescricao());
+            itemParaReativar.setMarca(itemCadastroDTO.getMarca());
+            itemParaReativar.setCompartimento(itemCadastroDTO.getCompartimento());
+            itemParaReativar.setStatus(StatusItem.DISPONIVEL);
+            itemParaReativar.setAtualizadoPor(usuarioLogado);
+            itemRepository.save(itemParaReativar);
+        } else {
+            salvarItem(itemCadastroDTO, usuarioLogado);
+        }
     }
 }

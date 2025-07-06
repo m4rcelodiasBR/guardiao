@@ -14,20 +14,14 @@ $(function() {
     const $progressBar = $('#progress-bar');
     const $tabelaValidacaoBody = $('#tabela-validacao');
     const $selectAllValidCheckbox = $('#select-all-valid-checkbox');
-    const $btnConfirmarImportacao = $('#btn-confirmar-importacao');
+    const $btnConfirmarImportacao = $('.btn-confirmar-importacao');
 
     let itensValidosParaImportar = [];
 
     // --- FUNÇÕES ---
-    const showAlert = (message, type = 'success') => {
-        const $alert = $(`<div class="alert alert-${type} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 2050;">${message}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>`);
-        $('body').append($alert);
-        setTimeout(() => $alert.fadeOut(500, () => $alert.remove()), 5000);
-    };
-
     const renderValidationTable = (resultados) => {
         $tabelaValidacaoBody.empty();
-        itensValidosParaImportar = [];
+        itensValidosParaImportar = []; // Limpa a lista de itens válidos
 
         if (!resultados || resultados.length === 0) {
             $tabelaValidacaoBody.html('<tr><td colspan="7" class="text-center text-muted">Nenhum item encontrado no ficheiro ou o formato é inválido.</td></tr>');
@@ -36,25 +30,42 @@ $(function() {
 
         resultados.forEach(resultado => {
             const item = resultado.item;
-            const rowClass = resultado.valido ? '' : 'table-danger';
-            const checkboxHtml = resultado.valido
-                ? `<td><input class="form-check-input valid-item-checkbox" type="checkbox" value='${JSON.stringify(item)}'></td>`
-                : '<td><i class="bi bi-x-circle-fill text-danger"></i></td>';
+            let rowClass = '';
+            let checkboxHtml = '<td><i class="bi bi-x-circle-fill text-danger"></i></td>';
+            let badgeClass = 'text-bg-danger';
+
+            switch (resultado.status) {
+                case 'VALIDO':
+                    rowClass = 'table-success';
+                    badgeClass = 'text-bg-success';
+                    checkboxHtml = `<td><input class="form-check-input valid-item-checkbox" type="checkbox" value='${JSON.stringify(item)}'></td>`;
+                    break;
+                case 'VALIDO_COM_AVISO':
+                    rowClass = 'table-warning';
+                    badgeClass = 'text-bg-warning';
+                    checkboxHtml = `<td><input class="form-check-input valid-item-checkbox" type="checkbox" value='${JSON.stringify(item)}'></td>`;
+                    break;
+                case 'INVALIDO':
+                    rowClass = 'table-danger';
+                    badgeClass = 'text-bg-danger';
+                    checkboxHtml = '<td><i class="bi bi-x-circle-fill text-danger"></i></td>';
+                    break;
+            }
 
             const rowHtml = `
-                <tr class="${rowClass}">
-                    ${checkboxHtml}
-                    <td>${item.numeroPatrimonial || ''}</td>
-                    <td>${item.descricao || ''}</td>
-                    <td>${item.marca || 'N/A'}</td>
-                    <td>${item.numeroDeSerie || 'N/A'}</td>
-                    <td>${item.compartimento.codigo || 'N/A'}</td>
-                    <td class="badge rounded-pill text-bg-success">${resultado.mensagemErro}</td>
-                </tr>
-            `;
+            <tr class="${rowClass}">
+                ${checkboxHtml}
+                <td>${item.numeroPatrimonial || ''}</td>
+                <td>${item.descricao || ''}</td>
+                <td>${item.marca || 'N/A'}</td>
+                <td>${item.numeroDeSerie || 'N/A'}</td>
+                <td>${item.compartimento?.codigo || 'N/A'}</td>
+                <td><span class="badge rounded-pill ${badgeClass}">${resultado.mensagem}</span></td>
+            </tr>
+        `;
             $tabelaValidacaoBody.append(rowHtml);
 
-            if (resultado.valido) {
+            if (resultado.status !== 'INVALIDO') {
                 itensValidosParaImportar.push(item);
             }
         });

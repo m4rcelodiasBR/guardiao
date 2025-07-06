@@ -1,3 +1,150 @@
+/* Declarações da Família de Fontes 'Genos' */
+/* --- Thin --- */
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-Thin.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-ThinItalic.ttf') format('truetype');
+    font-weight: 100;
+    font-style: italic;
+}
+
+/* --- ExtraLight --- */
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-ExtraLight.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-ExtraLightItalic.ttf') format('truetype');
+    font-weight: 200;
+    font-style: italic;
+}
+
+/* --- Light --- */
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-LightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+}
+
+/* --- Regular --- */
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-Regular.ttf') format('truetype');
+    font-weight: 400; /* normal */
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-Italic.ttf') format('truetype');
+    font-weight: 400; /* normal */
+    font-style: italic;
+}
+
+/* --- Medium --- */
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-MediumItalic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+}
+
+/* --- SemiBold --- */
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-SemiBoldItalic.ttf') format('truetype');
+    font-weight: 600;
+    font-style: italic;
+}
+
+/* --- Bold --- */
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-Bold.ttf') format('truetype');
+    font-weight: 700; /* bold */
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-BoldItalic.ttf') format('truetype');
+    font-weight: 700; /* bold */
+    font-style: italic;
+}
+
+/* --- ExtraBold --- */
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-ExtraBoldItalic.ttf') format('truetype');
+    font-weight: 800;
+    font-style: italic;
+}
+
+/* --- Black --- */
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-Black.ttf') format('truetype');
+    font-weight: 900;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Exo2';
+    src: url('../css/fonts/Exo2-BlackItalic.ttf') format('truetype');
+    font-weight: 900;
+    font-style: italic;
+}
+
+body {
+    font-family: 'Exo2', sans-serif;
+    font-weight: 400;
+    font-size: 1rem;
+}
+
+.table {
+    font-size: .8rem;
+    font-weight: 600;
+}
+
+.truncate-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 600px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
 th[data-sortable]:hover {
     cursor: pointer;
     background-color: #454d55;
@@ -9,7 +156,7 @@ th[data-sortable]:hover {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(255, 255, 255, 0.7);
+    background-color: var(--bs-success);
     z-index: 10;
     display: flex;
     align-items: center;
@@ -19,5 +166,49 @@ th[data-sortable]:hover {
 
 [data-bs-theme="dark"] .table-loading-overlay {
     background-color: rgba(33, 37, 41, 0.7);
+}
+
+/* Adicionar no final de css/styles.css */
+
+.password-rules {
+    font-size: 0.875em;
+    color: var(--bs-secondary-color);
+}
+
+.password-rules li {
+    transition: all 0.2s ease-in-out;
+}
+
+.password-rules li i {
+    margin-right: 0.5rem;
+}
+
+.password-rules li.valid {
+    color: var(--bs-success);
+}
+
+.password-rules li.valid i::before {
+    content: "\f26a";
+    font-weight: bold;
+}
+
+.password-rules li.invalid {
+    color: var(--bs-danger);
+}
+
+.password-rules li.invalid i::before {
+    content: "\f62a";
+    font-weight: bold;
+}
+
+mark {
+    padding: 0.1em 0.2em;
+    border-radius: 3px;
+    background-color: #ffdd77;
+}
+
+[data-bs-theme="dark"] mark {
+    background-color: #ffc107;
+    color: #000;
 }
 

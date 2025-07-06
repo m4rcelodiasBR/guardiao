@@ -4,7 +4,73 @@ $(function() {
     const $formMeusDados = $('#form-meus-dados');
     const $formAlterarSenha = $('#form-alterar-senha');
 
+    // --- LÓGICA DE VALIDAÇÃO DE SENHA EM TEMPO REAL ---
+    const $novaSenhaInput = $('#nova-senha');
+    const $confirmarSenhaInput = $('#confirmar-nova-senha');
+    const $btnAlterarSenha = $('#btn-alterar-senha');
+    const $passwordMatchError = $('#password-match-error');
+
+    // Seletores das regras
+    const $ruleLength = $('#rule-length');
+    const $ruleUppercase = $('#rule-uppercase');
+    const $ruleLowercase = $('#rule-lowercase');
+    const $ruleNumber = $('#rule-number');
+    const $ruleSpecial = $('#rule-special');
+    const allRules = [$ruleLength, $ruleUppercase, $ruleLowercase, $ruleNumber, $ruleSpecial];
+
     // --- FUNÇÕES ---
+    const validatePassword = () => {
+        const password = $novaSenhaInput.val();
+        let isFormValid = true;
+
+        if (password.length >= 6) {
+            $ruleLength.removeClass('invalid').addClass('valid');
+        } else {
+            $ruleLength.removeClass('valid').addClass('invalid');
+            isFormValid = false;
+        }
+
+        if (/[A-Z]/.test(password)) {
+            $ruleUppercase.removeClass('invalid').addClass('valid');
+        } else {
+            $ruleUppercase.removeClass('valid').addClass('invalid');
+            isFormValid = false;
+        }
+
+        if (/[a-z]/.test(password)) {
+            $ruleLowercase.removeClass('invalid').addClass('valid');
+        } else {
+            $ruleLowercase.removeClass('valid').addClass('invalid');
+            isFormValid = false;
+        }
+
+        if (/[0-9]/.test(password)) {
+            $ruleNumber.removeClass('invalid').addClass('valid');
+        } else {
+            $ruleNumber.removeClass('valid').addClass('invalid');
+            isFormValid = false;
+        }
+
+        if (/[@#$%^&+=!]/.test(password)) {
+            $ruleSpecial.removeClass('invalid').addClass('valid');
+        } else {
+            $ruleSpecial.removeClass('valid').addClass('invalid');
+            isFormValid = false;
+        }
+
+        const passwordsMatch = password === $confirmarSenhaInput.val();
+        if (passwordsMatch) {
+            $passwordMatchError.hide();
+        } else {
+            if ($confirmarSenhaInput.val()) {
+                $passwordMatchError.show();
+            }
+            isFormValid = false;
+        }
+
+        $btnAlterarSenha.prop('disabled', !isFormValid);
+    };
+
     const fetchAndPopulateProfile = () => {
         $.ajax({
             url: '/api/perfil/meus-dados',
@@ -23,34 +89,43 @@ $(function() {
     };
 
     // --- MANIPULADORES DE EVENTOS ---
-    // Evento para o formulário de atualização de dados pessoais
+    $novaSenhaInput.on('keyup', validatePassword);
+
+    $confirmarSenhaInput.on('keyup', validatePassword);
+
     $formMeusDados.on('submit', function(e) {
         e.preventDefault();
-
+        const $form = $(this);
+        const $submitButton = $form.find('button[type="submit"]');
         const dados = {
             nome: $('#perfil-nome').val(),
             email: $('#perfil-email').val()
         };
-
         $.ajax({
             url: '/api/perfil/meus-dados',
             method: 'PUT',
             contentType: 'application/json',
             data: JSON.stringify(dados),
+            beforeSend: function() {
+                $submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Salvando...');
+            },
             success: function() {
                 showAlert('Dados atualizados com sucesso!', 'success');
             },
             error: function(xhr) {
                 const errorMsg = xhr.responseJSON?.message || 'Erro ao atualizar os dados.';
                 showAlert(errorMsg, 'danger');
+            },
+            complete: function() {
+                $submitButton.prop('disabled', false).text('Salvar Alterações');
             }
         });
     });
 
-    // Evento para o formulário de alteração de senha
     $formAlterarSenha.on('submit', function(e) {
         e.preventDefault();
-
+        const $form = $(this);
+        const $submitButton = $form.find('button[type="submit"]');
         const senhaAtual = $('#senha-atual').val();
         const novaSenha = $('#nova-senha').val();
         const confirmarNovaSenha = $('#confirmar-nova-senha').val();
@@ -76,6 +151,9 @@ $(function() {
             method: 'PUT',
             contentType: 'application/json',
             data: JSON.stringify(dados),
+            beforeSend: function() {
+                $submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Alterando...');
+            },
             success: function() {
                 showAlert('Senha alterada com sucesso!');
                 $formAlterarSenha[0].reset();
@@ -92,6 +170,9 @@ $(function() {
                     errorMsg = xhr.responseText;
                 }
                 showAlert(errorMsg, 'danger');
+            },
+            complete: function() {
+                $submitButton.prop('disabled', false).text('Alterar Senha');
             }
         });
     });

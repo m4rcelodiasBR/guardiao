@@ -12,9 +12,9 @@ import java.util.Optional;
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Integer>, JpaSpecificationExecutor<Item> {
 
-    @Query("SELECT i FROM Item i WHERE i.id NOT IN (SELECT t.item.id FROM Transferencia t)")
-    List<Item> findItensDisponiveis();
+    @Query("SELECT i FROM Item i WHERE i.id NOT IN (SELECT t.item.id FROM Transferencia t)") List<Item> findItensDisponiveis();
 
     Optional<Item> findByNumeroPatrimonial(String numeroPatrimonial);
 
+    Optional<Item> findByNumeroDeSerieAndIdNot(String numeroDeSerie, Integer id);
 }

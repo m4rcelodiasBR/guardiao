@@ -35,14 +35,53 @@ if (!token) {
 
 // --- FUNÇÕES GLOBAIS ---
 const showAlert = (message, type = 'success') => {
-    const $alert = $(`
-            <div class="alert alert-${type} alert-dismissible fade show" role="alert" style="position: fixed; bottom: 20px; right: 20px; z-index: 2000;">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    const toastConfig = {
+        success: {
+            bgClass: 'text-bg-success',
+            iconClass: 'bi-check-circle-fill'
+        },
+        danger: {
+            bgClass: 'text-bg-danger',
+            iconClass: 'bi-x-circle-fill'
+        },
+        warning: {
+            bgClass: 'text-bg-warning',
+            iconClass: 'bi-exclamation-triangle-fill'
+        },
+        info: {
+            bgClass: 'text-bg-info',
+            iconClass: 'bi-info-circle-fill'
+        }
+    };
+
+    const config = toastConfig[type] || toastConfig.info;
+
+    const toastId = 'toast-' + Date.now();
+
+    const toastHtml = `
+        <div id="${toastId}" class="toast align-items-center ${config.bgClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi ${config.iconClass} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
-        `);
-    $('body').append($alert);
-    setTimeout(() => $alert.fadeOut(500, () => $alert.remove()), 4000);
+        </div>
+    `;
+
+    $('.toast-container').append(toastHtml);
+
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, {
+        delay: 5000 // O toast some após 5 segundos
+    });
+
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+    });
+
+    toast.show();
 };
 
 const updateThemeIcon = (theme) => {

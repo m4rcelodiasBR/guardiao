@@ -18,17 +18,6 @@ $(function() {
     let currentPage = 0;
 
     // --- FUNÇÕES ---
-    const showAlert = (message, type = 'success') => {
-        const $alert = $(`
-            <div class="alert alert-${type} alert-dismissible fade show" role="alert" style="position: fixed; bottom: 20px; right: 20px; z-index: 2000;">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `);
-        $('body').append($alert);
-        setTimeout(() => $alert.fadeOut(500, () => $alert.remove()), 4000);
-    };
-
     const formatarData = (dataISO) => {
         if (!dataISO) return 'N/A';
         return new Date(dataISO).toLocaleString('pt-BR');
@@ -190,7 +179,7 @@ $(function() {
                 <tr>
                     <td>${formatarData(transf.dataTransferencia)}</td>
                     <td>${transf.numeroPatrimonialItem || 'N/A'}</td>
-                    <td>${transf.descricaoItem || 'N/A'}</td>
+                    <td><span class="truncate-text" title="${transf.descricaoItem || 'N/A'}">${transf.descricaoItem || 'N/A'}</span></td>
                     <td>${incumbenciaHtml}</td>
                     <td>${observacaoHtml}</td>
                     <td>${transf.usuario ? transf.usuario.nome : 'Utilizador desconhecido'}</td>

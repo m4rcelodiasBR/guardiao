@@ -5,6 +5,7 @@ import br.com.guardiao.guardiao.controller.dto.ItemImportacaoDTO;
 import br.com.guardiao.guardiao.controller.dto.ItemValidadoDTO;
 import br.com.guardiao.guardiao.controller.dto.TabelaXmlWrapper;
 import br.com.guardiao.guardiao.model.Compartimento;
+import br.com.guardiao.guardiao.model.Item;
 import br.com.guardiao.guardiao.model.Usuario;
 import br.com.guardiao.guardiao.repository.ItemRepository;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -29,44 +30,35 @@ public class ImportacaoService {
     private static final List<String> MARCAS_CONHECIDAS = List.of(
             "HP", "HPE", "DELL", "CISCO", "3COM", "APC", "SMS",
             "IMATION", "RACKTRON", "MIDEA", "AGRATTO", "INTELBRAS", "GENIUS",
-            "RAGTECH", "LG", "SAMSUNG", "ACER", "DLINK", "PHILLIPS", "AOC"
+            "RAGTECH", "LG", "SAMSUNG", "ACER", "DLINK", "PHILLIPS", "AOC", "NHS"
     );
 
     public List<ItemValidadoDTO> validarFicheiroXml(MultipartFile file) throws IOException {
         XmlMapper xmlMapper = new XmlMapper();
         TabelaXmlWrapper wrapper = xmlMapper.readValue(file.getInputStream(), TabelaXmlWrapper.class);
         List<ItemValidadoDTO> resultados = new ArrayList<>();
-
         for (ItemImportacaoDTO itemImportado : wrapper.getRows()) {
             List<String> colunas = itemImportado.getColunas();
+
             if (colunas == null || colunas.size() < 11) {
-                continue; // Ignora linhas malformadas
+                continue;
             }
 
             ItemCadastroDTO itemCadastro = new ItemCadastroDTO();
-            // Mapeamento baseado na análise do seu XML
             itemCadastro.setNumeroPatrimonial(colunas.get(0).trim());
             itemCadastro.setDescricao(colunas.get(1).trim());
 
-            // Extração inteligente de Marca e Nº de Série
             extrairDadosDaDescricao(itemCadastro);
 
-            // Mapeamento do Compartimento
             String compartimentoStr = colunas.get(10).trim();
             try {
                 Compartimento compartimento = Compartimento.valueOf(compartimentoStr.toUpperCase());
                 itemCadastro.setCompartimento(compartimento);
             } catch (IllegalArgumentException e) {
-
+                // Ignora se o compartimento for inválido, a validação pegará depois se for obrigatório
             }
 
-            // Validação
-            String erro = validarItem(itemCadastro);
-            if (erro == null) {
-                resultados.add(new ItemValidadoDTO(itemCadastro));
-            } else {
-                resultados.add(new ItemValidadoDTO(itemCadastro, erro));
-            }
+            resultados.add(validarItem(itemCadastro));
         }
         return resultados;
     }
@@ -74,7 +66,7 @@ public class ImportacaoService {
     @Transactional
     public void importarItens(List<ItemCadastroDTO> itensParaImportar, Usuario usuarioLogado) {
         for (ItemCadastroDTO itemDTO : itensParaImportar) {
-            itemService.salvarItem(itemDTO, usuarioLogado);
+            itemService.salvarOuReativarItem(itemDTO, usuarioLogado);
         }
     }
 
@@ -89,16 +81,25 @@ public class ImportacaoService {
         }
     }
 
-    private String validarItem(ItemCadastroDTO item) {
+    private ItemValidadoDTO validarItem(ItemCadastroDTO item) {
         if (item.getNumeroPatrimonial() == null || !item.getNumeroPatrimonial().matches("^[0-9]{9}$")) {
-            return "Erro: Número Patrimonial inválido ou ausente.";
+            return new ItemValidadoDTO(item, ItemValidadoDTO.StatusValidacao.INVALIDO, "Erro: Número Patrimonial inválido ou ausente.");
         }
+
         if (item.getDescricao() == null || item.getDescricao().trim().isEmpty()) {
-            return "Erro: Descrição é obrigatória.";
+            return new ItemValidadoDTO(item, ItemValidadoDTO.StatusValidacao.INVALIDO, "Erro: Descrição é obrigatória.");
         }
-        if (itemRepository.findByNumeroPatrimonial(item.getNumeroPatrimonial()).isPresent()) {
-            return "Erro: Número Patrimonial já existe no sistema.";
+
+        var itemExistenteOpt = itemRepository.findByNumeroPatrimonial(item.getNumeroPatrimonial());
+
+        if (itemExistenteOpt.isPresent()) {
+            Item itemDoBanco = itemExistenteOpt.get();
+            if (itemDoBanco.getStatus() == br.com.guardiao.guardiao.model.StatusItem.EXCLUIDO) {
+                return new ItemValidadoDTO(item, ItemValidadoDTO.StatusValidacao.VALIDO_COM_AVISO, "Aviso: Item já existe e será reativado.");
+            } else {
+                return new ItemValidadoDTO(item, ItemValidadoDTO.StatusValidacao.INVALIDO, "Erro: Item já existe e está ativo no sistema.");
+            }
         }
-        return null;
+        return new ItemValidadoDTO(item, ItemValidadoDTO.StatusValidacao.VALIDO, "OK para importar.");
     }
 }

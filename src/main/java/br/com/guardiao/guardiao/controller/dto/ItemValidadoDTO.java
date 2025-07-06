@@ -2,24 +2,22 @@ package br.com.guardiao.guardiao.controller.dto;
 
 public class ItemValidadoDTO {
 
-    // Usamos o ItemCadastroDTO que já temos, pois ele representa um item a ser criado.
-    // Isso nos permite reutilizar a lógica de validação que já existe nele.
-    private ItemCadastroDTO item;
-    private boolean valido;
-    private String mensagemErro;
-
-    // Construtor para itens válidos
-    public ItemValidadoDTO(ItemCadastroDTO item) {
-        this.item = item;
-        this.valido = true;
-        this.mensagemErro = "OK para importar";
+    public enum StatusValidacao {
+        VALIDO,
+        INVALIDO,
+        VALIDO_COM_AVISO
     }
 
-    // Construtor para itens inválidos
-    public ItemValidadoDTO(ItemCadastroDTO item, String mensagemErro) {
+    private ItemCadastroDTO item;
+    private StatusValidacao status;
+    private String mensagem;
+
+    public ItemValidadoDTO() {}
+
+    public ItemValidadoDTO(ItemCadastroDTO item, StatusValidacao status, String mensagem) {
         this.item = item;
-        this.valido = false;
-        this.mensagemErro = mensagemErro;
+        this.status = status;
+        this.mensagem = mensagem;
     }
 
     public ItemCadastroDTO getItem() {
@@ -30,19 +28,19 @@ public class ItemValidadoDTO {
         this.item = item;
     }
 
-    public boolean isValido() {
-        return valido;
+    public StatusValidacao getStatus() {
+        return status;
     }
 
-    public void setValido(boolean valido) {
-        this.valido = valido;
+    public void setStatus(StatusValidacao status) {
+        this.status = status;
     }
 
-    public String getMensagemErro() {
-        return mensagemErro;
+    public String getMensagem() {
+        return mensagem;
     }
 
-    public void setMensagemErro(String mensagemErro) {
-        this.mensagemErro = mensagemErro;
+    public void setMensagem(String mensagem) {
+        this.mensagem = mensagem;
     }
 }
