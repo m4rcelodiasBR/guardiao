@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>Ajuda | SAGAP 211</title>
+
+        <script>
+            (function() {
+                try {
+                    const theme = localStorage.getItem('theme') || 'dark';
+                    document.documentElement.setAttribute('data-bs-theme', theme);
+                } catch (e) {}
+            })();
+        </script>
+
+        <link rel="stylesheet" href="/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/css/bootstrap-icons.min.css">
+        <link rel="stylesheet" href="/css/styles.css">
+    </head>
+    <body>
+        <div class="toast-container position-fixed top-0 end-0 p-3" id="toast-container"></div>
+        <div id="navbar-placeholder"></div>
+        <main class="container-fluid mt-4">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <h2 class="mb-4">Ajuda & Perguntas Frequentes (FAQ)</h2>
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
+                                    Como eu cadastro um novo item?
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Na página de <strong>Inventário</strong>, clique no botão verde "Novo item" no canto superior direito. Um formulário aparecerá para que você preencha os dados do bem, como número patrimonial, descrição, marca, etc. Após preencher, clique em "Salvar Item".
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
+                                    Como faço para transferir um item?
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Localize o item que deseja transferir na tabela de <strong>Inventário</strong>. Na coluna "Ações", clique no ícone de seta (<i class="bi bi-box-arrow-right"></i>). Um formulário de transferência será exibido para que você informe o destino e uma observação. Apenas itens com status "Disponível" podem ser transferidos.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
+                                    Como funciona a importação em massa?
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    A importação em massa permite cadastrar vários itens de uma só vez a partir de um arquivo <strong>XML</strong> com formato específico. No menu, acesse a página de <strong>Importação</strong>, selecione o arquivo XML e clique em "Validar Ficheiro". O sistema irá verificar cada item. Você poderá então selecionar os itens válidos e confirmar a importação para o inventário.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
+                                    O que significa quando um item está "Excluído"?
+                                </button>
+                            </h2>
+                            <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    O sistema utiliza "exclusão lógica". Isso significa que, ao excluir um item, ele não é apagado permanentemente, mas sim marcado como "EXCLUÍDO". Ele some da lista principal de inventário, mas seu histórico de transferências é preservado. Um item excluído pode ser "reativado" através da tela de <strong>Importação</strong>, caso um item com o mesmo número patrimonial seja importado novamente.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <button id="btn-scroll-to-top" class="btn btn-primary" title="Voltar ao Topo">
+            <i class="bi bi-arrow-up"></i>
+        </button>
+
+        <script src="/js/jquery-3.7.1.min.js"></script>
+        <script src="/js/bootstrap.bundle.min.js"></script>
+        <script src="/js/global.js"></script>
+
+    </body>
+</html>

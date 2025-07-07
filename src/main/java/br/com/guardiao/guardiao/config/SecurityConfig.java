@@ -40,6 +40,7 @@ public class SecurityConfig {
                         "/perfil.html",
                         "/trocar-senha.html",
                         "/importacao.html",
+                        "/ajuda.html",
                         "/api/auth/**",
                         "/api/perfil/**",
                         "/api/util/**",

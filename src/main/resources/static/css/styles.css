@@ -196,7 +196,8 @@ body {
 .card-pesquisa,
 .card-pesquisa input,
 .card-perfil,
-.card-perfil input {
+.card-perfil input,
+.card-sobre {
     background-color: transparent;
     font-size: .8rem;
 }

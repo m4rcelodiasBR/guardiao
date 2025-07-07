@@ -161,4 +161,24 @@ $(function() {
             $scrollToTopButton.removeClass('show');
         }
     });
+
+    const modalConteudoDinamico = document.getElementById('modal-conteudo-dinamico');
+    if (modalConteudoDinamico) {
+        modalConteudoDinamico.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const url = button.getAttribute('data-load-url');
+            const title = button.getAttribute('data-modal-title');
+            const modalTitle = modalConteudoDinamico.querySelector('.modal-title');
+            const modalBody = modalConteudoDinamico.querySelector('.modal-body');
+            modalTitle.textContent = title;
+
+            modalBody.innerHTML = '<div class="d-flex justify-content-center p-5"><div class="spinner-border" role="status"><span class="visually-hidden">Carregando...</span></div></div>';
+
+            $(modalBody).load(url, function(response, status, xhr) {
+                if (status === "error") {
+                    modalBody.innerHTML = `<div class="alert alert-danger">Erro ao carregar o conteúdo: ${xhr.status} ${xhr.statusText}</div>`;
+                }
+            });
+        });
+    }
 });
