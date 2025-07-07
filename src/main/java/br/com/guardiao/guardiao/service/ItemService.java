@@ -87,6 +87,7 @@ public class ItemService {
 
         itemExistente.setDescricao(dadosAtualizados.getDescricao());
         itemExistente.setMarca(dadosAtualizados.getMarca());
+
         if (Objects.equals(novoNumeroDeSerie, "")) {
             itemExistente.setNumeroDeSerie(null);
         } else {

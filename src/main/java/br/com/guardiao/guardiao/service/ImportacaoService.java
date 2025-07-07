@@ -10,6 +10,7 @@ import br.com.guardiao.guardiao.model.Usuario;
 import br.com.guardiao.guardiao.repository.ItemRepository;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,12 +26,15 @@ public class ImportacaoService {
     private ItemRepository itemRepository;
 
     @Autowired
+    @Lazy
     private ItemService itemService;
 
     private static final List<String> MARCAS_CONHECIDAS = List.of(
             "HP", "HPE", "DELL", "CISCO", "3COM", "APC", "SMS",
             "IMATION", "RACKTRON", "MIDEA", "AGRATTO", "INTELBRAS", "GENIUS",
-            "RAGTECH", "LG", "SAMSUNG", "ACER", "DLINK", "PHILLIPS", "AOC", "NHS"
+            "RAGTECH", "LG", "SAMSUNG", "ACER", "DLINK", "PHILIPS", "AOC", "NHS",
+            "ELECTROLUX", "TENDA", "MICROSOFT", "MAXXTRO", "WALITA", "THERMALTAKE",
+            "MUNDIAL", "MONDIAL"
     );
 
     public List<ItemValidadoDTO> validarFicheiroXml(MultipartFile file) throws IOException {

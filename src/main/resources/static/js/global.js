@@ -108,6 +108,8 @@ const setupGlobalUI = (role) => {
 
 // --- EVENTOS GLOBAIS ---
 $(function() {
+    const $scrollToTopButton = $('#btn-scroll-to-top');
+
     $("#navbar-placeholder").load("navbar.html", function() {
         $('#btn-logout').on('click', function() {
             localStorage.removeItem('jwt_token');
@@ -140,5 +142,20 @@ $(function() {
         updateThemeIcon(currentTheme);
 
         setupGlobalUI(userRole);
+    });
+
+    $scrollToTopButton.on('click', function() {
+        $('html, body').animate({ scrollTop: 0 }, 'smooth');
+    });
+
+    $(window).on('scroll', function() {
+        // Se o usuário rolou mais de 200 pixels para baixo
+        if ($(this).scrollTop() > 200) {
+            // Adiciona a classe .show para tornar o botão visível com fade-in
+            $scrollToTopButton.addClass('show');
+        } else {
+            // Senão, remove a classe para esconder o botão com fade-out
+            $scrollToTopButton.removeClass('show');
+        }
     });
 });

@@ -165,7 +165,7 @@ $(function() {
             const transf = detalhe.transferencia;
 
             const botaoDevolverHtml = detalhe.podeSerDevolvido && userRole === 'ADMIN' ?
-                `<button class="btn btn-sm btn-success btn-devolver" title="Registar Devolução" data-patrimonio="${transf.numeroPatrimonialItem}" data-descricao="${transf.descricaoItem}"><i class="bi bi-box-arrow-in-left"></i></button>`
+                `<button class="btn btn-xs btn-primary btn-devolver" title="Registar Devolução" data-patrimonio="${transf.numeroPatrimonialItem}" data-descricao="${transf.descricaoItem}"><i class="bi bi-box-arrow-in-left"></i></button>`
                 : '';
 
             const incumbencia = transf.incumbenciaDestino || '';
@@ -173,7 +173,7 @@ $(function() {
             const incumbenciaHtml = isBaixaDefinitiva ? `<span class="badge rounded-pill text-bg-danger">${incumbencia}</span>` : `<span class="badge rounded-pill text-bg-warning">${incumbencia}</span>`;
 
             const observacao = transf.observacao || '';
-            const observacaoHtml = observacao ? `<button class="btn btn-sm btn-secondary btn-ver-obs" data-obs="${observacao}" title="Clique para visualizar observações"><i class="bi bi-eye-fill"></i></button>` : '';
+            const observacaoHtml = observacao ? `<button class="btn btn-xs btn-secondary btn-ver-obs" data-obs="${observacao}" title="Clique para visualizar observações"><i class="bi bi-eye-fill"></i></button>` : '';
 
             const rowHtml = `
                 <tr>

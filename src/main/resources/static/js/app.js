@@ -129,7 +129,7 @@ $(function() {
     };
 
     const renderPaginationControls = (pageData) => {
-        const $paginationNav = $('#pagination-nav'); // Garante que temos o seletor correto
+        const $paginationNav = $('#pagination-nav');
         $paginationNav.empty();
 
         if (pageData.totalPages <= 1) {
@@ -248,14 +248,14 @@ $(function() {
             if (userRole === 'ADMIN') {
                 if (isDisponivel) {
                     acoesHtml = `
-                        <button class="btn btn-sm btn-primary btn-editar" title="Editar" data-patrimonio="${item.numeroPatrimonial}"><i class="bi bi-pencil-fill"></i></button>
-                        <button class="btn btn-sm btn-info btn-transferir" title="Transferir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}"><i class="bi bi-box-arrow-right"></i></button>
-                        <button class="btn btn-sm btn-danger btn-excluir" title="Excluir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}"><i class="bi bi-trash3-fill"></i></button>
+                        <button class="btn btn-xs btn-primary btn-editar" title="Editar" data-patrimonio="${item.numeroPatrimonial}"><i class="bi bi-pencil-fill"></i></button>
+                        <button class="btn btn-xs btn-info btn-transferir" title="Transferir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}"><i class="bi bi-box-arrow-right"></i></button>
+                        <button class="btn btn-xs btn-danger btn-excluir" title="Excluir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}"><i class="bi bi-trash3-fill"></i></button>
                     `;
                 }
             } else {
                 if (isDisponivel) {
-                    acoesHtml = `<button class="btn btn-sm btn-info btn-transferir" title="Transferir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}"><i class="bi bi-box-arrow-right"></i></button>`;
+                    acoesHtml = `<button class="btn btn-xs btn-info btn-transferir" title="Transferir" data-patrimonio="${item.numeroPatrimonial}" data-descricao="${item.descricao}"><i class="bi bi-box-arrow-right"></i></button>`;
                 }
             }
 

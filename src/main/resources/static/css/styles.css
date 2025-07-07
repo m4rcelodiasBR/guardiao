@@ -125,22 +125,105 @@
     font-style: italic;
 }
 
+:root {
+
+    --primary-color: #4A7754;
+    --primary-hover-color: #3E6246;
+    --amarelo-color: #FAB932;
+    --verde-color: #009444;
+    --header-color-1: #084298;
+    --header-color-2: #031633;
+
+    --bg-color: #F8F9FA;
+    --surface-color: #FFFFFF;
+    --border-color: #DEE2E6;
+
+    --text-primary-color: #212529;
+    --text-secondary-color: #6C757D;
+}
+
+[data-bs-theme="dark"] {
+
+    --primary-color: #4A7754;
+    --primary-hover-color: #1f3823;
+    --header-color-1: #084298;
+    --header-color-2: #031633;
+
+    --bg-color: #1A202C;
+    --surface-color: #2D3748;
+    --border-color: #4A5568;
+
+    --text-primary-color: #E2E8F0;
+    --text-secondary-color: var(--bs-secondary-color);
+}
+
 body {
     font-family: 'Exo2', sans-serif;
     font-weight: 400;
     font-size: 1rem;
+    background-color: var(--bg-color);
+    color: var(--text-primary-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.table {
-    font-size: .8rem;
+.navbar {
+    background-image: linear-gradient(to top, var(--header-color-1), var(--header-color-2));
+}
+
+.nav-logo {
+    padding-right: 1.5rem;
+    border-right: .2rem double #fff;
+}
+
+.navbar-brand-title {
     font-weight: 600;
+    line-height: 1.5;
+}
+
+.navbar-brand-subtitle {
+    font-size: .75rem;
+    font-weight: 300;
+    line-height: 1;
+    opacity: 0.8;
+    letter-spacing: 0.5px;
+}
+
+.barra-verde-amarelo {
+    height: .3rem;
+    background-image: linear-gradient(to left, var(--amarelo-color), var(--verde-color));
+}
+
+.card-pesquisa,
+.card-pesquisa input {
+    background-color: transparent;
+    font-size: .8rem;
+}
+
+.card-pesquisa #busca-compartimento {
+    font-size: .8rem;
+}
+
+#pagination-controls,
+#pagination-controls .form-select,
+#pagination-controls-historico,
+#pagination-controls-historico .form-select,
+#pagination-controls-usuarios,
+#pagination-controls-usuarios .form-select {
+    font-size: 0.8rem;
+}
+
+#pagination-controls .pagination .page-link,
+#pagination-controls-usuarios .pagination .page-link,
+#pagination-controls-historico .pagination .page-link {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.6rem;
 }
 
 .truncate-text {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 600px;
+    max-width: 500px;
     display: inline-block;
     vertical-align: middle;
 }
@@ -167,8 +250,6 @@ th[data-sortable]:hover {
 [data-bs-theme="dark"] .table-loading-overlay {
     background-color: rgba(33, 37, 41, 0.7);
 }
-
-/* Adicionar no final de css/styles.css */
 
 .password-rules {
     font-size: 0.875em;
@@ -204,11 +285,85 @@ th[data-sortable]:hover {
 mark {
     padding: 0.1em 0.2em;
     border-radius: 3px;
-    background-color: #ffdd77;
+    background-color: #3E6246;
+    color: #fff;
 }
 
 [data-bs-theme="dark"] mark {
-    background-color: #ffc107;
+    background-color: var(--amarelo-color);
     color: #000;
 }
 
+.table {
+    background-color: transparent;
+    border-collapse: separate;
+    border-spacing: 0 5px;
+    font-size: .8rem;
+    font-weight: 300;
+}
+
+.table td {
+    border: none;
+    background-color: var(--bs-table-striped-bg);
+    vertical-align: middle;
+    height: 2.6rem;
+}
+
+.table thead th {
+    color: var(--text-secondary-color) !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    background-color: transparent !important;
+}
+
+.table tbody tr {
+    background-color: var(--surface-color);
+}
+
+.table td {
+    border-bottom: 1px solid var(--bg-color);
+}
+
+.table-hover tbody tr:hover {
+    background-color: var(--bs-secondary-bg);
+}
+
+[data-bs-theme="dark"] .table-hover tbody tr:hover {
+    background-color: #2c3e5a;
+}
+
+.btn-xs {
+    --bs-btn-padding-y: 0.15rem;
+    --bs-btn-padding-x: 0.4rem;
+    --bs-btn-font-size: 0.75rem;
+    --bs-btn-border-radius: 0.2rem;
+}
+
+.btn-xs i {
+    font-size: 0.9em;
+    vertical-align: middle;
+}
+
+#btn-scroll-to-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1030;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+#btn-scroll-to-top.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#btn-scroll-to-top:hover {
+    opacity: 0.9;
+}

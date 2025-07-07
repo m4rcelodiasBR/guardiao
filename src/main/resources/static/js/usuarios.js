@@ -91,9 +91,9 @@ $(function() {
             const isSelf = user.id === loggedInUserId;
             const disabledAttr = isSelf ? 'hidden' : '';
 
-            const btnResetSenha = isAtivo ? `<button class="btn btn-sm btn-secondary btn-reset-senha opacity-100" title="Resetar Senha" data-id="${user.id}" data-nome="${user.nome}" ${disabledAttr}><i class="bi bi-key-fill"></i></button>` : '';
-            const btnEditar = `<button class="btn btn-sm btn-primary btn-editar-usuario opacity-100" title="Editar" data-id="${user.id}" ${disabledAttr}><i class="bi bi-pencil-fill"></i></button>`;
-            const btnExcluir = `<button class="btn btn-sm btn-danger btn-excluir-usuario opacity-100" title="Excluir" data-id="${user.id}" data-nome="${user.nome}" ${disabledAttr}><i class="bi bi-trash3-fill"></i></button>`;
+            const btnResetSenha = isAtivo ? `<button class="btn btn-xs btn-secondary btn-reset-senha opacity-100" title="Resetar Senha" data-id="${user.id}" data-nome="${user.nome}" ${disabledAttr}><i class="bi bi-key-fill"></i></button>` : '';
+            const btnEditar = `<button class="btn btn-xs btn-primary btn-editar-usuario opacity-100" title="Editar" data-id="${user.id}" ${disabledAttr}><i class="bi bi-pencil-fill"></i></button>`;
+            const btnExcluir = `<button class="btn btn-xs btn-danger btn-excluir-usuario opacity-100" title="Excluir" data-id="${user.id}" data-nome="${user.nome}" ${disabledAttr}><i class="bi bi-trash3-fill"></i></button>`;
 
             const rowHtml = `
                 <tr class="${!isAtivo ? 'opacity-50' : ''}">

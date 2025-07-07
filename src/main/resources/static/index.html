@@ -15,32 +15,13 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="mb-0">Inventário Ativo</h2>
             <div class="d-flex align-items-center">
-                <div class="btn-group-sm me-3" role="group" id="filtros-status">
-                    <span class="me-1 fw-bold">Exibir: </span>
-                    <input type="radio" class="btn-check" name="status-filter" id="filter-todos" value="" autocomplete="off" checked>
-                    <label class="btn btn-outline-secondary" for="filter-todos">Todos</label>
-
-                    <input type="radio" class="btn-check" name="status-filter" id="filter-disponivel" value="DISPONIVEL" autocomplete="off">
-                    <label class="btn btn-outline-success" for="filter-disponivel">Disponíveis</label>
-
-                    <input type="radio" class="btn-check" name="status-filter" id="filter-transferido" value="TRANSFERIDO" autocomplete="off">
-                    <label class="btn btn-outline-warning" for="filter-transferido">Transferidos</label>
-                </div>
-                <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#area-de-busca" aria-expanded="false" aria-controls="area-de-busca">
+                <button class="btn btn-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#area-de-busca" aria-expanded="false" aria-controls="area-de-busca">
                     <i class="bi bi-search me-1"></i>Pesquisar
                 </button>
             </div>
         </div>
-        <div class="mb-3 text-end">
-            <a href="/importacao.html" class="btn btn-outline-light me-2">
-                <i class="bi bi-file-earmark-arrow-up-fill me-1"></i> Importar Itens
-            </a>
-            <button class="btn btn-outline-success" type="button" data-bs-toggle="modal" data-bs-target="#modalNovoItem" aria-expanded="false" aria-controls="modalNovoItem">
-                <i class="bi bi-plus-circle-fill me-1"></i>Novo item
-            </button>
-        </div>
         <div class="collapse" id="area-de-busca">
-            <div class="card card-body mb-3">
+            <div class="card card-body mb-3 card-pesquisa">
                 <form id="form-busca-avancada">
                     <div class="row">
                         <div class="col-md-4 mb-3">
@@ -75,6 +56,27 @@
                 </form>
             </div>
         </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="btn-group-sm me-3" role="group" id="filtros-status">
+                <span class="me-1 fw-bold">Exibir: </span>
+                <input type="radio" class="btn-check" name="status-filter" id="filter-todos" value="" autocomplete="off" checked>
+                <label class="btn btn-outline-secondary" for="filter-todos">Todos</label>
+
+                <input type="radio" class="btn-check" name="status-filter" id="filter-disponivel" value="DISPONIVEL" autocomplete="off">
+                <label class="btn btn-outline-success" for="filter-disponivel">Disponíveis</label>
+
+                <input type="radio" class="btn-check" name="status-filter" id="filter-transferido" value="TRANSFERIDO" autocomplete="off">
+                <label class="btn btn-outline-warning" for="filter-transferido">Transferidos</label>
+            </div>
+            <div>
+                <a href="/importacao.html" class="btn btn-primary btn-sm me-2">
+                    <i class="bi bi-file-earmark-arrow-up-fill me-1"></i> Importar Itens
+                </a>
+                <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="modal" data-bs-target="#modalNovoItem" aria-expanded="false" aria-controls="modalNovoItem">
+                    <i class="bi bi-plus-circle-fill me-1"></i>Novo item
+                </button>
+            </div>
+        </div>
         <div class="collapse" id="bulk-actions-collapse">
             <div class="card card-body mb-3 bg-light-subtle d-flex flex-row align-items-center justify-content-end">
                 <span id="selection-counter" class="me-3 text-muted fw-bold"></span>
@@ -90,7 +92,7 @@
                 </button>
             </div>
         </div>
-        <div id="pagination-controls" class="d-flex justify-content-between align-items-center my-3" style="display: none;">
+        <div id="pagination-controls" class="d-flex justify-content-between align-items-center my-3 pagination-sm" style="display: none;">
             <div class="d-flex align-items-center">
                 <span class="me-2">Itens por página:</span>
                 <select class="form-select form-select-sm" id="page-size-select" style="width: 75px;">
@@ -112,7 +114,7 @@
                 </div>
             </div>
             <div class="table-responsive">
-                <table class="table table-striped table-hover sortable">
+                <table class="table table-hover sortable">
                     <thead class="table-dark">
                     <tr>
                         <th style="width: 50px;">
@@ -331,5 +333,10 @@
     <script src="/js/bootstrap.bundle.min.js"></script>
     <script src="/js/global.js"></script>
     <script src="/js/app.js"></script>
+
+    <button id="btn-scroll-to-top" class="btn btn-primary" title="Voltar ao Topo">
+        <i class="bi bi-caret-up-fill"></i>
+    </button>
+
 </body>
 </html>
