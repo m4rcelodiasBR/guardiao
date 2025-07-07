@@ -87,9 +87,13 @@ const showAlert = (message, type = 'success') => {
 const updateThemeIcon = (theme) => {
     const $themeIcon = $('#theme-icon');
     if (theme === 'dark') {
-        $themeIcon.removeClass('bi-moon-stars-fill').addClass('bi-sun-fill');
+        $themeIcon.removeClass('bi-moon-stars-fill')
+            .addClass('bi-sun-fill')
+            .attr('title','Modo Claro');
     } else {
-        $themeIcon.removeClass('bi-sun-fill').addClass('bi-moon-stars-fill');
+        $themeIcon.removeClass('bi-sun-fill')
+            .addClass('bi-moon-stars-fill')
+            .attr('title','Modo Escuro');
     }
 };
 
@@ -108,7 +112,8 @@ const setupGlobalUI = (role) => {
 
 // --- EVENTOS GLOBAIS ---
 $(function() {
-    const $scrollToTopButton = $('#btn-scroll-to-top');
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-bs-theme', savedTheme);
 
     $("#navbar-placeholder").load("navbar.html", function() {
         $('#btn-logout').on('click', function() {
@@ -144,17 +149,15 @@ $(function() {
         setupGlobalUI(userRole);
     });
 
+    const $scrollToTopButton = $('#btn-scroll-to-top');
     $scrollToTopButton.on('click', function() {
         $('html, body').animate({ scrollTop: 0 }, 'smooth');
     });
 
     $(window).on('scroll', function() {
-        // Se o usuário rolou mais de 200 pixels para baixo
         if ($(this).scrollTop() > 200) {
-            // Adiciona a classe .show para tornar o botão visível com fade-in
             $scrollToTopButton.addClass('show');
         } else {
-            // Senão, remove a classe para esconder o botão com fade-out
             $scrollToTopButton.removeClass('show');
         }
     });

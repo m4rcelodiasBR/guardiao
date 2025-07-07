@@ -3,17 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Login - SysGAP 211</title>
+    <title>Login | SAGAP 211</title>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
     <link href="/css/login.css" rel="stylesheet">
     <link href="/css/styles.css" rel="stylesheet">
+
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
 </head>
 <body>
     <main class="form-signin text-center">
         <form id="form-login">
-            <h1 class="h3 mb-3 fw-normal">🦉 SysGAP 211</h1>
-            <h2 class="h5 mb-3 fw-light">Por favor, efetue o login</h2>
+            <div class="d-flex flex-column">
+                <img src="/images/sagap_logo.svg" alt="Logotipo SAGAP 211" height="140" class="me-2">
+                <h1>SAGAP 211</h1>
+                <span class="navbar-brand-subtitle">Sistema de Apoio à Gestão de Ativos Patrimoniais</span>
+                <span class="navbar-brand-subtitle">Incumbência 211</span>
+            </div>
+            <h2 class="h5 my-3 fw-light">Por favor, efetue o login</h2>
 
             <div class="alert alert-danger d-none" id="login-alert" role="alert"></div>
 
@@ -26,7 +38,7 @@
                 <label for="senha">Senha</label>
             </div>
             <button class="w-100 btn btn-lg btn-primary mt-3" type="submit">Entrar</button>
-            <p class="mt-5 mb-3 text-muted">&copy; 2024 - Todos os direitos reservados.</p>
+            <p class="mt-5 mb-3 text-muted">&copy; Copyright 2025 - Sistema de Apoio à Gestão de Ativos Patrimoniais - Todos os direitos reservados</p>
         </form>
     </main>
 

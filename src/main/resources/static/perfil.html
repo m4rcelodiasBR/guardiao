@@ -3,10 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu perfil - Guardião</title>
+    <title>Meu Perfil | SAGAP 211</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/css/styles.css">
+
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
 </head>
 <body>
     <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
@@ -15,7 +22,7 @@
         <h2 class="mb-4">Meu Perfil</h2>
         <div class="row">
             <div class="col-md-6 mb-4">
-                <div class="card h-100">
+                <div class="card h-100 card-perfil">
                     <div class="card-header">
                         Dados Pessoais
                     </div>
@@ -37,7 +44,7 @@
                                 <label class="form-label">Perfil de Acesso</label>
                                 <input type="text" class="form-control" id="perfil-perfil" disabled>
                             </div>
-                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                            <button type="submit" class="btn btn-primary btn-sm">Salvar Alterações</button>
                         </form>
                     </div>
                 </div>
@@ -45,7 +52,7 @@
 
             <!-- Card de Alteração de Senha -->
             <div class="col-md-6 mb-4">
-                <div class="card h-100">
+                <div class="card h-100 card-perfil">
                     <div class="card-header">
                         Alterar Senha
                     </div>
@@ -81,7 +88,7 @@
                                 <input type="password" class="form-control" id="confirmar-nova-senha" required>
                                 <div class="invalid-feedback" id="password-match-error" style="display: none;">As senhas não coincidem.</div>
                             </div>
-                            <button type="submit" class="btn btn-warning" id="btn-alterar-senha" disabled>Alterar Senha</button>
+                            <button type="submit" class="btn btn-warning btn-sm" id="btn-alterar-senha" disabled>Alterar Senha</button>
                         </form>
                     </div>
                 </div>

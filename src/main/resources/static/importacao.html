@@ -3,26 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Importação de Itens - SysGAP 211</title>
+    <title>Importação  SAGAP 211</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/css/styles.css">
+
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
 </head>
 <body>
     <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
     <div id="navbar-placeholder"></div>
     <main class="container-fluid mt-4">
         <h2 class="mb-3">Importação de Itens em Massa</h2>
-        <div class="card mb-4">
+        <div class="card mb-4 card-importacao">
             <div class="card-header">
-                Passo 1: Selecione o Ficheiro XML
+                <h4>Passo 1: Selecione um arquivo XML</h4>
+                <p>Após carregar o arquivo, clique ao lado em "Validar"</p>
             </div>
             <div class="card-body">
                 <form id="form-upload">
                     <div class="input-group">
                         <input type="file" class="form-control" id="xml-file-input" accept=".xml" required>
                         <button class="btn btn-primary" type="submit" id="btn-validar-arquivo">
-                            <i class="bi bi-shield-check me-1"></i> Validar Ficheiro
+                            <i class="bi bi-shield-check me-1"></i> Validar
                         </button>
                     </div>
                 </form>
@@ -62,7 +70,7 @@
             </div>
 
             <!-- Botão de Confirmação Final -->
-            <div class="text-end mt-3">
+            <div class="text-end my-3">
                 <button class="btn btn-success btn-lg btn-confirmar-importacao" disabled>
                     <i class="bi bi-check-circle-fill me-1"></i> Confirmar Importação dos Itens Selecionados
                 </button>

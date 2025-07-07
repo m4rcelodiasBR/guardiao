@@ -249,7 +249,7 @@ $(function() {
             url: `/api/usuarios/${id}/reset-senha`,
             method: 'POST',
             success: function() {
-                showAlert('Senha do usuário resetada para "guardiao".');
+                showAlert('Senha do usuário resetada. Será necessário alterar a senha no próximo login.');
             },
             error: function() { showAlert('Erro ao resetar a senha.', 'danger'); }
         });

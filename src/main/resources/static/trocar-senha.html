@@ -3,18 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alterar Senha - SysGAP 211</title>
+    <title>Alterar Senha | SAGAP 211</title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/css/login.css">
     <link rel="stylesheet" href="/css/styles.css">
+
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
 </head>
 <body>
     <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
     <main class="form-signin text-center">
-        <h1 class="h3 mb-3 fw-normal">🦉 SysGAP 211</h1>
+        <div class="d-flex flex-column mb-3">
+            <img src="/images/sagap_logo.svg" alt="Logotipo SAGAP 211" height="140" class="me-2">
+            <h1>SAGAP 211</h1>
+            <span class="navbar-brand-subtitle">Sistema de Apoio à Gestão de Ativos Patrimoniais</span>
+            <span class="navbar-brand-subtitle">Incumbência 211</span>
+        </div>
         <form id="form-trocar-senha">
-            <h2 class="h5 mb-3 fw-light">Por segurança, defina uma nova senha.</h2>
+            <h2 class="h5 fw-light">Por segurança, defina uma nova senha.</h2>
             <div id="troca-senha-alert" class="alert alert-danger d-none" role="alert"></div>
             <div class="form-floating">
                 <input type="password" class="form-control" id="nova-senha" required>

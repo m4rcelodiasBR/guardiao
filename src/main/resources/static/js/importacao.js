@@ -117,7 +117,7 @@ $(function() {
                 $progressBar.addClass('bg-danger').text('Falha na Validação');
             },
             complete: function() {
-                $btnValidar.prop('disabled', false).html('<i class="bi bi-shield-check me-1"></i> Validar Ficheiro');
+                $btnValidar.prop('disabled', false).html('<i class="bi bi-shield-check me-1"></i> Validar');
             }
         });
     });

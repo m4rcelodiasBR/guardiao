@@ -194,9 +194,16 @@ body {
 }
 
 .card-pesquisa,
-.card-pesquisa input {
+.card-pesquisa input,
+.card-perfil,
+.card-perfil input {
     background-color: transparent;
     font-size: .8rem;
+}
+
+
+.card-importacao {
+    background-color: transparent;
 }
 
 .card-pesquisa #busca-compartimento {

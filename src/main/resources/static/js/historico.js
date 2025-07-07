@@ -164,7 +164,7 @@ $(function() {
         detalhesTransferencia.forEach(detalhe => {
             const transf = detalhe.transferencia;
 
-            const botaoDevolverHtml = detalhe.podeSerDevolvido && userRole === 'ADMIN' ?
+            const botaoDevolverHtml = detalhe.podeSerDevolvido ?
                 `<button class="btn btn-xs btn-primary btn-devolver" title="Registar Devolução" data-patrimonio="${transf.numeroPatrimonialItem}" data-descricao="${transf.descricaoItem}"><i class="bi bi-box-arrow-in-left"></i></button>`
                 : '';
 
@@ -182,7 +182,7 @@ $(function() {
                     <td><span class="truncate-text" title="${transf.descricaoItem || 'N/A'}">${transf.descricaoItem || 'N/A'}</span></td>
                     <td>${incumbenciaHtml}</td>
                     <td>${observacaoHtml}</td>
-                    <td>${transf.usuario ? transf.usuario.nome : 'Utilizador desconhecido'}</td>
+                    <td>${transf.usuario ? transf.usuario.nome : 'Usuário desconhecido'}</td>
                     <td>${botaoDevolverHtml}</td>
                 </tr>
                 `;

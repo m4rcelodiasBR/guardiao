@@ -3,10 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Histórico de Transferências - SysGAP 211</title>
+  <title>Histórico | SAGAP 211</title>
   <link rel="stylesheet" href="/css/bootstrap.min.css">
   <link rel="stylesheet" href="/css/bootstrap-icons.min.css">
   <link rel="stylesheet" href="/css/styles.css">
+
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
 </head>
 <body>
     <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
@@ -14,8 +21,8 @@
     <main class="container-fluid mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="mb-0">Histórico de Transferências</h2>
-            <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#area-de-busca-historico" aria-expanded="false" aria-controls="area-de-busca-historico">
-                <i class="bi bi-search me-1"></i> Pesquisa Avançada
+            <button class="btn btn-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#area-de-busca-historico" aria-expanded="false" aria-controls="area-de-busca-historico">
+                <i class="bi bi-search me-1"></i> Pesquisa
             </button>
         </div>
         <div class="collapse" id="area-de-busca-historico">
@@ -23,11 +30,11 @@
                 <form id="form-busca-historico-avancada">
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <label for="busca-patrimonio" class="form-label">Nº Patrimonial</label>
+                            <label for="busca-patrimonio" class="form-label">NumPAT (Número Patrimonial)</label>
                             <input type="text" class="form-control" id="busca-patrimonio" name="numeroPatrimonialItem">
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label for="busca-descricao" class="form-label">Descrição do Item</label>
+                            <label for="busca-descricao" class="form-label">Descrição</label>
                             <input type="text" class="form-control" id="busca-descricao" name="descricaoItem">
                         </div>
                         <div class="col-md-3 mb-3">
@@ -40,8 +47,8 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-end">
-                        <button type="button" id="btn-limpar-busca-historico" class="btn btn-secondary me-2">Limpar Filtros</button>
-                        <button type="submit" class="btn btn-primary">Buscar</button>
+                        <button type="button" id="btn-limpar-busca-historico" class="btn btn-secondary btn-sm me-2">Limpar Filtros</button>
+                        <button type="submit" class="btn btn-primary btn-sm">Buscar</button>
                     </div>
                 </form>
             </div>
