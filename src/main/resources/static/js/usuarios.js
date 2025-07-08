@@ -91,7 +91,7 @@ $(function() {
             const isSelf = user.id === loggedInUserId;
             const disabledAttr = isSelf ? 'hidden' : '';
 
-            const btnResetSenha = isAtivo ? `<button class="btn btn-xs btn-secondary btn-reset-senha opacity-100" title="Resetar Senha" data-id="${user.id}" data-nome="${user.nome}" ${disabledAttr}><i class="bi bi-key-fill"></i></button>` : '';
+            const btnResetSenha = isAtivo ? `<button class="btn btn-xs btn-info btn-reset-senha opacity-100" title="Resetar Senha" data-id="${user.id}" data-nome="${user.nome}" ${disabledAttr}><i class="bi bi-key-fill"></i></button>` : '';
             const btnEditar = `<button class="btn btn-xs btn-primary btn-editar-usuario opacity-100" title="Editar" data-id="${user.id}" ${disabledAttr}><i class="bi bi-pencil-fill"></i></button>`;
             const btnExcluir = `<button class="btn btn-xs btn-danger btn-excluir-usuario opacity-100" title="Excluir" data-id="${user.id}" data-nome="${user.nome}" ${disabledAttr}><i class="bi bi-trash3-fill"></i></button>`;
 
@@ -138,6 +138,7 @@ $(function() {
         const userName = $(this).data('nome');
         $('#confirm-title-usuario').text('Confirmar Exclusão');
         $('#confirm-body-usuario').text(`Tem certeza que deseja EXCLUIR o usuário ${userName}? Ele será removido da lista e não poderá mais ser recuperado.`);
+        $('#btn-confirmar-acao-usuario').addClass('btn-danger');
         acaoConfirmada = () => handleExcluir(userId);
         modalConfirmacaoUsuario.show();
     });
@@ -147,12 +148,15 @@ $(function() {
         const userName = $(this).data('nome');
         $('#confirm-title-usuario').text('Confirmar Reset de Senha');
         $('#confirm-body-usuario').text(`Tem certeza que deseja resetar a senha do usuário ${userName}? A nova senha padrão será "guardiao".`);
+        $('#btn-confirmar-acao-usuario').addClass('btn-info');
         acaoConfirmada = () => handleResetSenha(userId);
         modalConfirmacaoUsuario.show();
     });
 
     $btnConfirmarAcaoUsuario.on('click', function() {
-        if (typeof acaoConfirmada === 'function') { acaoConfirmada(); }
+        if (typeof acaoConfirmada === 'function') {
+            acaoConfirmada();
+        }
         modalConfirmacaoUsuario.hide();
         acaoConfirmada = null;
     });

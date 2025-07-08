@@ -68,12 +68,13 @@
 
     <!-- Modal para Cadastrar Novo Usuário -->
     <div class="modal fade" id="modalNovoUsuario" tabindex="-1" aria-labelledby="modalNovoUsuarioLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalNovoUsuarioLabel">Cadastrar Novo Usuário</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <div class="barra-verde-amarelo"></div>
                 <div class="modal-body">
                     <form id="form-novo-usuario">
                         <div class="mb-3">
@@ -96,11 +97,12 @@
                                 <option value="ADMIN">Administrador</option>
                             </select>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-primary">Salvar Usuário</button>
-                        </div>
                     </form>
+                </div>
+                <div class="barra-verde-amarelo"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-primary" form="form-novo-usuario">Salvar Usuário</button>
                 </div>
             </div>
         </div>
@@ -108,12 +110,13 @@
 
     <!-- Modal para Editar Usuário -->
     <div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-labelledby="modalEditarUsuarioLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalEditarUsuarioLabel">Editar Usuário</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <div class="barra-verde-amarelo"></div>
                 <div class="modal-body">
                     <form id="form-editar-usuario">
                         <input type="hidden" id="edit-usuario-id">
@@ -143,11 +146,12 @@
                                 <option value="INATIVO">Inativo</option>
                             </select>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                        </div>
                     </form>
+                </div>
+                <div class="barra-verde-amarelo"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-sm btn-primary" form="form-editar-usuario">Salvar Alterações</button>
                 </div>
             </div>
         </div>
@@ -155,18 +159,20 @@
 
     <!-- Modal de Confirmação Genérico -->
     <div class="modal fade" id="modalConfirmacaoUsuario" tabindex="-1" aria-labelledby="modalConfirmacaoUsuarioLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="confirm-title-usuario">Confirmar Ação</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <div class="barra-verde-amarelo"></div>
                 <div class="modal-body">
                     <p id="confirm-body-usuario"></p>
                 </div>
+                <div class="barra-verde-amarelo"></div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" id="btn-confirmar-acao-usuario">Confirmar</button>
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-sm" id="btn-confirmar-acao-usuario">Confirmar</button>
                 </div>
             </div>
         </div>
@@ -180,6 +186,7 @@
                     <h5 class="modal-title" id="modal-conteudo-dinamico-title"></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
+                <div class="barra-verde-amarelo"></div>
                 <div class="modal-body" id="modal-conteudo-dinamico-body">
                 </div>
             </div>

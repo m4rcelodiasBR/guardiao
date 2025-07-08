@@ -165,7 +165,7 @@ $(function() {
             const transf = detalhe.transferencia;
 
             const botaoDevolverHtml = detalhe.podeSerDevolvido ?
-                `<button class="btn btn-xs btn-primary btn-devolver" title="Registar Devolução" data-patrimonio="${transf.numeroPatrimonialItem}" data-descricao="${transf.descricaoItem}"><i class="bi bi-box-arrow-in-left"></i></button>`
+                `<button class="btn btn-xs btn-success btn-devolver" title="Registar Devolução" data-patrimonio="${transf.numeroPatrimonialItem}" data-descricao="${transf.descricaoItem}"><i class="bi bi-box-arrow-in-left"></i></button>`
                 : '';
 
             const incumbencia = transf.incumbenciaDestino || '';

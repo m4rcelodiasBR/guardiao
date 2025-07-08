@@ -139,7 +139,7 @@ $(function() {
 
         $('#pagination-controls').show();
         const totalItems = pageData.totalItems;
-        const pageNumber = pageData.currentPage; // Lembre-se que currentPage é baseado em 0 (0, 1, 2...)
+        const pageNumber = pageData.currentPage;
         const pageSize = parseInt(pageData.size || $pageSizeSelect.val(), 10);
         const startItem = totalItems > 0 ? (pageNumber * pageSize) + 1 : 0;
         const endItem = Math.min(startItem + pageSize - 1, totalItems);
