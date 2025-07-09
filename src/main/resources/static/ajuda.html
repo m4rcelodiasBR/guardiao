@@ -22,64 +22,111 @@
     <body>
         <div class="toast-container position-fixed top-0 end-0 p-3" id="toast-container"></div>
         <div id="navbar-placeholder"></div>
-        <main class="container-fluid mt-4">
-            <div class="row justify-content-center">
-                <div class="col-lg-10">
-                    <h2 class="mb-4">Ajuda & Perguntas Frequentes (FAQ)</h2>
-                    <div class="accordion" id="faqAccordion">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
-                                    Como eu cadastro um novo item?
-                                </button>
-                            </h2>
-                            <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Na página de <strong>Inventário</strong>, clique no botão verde "Novo item" no canto superior direito. Um formulário aparecerá para que você preencha os dados do bem, como número patrimonial, descrição, marca, etc. Após preencher, clique em "Salvar Item".
-                                </div>
-                            </div>
+        <main>
+            <div class="container-fluid mt-4">
+                <h2 class="mb-4">Central de Ajuda do SAGAP</h2>
+                <hr>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                            <button class="nav-link active text-start" id="v-pills-inventario-tab" data-bs-toggle="pill" data-bs-target="#v-pills-inventario" type="button" role="tab">
+                                <i class="bi bi-box-seam-fill me-2"></i> Inventário
+                            </button>
+                            <button class="nav-link text-start" id="v-pills-transferencias-tab" data-bs-toggle="pill" data-bs-target="#v-pills-transferencias" type="button" role="tab">
+                                <i class="bi bi-arrow-left-right me-2"></i> Transferências e Histórico
+                            </button>
+                            <button class="nav-link text-start" id="v-pills-importacao-tab" data-bs-toggle="pill" data-bs-target="#v-pills-importacao" type="button" role="tab">
+                                <i class="bi bi-file-earmark-arrow-up-fill me-2"></i> Importação em Massa
+                            </button>
+                            <button class="nav-link text-start" id="v-pills-usuarios-tab" data-bs-toggle="pill" data-bs-target="#v-pills-usuarios" type="button" role="tab">
+                                <i class="bi bi-people-fill me-2"></i> Gestão de Usuários
+                            </button>
+                            <button class="nav-link text-start" id="v-pills-sistema-tab" data-bs-toggle="pill" data-bs-target="#v-pills-sistema" type="button" role="tab">
+                                <i class="bi bi-gear-fill me-2"></i> Perfil e Sistema
+                            </button>
                         </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo">
-                                    Como faço para transferir um item?
-                                </button>
-                            </h2>
-                            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    Localize o item que deseja transferir na tabela de <strong>Inventário</strong>. Na coluna "Ações", clique no ícone de seta (<i class="bi bi-box-arrow-right"></i>). Um formulário de transferência será exibido para que você informe o destino e uma observação. Apenas itens com status "Disponível" podem ser transferidos.
-                                </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="tab-content" id="v-pills-tabContent">
+                            <div class="tab-pane fade show active" id="v-pills-inventario" role="tabpanel">
+                                <h4>Módulo de Inventário</h4>
+                                <p class="text-muted">Esta é a tela principal do sistema, onde você pode visualizar e gerenciar todos os ativos patrimoniais.</p>
+
+                                <h5 class="mt-4">Busca e Filtragem</h5>
+                                <p>Para encontrar itens específicos, utilize as ferramentas no topo da tabela. Você pode filtrar rapidamente por status clicando nos botões "Todos", "Disponíveis" e "Transferidos". Para uma busca mais detalhada, clique no botão "Pesquisar" para abrir o formulário de busca avançada.</p>
+
+                                <h5 class="mt-4">Adicionando um Novo Item</h5>
+                                <p>Para cadastrar um novo bem, clique no botão verde <strong>"Novo item"</strong> no canto superior direito. Preencha os dados no formulário que aparecer e clique em "Salvar Item".</p>
+
+                                <h5 class="mt-4">Ações Individuais e em Massa</h5>
+                                <p>Cada item na tabela possui botões de ação na última coluna para <strong>Editar </strong><button class="btn btn-primary btn-xs"><i class="bi bi-pencil-fill"></i></button>, <strong>Transferir </strong><button class="btn btn-warning btn-xs"><i class="bi bi-box-arrow-right"></i></button> ou <strong>Excluir </strong><button class="btn btn-danger btn-xs"><i class="bi bi-trash3-fill"></i></button>. Para realizar ações em múltiplos itens, marque as caixas de seleção na primeira coluna. Uma barra de ações aparecerá no topo da tabela, permitindo editar, transferir ou excluir todos os itens selecionados de uma vez.</p>
                             </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree">
-                                    Como funciona a importação em massa?
-                                </button>
-                            </h2>
-                            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    A importação em massa permite cadastrar vários itens de uma só vez a partir de um arquivo <strong>XML</strong> com formato específico. No menu, acesse a página de <strong>Importação</strong>, selecione o arquivo XML e clique em "Validar Ficheiro". O sistema irá verificar cada item. Você poderá então selecionar os itens válidos e confirmar a importação para o inventário.
-                                </div>
+                            <div class="tab-pane fade" id="v-pills-transferencias" role="tabpanel">
+                                <h4>Módulo de Transferências e Histórico</h4>
+                                <p class="text-muted">Este módulo controla toda a movimentação de ativos entre diferentes responsabilidades (incumbências).</p>
+
+                                <h5 class="mt-4">Como Realizar uma Transferência</h5>
+                                <p>Na tela de Inventário, encontre o item que deseja mover e clique no ícone de transferência <button class="btn btn-warning btn-xs"><i class="bi bi-box-arrow-right"></i></button>. No formulário que abrir, selecione a <strong>Incumbência de Destino</strong> e adicione uma <strong>Observação </strong><button class="btn btn-xs btn-secondary"><i class="bi bi-eye-fill"></i></button> detalhando o motivo da transferência. Apenas itens com status <span class="badge rounded-pill text-bg-success">Disponível</span> podem ser transferidos.</p>
+
+                                <h5 class="mt-4">Consultando o Histórico</h5>
+                                <p>Clique no link <strong>"Histórico"</strong> no menu principal para ver um registro completo de todas as transferências. Você pode pesquisar por um item específico, destino ou usuário para auditar as movimentações. O status de cada transferência (se foi uma baixa permanente ou temporária) é indicado pela cor da badge de incumbência.</p>
+
+                                <h5 class="mt-4">Registrando uma Devolução</h5>
+                                <p>Se um item transferido temporariamente retornou, você pode registrar sua devolução na tela de <strong>Histórico</strong>. Encontre o registro da transferência e clique no botão de devolução <button class="btn btn-xs btn-success"><i class="bi bi-box-arrow-in-left"></i></button>. O item voltará a ter o status <span class="badge rounded-pill text-bg-success">Disponível</span> no inventário.</p>
                             </div>
-                        </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour">
-                                    O que significa quando um item está "Excluído"?
-                                </button>
-                            </h2>
-                            <div id="collapseFour" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">
-                                    O sistema utiliza "exclusão lógica". Isso significa que, ao excluir um item, ele não é apagado permanentemente, mas sim marcado como "EXCLUÍDO". Ele some da lista principal de inventário, mas seu histórico de transferências é preservado. Um item excluído pode ser "reativado" através da tela de <strong>Importação</strong>, caso um item com o mesmo número patrimonial seja importado novamente.
-                                </div>
+                            <div class="tab-pane fade" id="v-pills-importacao" role="tabpanel">
+                                <h4>Módulo de Importação em Massa</h4>
+                                <p class="text-muted">Esta funcionalidade (disponível para Administradores) permite cadastrar ou reativar centenas de itens de uma só vez a partir de um arquivo XML.</p>
+
+                                <h5 class="mt-4">Processo de Importação</h5>
+                                <ol>
+                                    <li><strong>Seleção do Arquivo:</strong> Clique em "Selecionar ficheiro" e escolha o arquivo XML com os dados dos itens.</li>
+                                    <li><strong>Validação:</strong> Clique em "Validar Ficheiro". O sistema irá ler o arquivo e analisar cada item, exibindo o resultado em uma tabela de pré-visualização.</li>
+                                    <li><strong>Análise dos Resultados:</strong>
+                                        <ul>
+                                            <li><span class="text-bg-success"><strong>Linha Verde (Válido):</strong> O item é novo e está pronto para ser importado.</span></li>
+                                            <li><span class="text-bg-warning"><strong>Linha Amarela (Aviso):</strong> O item já existe no sistema, mas está marcado como "EXCLUÍDO". Ao importar, ele será reativado e seus dados atualizados.</span></li>
+                                            <li><span class="text-bg-danger"><strong>Linha Vermelha (Inválido):</strong> O item possui um erro (ex: número patrimonial já em uso por um item ativo) e não pode ser importado.</span></li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Confirmação:</strong> Marque os itens que deseja importar (os válidos e com aviso) e clique em "Confirmar Importação".</li>
+                                </ol>
+                            </div>
+                            <div class="tab-pane fade" id="v-pills-usuarios" role="tabpanel">
+                                <h4>Módulo de Gestão de Usuários</h4>
+                                <p class="text-muted">Seção exclusiva para Administradores, para gerenciar quem pode acessar o sistema.</p>
+
+                                <h5 class="mt-4">Níveis de Permissão</h5>
+                                <p>Existem dois tipos de usuário no SAGAP:</p>
+                                <ul>
+                                    <li><span class="badge rounded-pill text-bg-info">Usuário</span>: Pode visualizar o inventário, o histórico e realizar transferências.</li>
+                                    <li><span class="badge rounded-pill text-bg-primary">Administrador</span>: Possui todas as permissões de um usuário padrão, e adicionalmente pode criar/editar/excluir itens, gerenciar outros usuários e realizar importações em massa.</li>
+                                </ul>
+
+                                <h5 class="mt-4">Ações Disponíveis</h5>
+                                <p>Nesta seção, o administrador pode criar novos usuários, editar seus dados (nome, e-mail, perfil e status), resetar suas senhas para o valor padrão ou excluí-los permanentemente do sistema.</p>
+                            </div>
+                            <div class="tab-pane fade" id="v-pills-sistema" role="tabpanel">
+                                <h4>Módulo de Perfil e Sistema</h4>
+                                <p class="text-muted">Funcionalidades globais e de personalização da sua experiência no sistema.</p>
+
+                                <h5 class="mt-4">Meu Perfil</h5>
+                                <p>Acessando <strong>"Meu Perfil"</strong> no menu do usuário (canto superior direito), você pode alterar seu nome, e-mail e sua senha de acesso. Ao alterar a senha, o sistema valida em tempo real se os requisitos de segurança (tamanho, caracteres especiais, etc.) estão sendo atendidos.</p>
+
+                                <h5 class="mt-4">Troca de Tema</h5>
+                                <p>No canto superior direito da navbar, você encontrará um ícone de sol (<i class="bi bi-sun-fill"></i>) ou lua (<i class="bi bi-moon-stars-fill"></i>). Clique nele para alternar instantaneamente entre os temas claro e escuro. Sua preferência fica salva no navegador.</p>
+
+                                <h5 class="mt-4">Botão Voltar ao Topo</h5>
+                                <p>Em páginas com muito conteúdo, um botão com uma seta para cima (<i class="bi bi-arrow-up"></i>) aparecerá no canto inferior direito. Clique nele para rolar suavemente de volta ao topo da página.</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
+        <div id="footer-placeholder"></div>
 
+        <!-- Modal dinâmico -->
         <div class="modal fade" id="modal-conteudo-dinamico" tabindex="-1" aria-labelledby="modalConteudoDinamicoLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">

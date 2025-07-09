@@ -57,9 +57,11 @@
             <div class="d-flex align-items-center">
                 <span class="me-2">Itens por página:</span>
                 <select class="form-select form-select-sm" id="page-size-select-historico" style="width: 75px;">
-                    <option value="10" selected>10</option>
+                    <option value="5" selected>5</option>
+                    <option value="10">10</option>
                     <option value="25">25</option>
                     <option value="50">50</option>
+                    <option value="100">100</option>
                 </select>
                 <span id="page-info-historico" class="ms-3 text-muted"></span>
             </div>
@@ -93,6 +95,7 @@
             </div>
         </div>
     </main>
+    <div id="footer-placeholder"></div>
 
     <!-- MODAL DE DEVOLUÇÃO -->
     <div class="modal fade" id="modalDevolucao" tabindex="-1" aria-labelledby="modalDevolucaoLabel" aria-hidden="true">

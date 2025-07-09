@@ -260,6 +260,7 @@ $(function() {
             data: JSON.stringify(data),
             success: function() {
                 modalDevolucao.hide();
+                $formDevolucao[0].reset();
                 showAlert('Devolução registrada com sucesso! O item está disponível no inventário.', 'success');
                 performSearch(currentPage);
             },

@@ -149,6 +149,8 @@ $(function() {
         setupGlobalUI(userRole);
     });
 
+    $("#footer-placeholder").load("footer.html");
+
     const $scrollToTopButton = $('#btn-scroll-to-top');
     $scrollToTopButton.on('click', function() {
         $('html, body').animate({ scrollTop: 0 }, 'smooth');

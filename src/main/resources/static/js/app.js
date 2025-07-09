@@ -543,16 +543,27 @@ $(function() {
     $formEdicaoMassa.on('submit', function(e) {
         e.preventDefault();
         const $form = $(this);
-        const $submitButton = $form.find('button[type="submit"]');
-        const data = {
-            numerosPatrimoniais: Array.from(selectedItems),
-            localizacao: $('#massa-localizacao').val(),
-            compartimento: $('#massa-compartimento').val()
-        };
-        if (!data.localizacao && !data.compartimento) {
+        const $submitButton = $form.closest('.modal-content').find('button[type="submit"][form="form-edicao-massa"]');
+        const localizacao = $('#massa-localizacao').val();
+        const compartimento = $('#massa-compartimento').val();
+
+        if (!localizacao && !compartimento) {
             showAlert('Preencha pelo menos um campo (Localização ou Compartimento) para atualizar.', 'warning');
             return;
         }
+
+        const data = {
+            numerosPatrimoniais: Array.from(selectedItems)
+        };
+
+        if (localizacao) {
+            data.localizacao = localizacao;
+        }
+
+        if (compartimento) {
+            data.compartimento = compartimento;
+        }
+
         $.ajax({
             url: '/api/itens/massa',
             method: 'PUT',
@@ -699,7 +710,6 @@ $(function() {
     };
 
     // --- INICIALIZAÇÃO ---
-    fetchAndDisplayItems();
     popularCompartimentos('#novo-compartimento', 'Selecione um compartimento...');
     popularCompartimentos('#busca-compartimento', 'Todos os compartimentos');
     popularCompartimentos('#massa-compartimento', 'Manter o compartimento atual');
