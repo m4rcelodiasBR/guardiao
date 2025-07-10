@@ -274,7 +274,7 @@ footer {
 
 .navbar-brand-title {
     font-family: 'Octin College', serif;
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 600;
     line-height: 1.5;
     color: #fff;
@@ -283,7 +283,7 @@ footer {
 .navbar-brand-uptitle,
 .navbar-brand-subtitle {
     font-family: 'Octin College', serif;
-    font-size: .8rem;
+    font-size: .9rem;
     font-weight: 500;
     line-height: 1;
     letter-spacing: 0.5px;
