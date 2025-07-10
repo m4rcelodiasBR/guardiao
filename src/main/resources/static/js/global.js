@@ -74,7 +74,7 @@ const showAlert = (message, type = 'success') => {
 
     const toastElement = document.getElementById(toastId);
     const toast = new bootstrap.Toast(toastElement, {
-        delay: 5000 // O toast some após 5 segundos
+        delay: 7000
     });
 
     toastElement.addEventListener('hidden.bs.toast', () => {
