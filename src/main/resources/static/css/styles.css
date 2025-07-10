@@ -1,3 +1,60 @@
+/* Declarações da Família de Fontes 'Octin College' */
+/* Light */
+@font-face {
+    font-family: 'Octin College';
+    src: url('../css/fonts/OctinCollegeLt-Regular.otf') format('opentype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+/* Regular */
+@font-face {
+    font-family: 'Octin College';
+    src: url('../css/fonts/OctinCollegeRg-Regular.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+/* SemiBold */
+@font-face {
+    font-family: 'Octin College';
+    src: url('../css/fonts/OctinCollegeSb-Regular.otf') format('opentype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+/* Bold */
+@font-face {
+    font-family: 'Octin College';
+    src: url('../css/fonts/OctinCollegeRg-Bold.otf') format('opentype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+/* Bold (interpretado de 'Bl') */
+@font-face {
+    font-family: 'Octin College';
+    src: url('../css/fonts/OctinCollegeBl-Regular.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* Heavy */
+@font-face {
+    font-family: 'Octin College';
+    src: url('../css/fonts/OctinCollegeHv-Regular.otf') format('opentype');
+    font-weight: 800;
+    font-style: normal;
+}
+
+/* Black */
+@font-face {
+    font-family: 'Octin College';
+    src: url('../css/fonts/OctinCollegeBk-Regular.otf') format('opentype');
+    font-weight: 900;
+    font-style: normal;
+}
+
 /* Declarações da Família de Fontes 'Genos' */
 /* --- Thin --- */
 @font-face {
@@ -213,20 +270,31 @@ footer {
 
 .nav-logo {
     padding-right: 1.5rem;
-    border-right: .2rem double #fff;
 }
 
 .navbar-brand-title {
+    font-family: 'Octin College', serif;
+    font-size: 1.8rem;
     font-weight: 600;
     line-height: 1.5;
+    color: #fff;
+}
+
+.navbar-brand-uptitle,
+.navbar-brand-subtitle {
+    font-family: 'Octin College', serif;
+    font-size: .8rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.5px;
 }
 
 .navbar-brand-subtitle {
-    font-size: .75rem;
-    font-weight: 300;
-    line-height: 1;
-    opacity: 0.8;
-    letter-spacing: 0.5px;
+    color: var(--amarelo-color);
+}
+
+.navbar-brand-uptitle {
+    color: #fff;
 }
 
 .dropdown-menu {
