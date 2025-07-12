@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link rel="stylesheet" href="/css/bootstrap-icons.min.css">
     <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/datatables.css">
+    <link rel="stylesheet" href="/css/datatables.min.css">
     <script>
         (function() {
             const theme = localStorage.getItem('theme') || 'dark';
@@ -52,46 +54,22 @@
                 </form>
             </div>
         </div>
-        <div id="pagination-controls-historico" class="d-flex justify-content-between align-items-center my-3" style="display: none;">
-            <div class="d-flex align-items-center">
-                <span class="me-2">Itens por página:</span>
-                <select class="form-select form-select-sm" id="page-size-select-historico" style="width: 75px;">
-                    <option value="5" selected>5</option>
-                    <option value="10">10</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                </select>
-                <span id="page-info-historico" class="ms-3 text-muted"></span>
-            </div>
-            <nav>
-                <ul class="pagination mb-0" id="pagination-nav-historico">
-                </ul>
-            </nav>
-        </div>
-        <div class="table-wrapper position-relative">
-            <div class="table-loading-overlay d-none">
-                <div class="progress w-75" role="progressbar" aria-label="Animated striped example" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%">Carregando Dados...</div>
-                </div>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped table-hover sortable">
-                    <thead class="table-dark">
-                    <tr>
-                        <th data-sortable data-column="dataTransferencia">Data</th>
-                        <th data-sortable data-column="numeroPatrimonialItem">NumPAT</th>
-                        <th data-sortable data-column="descricaoItem">Descrição</th>
-                        <th data-sortable data-column="incumbenciaDestino">Incumbência de Destino</th>
-                        <th data-sortable data-column="observacao">Obs.</th>
-                        <th data-sortable data-column="usuario">Realizado por</th>
-                        <th>Ações</th>
-                    </tr>
-                    </thead>
-                    <tbody id="tabela-historico">
-                    </tbody>
-                </table>
-            </div>
+        <div class="table-responsive">
+            <table id="datatable-historico" class="table table-striped table-hover" style="width: 100%">
+                <thead class="table-dark">
+                <tr>
+                    <th style="width: 10%;">Data</th>
+                    <th style="width: 5%;">NumPAT</th>
+                    <th>Descrição</th>
+                    <th style="width: 10%;">Incumbência Destino</th>
+                    <th style="width: 3%;">Obs.</th>
+                    <th>Realizado por</th>
+                    <th style="width: 5%;">Ações</th>
+                </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
         </div>
     </main>
     <div id="footer-placeholder"></div>
@@ -171,6 +149,10 @@
     <script src="/js/bootstrap.bundle.min.js"></script>
     <script src="/js/global.js"></script>
     <script src="/js/historico.js"></script>
+    <script src="/js/datatables.js"></script>
+    <script src="/js/datatables.min.js"></script>
+    <script src="/js/datatables-ellipsis.js"></script>
+
 
     <button id="btn-scroll-to-top" class="btn btn-primary" title="Voltar ao Topo">
         <i class="bi bi-caret-up-fill"></i>

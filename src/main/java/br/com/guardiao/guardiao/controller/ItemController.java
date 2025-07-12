@@ -6,8 +6,12 @@ import br.com.guardiao.guardiao.model.Usuario;
 import br.com.guardiao.guardiao.service.ItemService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -96,5 +100,44 @@ public class ItemController {
     public Item devolverItem(@RequestBody @Valid DevolucaoDTO devolucaoDTO, Authentication authentication) {
         Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
         return itemService.registrarDevolucao(devolucaoDTO, usuarioLogado);
+    }
+
+    /**
+     * Endpoint montar a tabela de itens do inventário com DataTables.
+     */
+    @PostMapping("/datatable")
+    public ResponseEntity<DataTablesResponseDTO<ItemAtivoDTO>> listarItensParaDataTable(
+            @RequestBody ItemBuscaDTO itemBuscaDTO, // Recebe os filtros avançados no corpo da requisição
+            @RequestParam("draw") int draw,
+            @RequestParam("start") int start,
+            @RequestParam("length") int length,
+            @RequestParam("search[value]") String globalSearchValue,
+            @RequestParam(name = "order[0][column]", required = false, defaultValue = "2") int orderColumnIndex,
+            @RequestParam(name = "order[0][dir]", required = false, defaultValue = "asc") String orderDirection) {
+
+        List<String> columnNames = List.of(
+                "checkbox", "status", "numeroPatrimonial", "descricao",
+                "marca", "numeroDeSerie", "localizacao", "compartimento", "acoes"
+        );
+
+        Sort sort = Sort.unsorted();
+        if (orderColumnIndex >= 0 && orderColumnIndex < columnNames.size()) {
+            String columnName = columnNames.get(orderColumnIndex);
+            if (!columnName.equals("checkbox") && !columnName.equals("acoes")) {
+                sort = Sort.by(Sort.Direction.fromString(orderDirection), columnName);
+            }
+        }
+
+        Pageable pageable = PageRequest.of(start / length, length, sort);
+
+        Page<ItemAtivoDTO> paginaDeItens = itemService.buscarItensParaDataTable(itemBuscaDTO, globalSearchValue, pageable);
+
+        var responseDTO = new DataTablesResponseDTO<ItemAtivoDTO>();
+        responseDTO.setDraw(draw);
+        responseDTO.setRecordsTotal(paginaDeItens.getTotalElements());
+        responseDTO.setRecordsFiltered(paginaDeItens.getTotalElements());
+        responseDTO.setData(paginaDeItens.getContent());
+
+        return ResponseEntity.ok(responseDTO);
     }
 }

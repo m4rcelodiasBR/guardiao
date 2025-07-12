@@ -1,5 +1,6 @@
 package br.com.guardiao.guardiao.controller;
 
+import br.com.guardiao.guardiao.controller.dto.DataTablesResponseDTO;
 import br.com.guardiao.guardiao.controller.dto.RegistroUsuarioDTO;
 import br.com.guardiao.guardiao.controller.dto.UsuarioDTO;
 import br.com.guardiao.guardiao.controller.dto.UsuarioUpdateDTO;
@@ -8,12 +9,14 @@ import br.com.guardiao.guardiao.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -51,5 +54,33 @@ public class UsuarioController {
     public ResponseEntity<Void> resetarSenha(@PathVariable Integer id) {
         usuarioService.resetarSenha(id);
         return ResponseEntity.ok().build();
+    }
+
+    // br/com/guardiao/guardiao/controller/UsuarioController.java
+
+    @PostMapping("/datatable")
+    public ResponseEntity<DataTablesResponseDTO<UsuarioDTO>> listarUsuariosParaDataTable(
+            @RequestParam("draw") int draw,
+            @RequestParam("start") int start,
+            @RequestParam("length") int length,
+            @RequestParam("search[value]") String searchValue,
+            @RequestParam(name = "order[0][column]", required = false, defaultValue = "1") int orderColumnIndex,
+            @RequestParam(name = "order[0][dir]", required = false, defaultValue = "asc") String orderDirection) {
+
+        List<String> columnNames = List.of("login", "nome", "email", "perfil", "status");
+
+        String orderColumnName = columnNames.get(orderColumnIndex);
+        Sort sort = Sort.by(Sort.Direction.fromString(orderDirection), orderColumnName);
+        Pageable pageable = PageRequest.of(start / length, length, sort);
+
+        Page<UsuarioDTO> paginaDeUsuarios = usuarioService.listarUsuariosParaDataTable(searchValue, pageable);
+
+        var responseDTO = new DataTablesResponseDTO<UsuarioDTO>();
+        responseDTO.setDraw(draw);
+        responseDTO.setRecordsTotal(paginaDeUsuarios.getTotalElements());
+        responseDTO.setRecordsFiltered(paginaDeUsuarios.getTotalElements());
+        responseDTO.setData(paginaDeUsuarios.getContent());
+
+        return ResponseEntity.ok(responseDTO);
     }
 }

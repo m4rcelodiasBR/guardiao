@@ -7,6 +7,7 @@ import br.com.guardiao.guardiao.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -113,5 +114,26 @@ public class UsuarioService {
         }
         usuarioLogado.setSenha(passwordEncoder.encode(dados.getNovaSenha()));
         usuarioRepository.save(usuarioLogado);
+    }
+
+    public Page<UsuarioDTO> listarUsuariosParaDataTable(String termoBusca, Pageable pageable) {
+        Specification<Usuario> spec = (root, query, criteriaBuilder) -> {
+
+            var statusPredicate = criteriaBuilder.notEqual(root.get("status"), StatusUsuario.EXCLUIDO);
+
+            if (termoBusca == null || termoBusca.isBlank()) {
+                return statusPredicate;
+            }
+
+            var nomeLike = criteriaBuilder.like(criteriaBuilder.lower(root.get("nome")), "%" + termoBusca.toLowerCase() + "%");
+            var loginLike = criteriaBuilder.like(criteriaBuilder.lower(root.get("login")), "%" + termoBusca.toLowerCase() + "%");
+            var emailLike = criteriaBuilder.like(criteriaBuilder.lower(root.get("email")), "%" + termoBusca.toLowerCase() + "%");
+
+            var orPredicate = criteriaBuilder.or(nomeLike, loginLike, emailLike);
+
+            return criteriaBuilder.and(statusPredicate, orPredicate);
+        };
+
+        return usuarioRepository.findAll(spec, pageable).map(UsuarioDTO::new);
     }
 }

@@ -350,27 +350,8 @@ footer {
     vertical-align: middle;
 }
 
-th[data-sortable]:hover {
+th[datatable]:hover {
     cursor: pointer;
-    background-color: #454d55;
-}
-
-.table-loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--bs-success);
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--bs-border-radius);
-}
-
-[data-bs-theme="dark"] .table-loading-overlay {
-    background-color: rgba(33, 37, 41, 0.7);
 }
 
 .password-rules {
@@ -402,18 +383,6 @@ th[data-sortable]:hover {
 .password-rules li.invalid i::before {
     content: "\f62a";
     font-weight: bold;
-}
-
-mark {
-    padding: 0.1em 0.2em;
-    border-radius: 3px;
-    background-color: #3E6246;
-    color: #fff;
-}
-
-[data-bs-theme="dark"] mark {
-    background-color: var(--amarelo-color);
-    color: #000;
 }
 
 .table {
@@ -488,4 +457,18 @@ mark {
 
 #btn-scroll-to-top:hover {
     opacity: 0.9;
+}
+
+/* DATATABLES */
+.dt-paging .pagination {
+    --bs-pagination-padding-x: 0.5rem;
+    --bs-pagination-padding-y: 0.25rem;
+    --bs-pagination-font-size: 0.875rem;
+    --bs-pagination-border-radius: 0.25rem;
+}
+
+.dt-info,
+.dt-length,
+#buttons-title-placeholder {
+    font-size: 0.875rem;
 }

@@ -91,24 +91,24 @@ public class TransferenciaService {
         }
     }
 
-    public PageDTO<TransferenciaDetalheDTO> buscarTransferencias(TransferenciaBuscaDTO transferenciaBuscaDTO, Pageable pageable) {
+    public Page<TransferenciaDetalheDTO> listarTransferenciasParaDataTable(TransferenciaBuscaDTO transferenciaBuscaDTO, Pageable pageable) {
         Specification<Transferencia> spec = transferenciaSpecification.getSpecifications(transferenciaBuscaDTO);
+
         Page<Transferencia> paginaDeTransferencias = transferenciaRepository.findAll(spec, pageable);
 
-        Page<TransferenciaDetalheDTO> dtoPage = paginaDeTransferencias.map(transferencia -> {
+        return paginaDeTransferencias.map(transferencia -> {
             Item itemDaTransferencia = transferencia.getItem();
             boolean podeDevolver = false;
-            if (itemDaTransferencia.getStatus() == StatusItem.TRANSFERIDO) {
+            if (itemDaTransferencia != null && itemDaTransferencia.getStatus() == StatusItem.TRANSFERIDO) {
                 boolean isUltimaTransferencia = transferenciaRepository.findTopByItemIdOrderByIdDesc(itemDaTransferencia.getId())
                         .map(ultima -> ultima.getId().equals(transferencia.getId()))
                         .orElse(false);
                 String destino = transferencia.getIncumbenciaDestino();
-                boolean isTransferenciaPermanente = destino.startsWith("000") || destino.startsWith("001") || destino.startsWith("002");
+                boolean isTransferenciaPermanente = destino != null && (destino.startsWith("000") || destino.startsWith("001") || destino.startsWith("002"));
 
                 podeDevolver = isUltimaTransferencia && !isTransferenciaPermanente;
             }
             return new TransferenciaDetalheDTO(transferencia, podeDevolver);
         });
-        return new PageDTO<>(dtoPage);
     }
 }

@@ -5,13 +5,16 @@ import br.com.guardiao.guardiao.model.Usuario;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
 import java.util.Optional;
 
-public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
+public interface UsuarioRepository extends JpaRepository<Usuario, Integer>, JpaSpecificationExecutor<Usuario> {
 
     Optional<Usuario> findByEmail(String email);
 
     Optional<Usuario> findByLogin(String login);
 
     Page<Usuario> findAllByStatusNot(StatusUsuario status, Pageable pageable);
+
 }

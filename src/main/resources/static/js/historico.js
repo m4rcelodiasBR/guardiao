@@ -1,26 +1,21 @@
 $(function() {
 
     // --- SELETORES ---
-    const $tabelaHistoricoBody = $('#tabela-historico');
-    const $cabecalhoTabelaHistorico = $('#tabela-historico').closest('table').find('thead');
     const $formBusca = $('#form-busca-historico-avancada');
     const $btnLimparBusca = $('#btn-limpar-busca-historico');
     const $formDevolucao = $('#form-devolucao');
-    const $btnLogout = $('#btn-logout');
-    const $paginationControls = $('#pagination-controls-historico');
-    const $paginationNav = $('#pagination-nav-historico');
-    const $pageSizeSelect = $('#page-size-select-historico');
     const modalDevolucao = new bootstrap.Modal(document.getElementById('modalDevolucao'));
     const modalObservacoes = new bootstrap.Modal(document.getElementById('modalObservacoes'));
 
-    // --- VARIÁVEIS DE ESTADO ---
-    let currentSort = { column: 'dataTransferencia', direction: 'desc' };
-    let currentPage = 0;
-
     // --- FUNÇÕES ---
     const formatarData = (dataISO) => {
-        if (!dataISO) return 'N/A';
-        return new Date(dataISO).toLocaleString('pt-BR');
+        if (!dataISO) return '';
+        const options = {
+            year: 'numeric', month: '2-digit', day: '2-digit',
+            hour: '2-digit', minute: '2-digit', second: '2-digit',
+            hour12: false
+        };
+        return new Date(dataISO).toLocaleString('pt-BR', options);
     };
 
     const popularCompartimentosDevolucao = () => {
@@ -37,215 +32,185 @@ $(function() {
         });
     };
 
-    const performSearch = (page = 0) => {
-        const formDataArray = $formBusca.serializeArray();
-        let searchParams = {};
-        formDataArray.forEach(item => { if (item.value) { searchParams[item.name] = item.value; } });
-        fetchHistory(searchParams, page, $pageSizeSelect.val());
-    };
+    const dataTable = $('#datatable-historico').DataTable({
+        serverSide: true,
+        responsive: true,
+        processing: true,
+        ajax: function (data, callback, settings) {
+            const formDataArray = $formBusca.serializeArray();
+            let buscaAvancada = {};
+            formDataArray.forEach(item => { if (item.value) { buscaAvancada[item.name] = item.value; } });
 
-    const fetchHistory = (searchParams = {}, page = 0, size = 10) => {
-        searchParams.page = page;
-        searchParams.size = size;
-        searchParams.sort = `${currentSort.column},${currentSort.direction}`;
-        const queryString = $.param(searchParams);
-        const $overlay = $('.table-loading-overlay');
+            const dtParams = {
+                draw: data.draw,
+                start: data.start,
+                length: data.length,
+            };
 
-        $.ajax({
-            url: `/api/transferencias?${queryString}`,
-            method: 'GET',
-            dataType: 'json',
-            beforeSend: function() {
-                $overlay.removeClass('d-none');
+            if (data.order && data.order.length > 0) {
+                dtParams['order[0][column]'] = data.order[0].column;
+                dtParams['order[0][dir]'] = data.order[0].dir;
+            }
+
+            const url = '/api/transferencias/datatable?' + $.param(dtParams);
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(buscaAvancada),
+                success: function(json) {
+                    callback(json);
+                },
+                error: function() {
+                    showAlert('Erro ao carregar histórico.', 'danger');
+                    callback({ draw: data.draw, recordsTotal: 0, recordsFiltered: 0, data: [] });
+                }
+            });
+        },
+        columns: [
+            { data: 'transferencia.dataTransferencia', render: (data) => formatarData(data) },
+            { data: 'transferencia.numeroPatrimonialItem', defaultContent: '' },
+            { data: 'transferencia.descricaoItem', render: $.fn.dataTable.render.ellipsis(80, true) },
+            {
+                data: 'transferencia.incumbenciaDestino',
+                render: function(data) {
+                    if (!data) return '';
+                    const isBaixaDefinitiva = ["000", "001", "002"].some(prefix => data.startsWith(prefix));
+                    const badgeClass = isBaixaDefinitiva ? 'text-bg-danger' : 'text-bg-warning';
+                    return `<span class="badge rounded-pill ${badgeClass}">${data}</span>`;
+                }
             },
-            success: (pageData) => {
-                const detalhesTransferencia = pageData.content;
-                renderHistoryTable(detalhesTransferencia);
-                currentPage = pageData.currentPage;
-                renderPaginationControls(pageData);
+            {
+                data: 'transferencia.observacao',
+                orderable: false,
+                searchable: false,
+                render: function(data) {
+                    if (!data) return '';
+                    const obsEscapada = $('<textarea />').text(data).html();
+                    return `<button class="btn btn-xs btn-secondary btn-ver-obs" data-obs="${obsEscapada}" title="Ver observações"><i class="bi bi-eye-fill"></i></button>`;
+                }
             },
-            error: () => {
-                $tabelaHistoricoBody.html('<tr><td colspan="7" class="text-center text-danger">Erro ao carregar o histórico.</td></tr>');
-                $paginationControls.hide();
-            },
-            complete: function() {
-                $overlay.addClass('d-none');
-            }
-        });
-    };
-
-    const renderPaginationControls = (pageData) => {
-        const $paginationNav = $('#pagination-nav-historico');
-        const $paginationControls = $('#pagination-controls-historico');
-        const $pageInfo = $('#page-info-historico');
-        const $pageSizeSelect = $('#page-size-select-historico');
-
-        $paginationNav.empty();
-
-        if (pageData.totalPages <= 1) {
-            $paginationControls.hide();
-            return;
-        }
-
-        $paginationControls.show();
-        const totalItems = pageData.totalItems;
-        const pageNumber = pageData.currentPage;
-
-        const pageSize = parseInt(pageData.size || $pageSizeSelect.val(), 10);
-
-        const startItem = totalItems > 0 ? (pageNumber * pageSize) + 1 : 0;
-        const endItem = Math.min(startItem + pageSize - 1, totalItems);
-        $pageInfo.text(`Exibindo ${startItem}-${endItem} de ${totalItems} registos`);
-
-        const totalPages = pageData.totalPages;
-        const currentPage = pageData.currentPage;
-        const maxPagesToShow = 7;
-        const createPageItem = (page, text, isActive = false, isDisabled = false) => {
-            return `
-            <li class="page-item ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}">
-                <a class="page-link" href="#" data-page="${page}">${text}</a>
-            </li>
-        `;
-        };
-
-        $paginationNav.append(createPageItem(currentPage - 1, 'Anterior', false, pageData.first));
-
-        if (totalPages <= maxPagesToShow) {
-            for (let i = 0; i < totalPages; i++) {
-                $paginationNav.append(createPageItem(i, i + 1, i === currentPage));
-            }
-        } else {
-            let startPage, endPage;
-            const pagesToShowBeforeAndAfter = Math.floor((maxPagesToShow - 2) / 2);
-
-            if (currentPage <= pagesToShowBeforeAndAfter) {
-                startPage = 0;
-                endPage = maxPagesToShow - 2;
-            } else if (currentPage + pagesToShowBeforeAndAfter >= totalPages - 1) {
-                startPage = totalPages - (maxPagesToShow - 1);
-                endPage = totalPages - 1;
-            } else {
-                startPage = currentPage - pagesToShowBeforeAndAfter;
-                endPage = currentPage + pagesToShowBeforeAndAfter;
-            }
-
-            $paginationNav.append(createPageItem(0, '1', 0 === currentPage));
-
-            if (startPage > 1) {
-                $paginationNav.append(createPageItem(currentPage - 3, '...', false, true));
-            }
-
-            for (let i = startPage; i <= endPage; i++) {
-                if (i > 0 && i < totalPages - 1) {
-                    $paginationNav.append(createPageItem(i, i + 1, i === currentPage));
+            { data: 'transferencia.usuario.nome', defaultContent: 'N/A' },
+            {
+                data: 'podeSerDevolvido',
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row) {
+                    if (data) {
+                        const patrimonio = row.transferencia.numeroPatrimonialItem;
+                        const descricao = $('<textarea />').text(row.transferencia.descricaoItem).html();
+                        return `<button class="btn btn-xs btn-success btn-devolver" title="Registar Devolução" data-patrimonio="${patrimonio}" data-descricao="${descricao}"><i class="bi bi-box-arrow-in-left"></i></button>`;
+                    }
+                    return '';
                 }
             }
-
-            if (endPage < totalPages - 2) {
-                $paginationNav.append(createPageItem(currentPage + 3, '...', false, true));
+        ],
+        language: { url: '/js/datatables-traducoes/pt-BR.json' },
+        order: [[0, 'desc']],
+        dom: "<'row mb-3'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 d-flex justify-content-md-end align-items-center'<'#buttons-title-placeholder'>B>>" +
+            "<'row my-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-md-end'p>>" +
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row my-3'<'col-sm-12 col-md-5'i><'data-pagination col-sm-12 col-md-7 d-flex justify-content-md-end'p>>",
+        buttonsTitle: 'Ações',
+        buttons: [
+            {
+                extend: 'copy',
+                text: '<i class="bi bi-copy"></i>',
+                titleAttr: 'Copiar linhas visíveis',
+                className: 'btn btn-sm btn-secondary',
+                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
+            },
+            {
+                extend: 'csv',
+                text: '<i class="bi bi-filetype-csv"></i>',
+                titleAttr: 'Exportar para CSV',
+                className: 'btn btn-sm btn-success',
+                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
+            },
+            {
+                 extend: 'copy',
+                text: '<i class="bi bi-filetype-xlsx"></i>',
+                titleAttr: 'Exportar para Excel',
+                className: 'btn btn-sm btn-success',
+                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
+            },
+            {
+                extend: 'collection',
+                text: '<i class="bi bi-filetype-pdf"></i>',
+                titleAttr: 'Exportar para PDF',
+                className: 'btn btn-sm btn-danger',
+                buttons: [
+                    {
+                        extend: 'pdfHtml5',
+                        text: 'Retrato',
+                        orientation: 'portrait',
+                        pageSize: 'A4',
+                        exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'},
+                        customize: function (doc) {
+                            doc.defaultStyle.fontSize = 10;
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: 'Paisagem',
+                        orientation: 'landscape',
+                        pageSize: 'A4',
+                        exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'},
+                        customize: function (doc) {
+                            doc.defaultStyle.fontSize = 10;
+                        }
+                    }
+                ]
+            },
+            {
+                extend: 'print',
+                text: '<i class="bi bi-printer"></i>',
+                titleAttr: 'Imprimir',
+                className: 'btn btn-sm btn-info',
+                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
             }
+        ]
+    });
 
-            $paginationNav.append(createPageItem(totalPages - 1, totalPages, totalPages - 1 === currentPage));
-        }
+    dataTable.on('init.dt', function() {
+        $('#buttons-title-placeholder').html('<span class="me-2">Exportar:</span>');
+    });
 
-        $paginationNav.append(createPageItem(currentPage + 1, 'Próximo', false, pageData.last));
-    };
-
-    const renderHistoryTable = (detalhesTransferencia) => {
-        $tabelaHistoricoBody.empty();
-
-        if (!detalhesTransferencia || detalhesTransferencia.length === 0) {
-            $tabelaHistoricoBody.html(
-                '<tr><td colspan="7" class="text-center text-muted">Nenhum registo encontrado.</td></tr>'
-            );
-            return;
-        }
-
-        detalhesTransferencia.forEach(detalhe => {
-            const transf = detalhe.transferencia;
-
-            const botaoDevolverHtml = detalhe.podeSerDevolvido ?
-                `<button class="btn btn-xs btn-success btn-devolver" title="Registar Devolução" data-patrimonio="${transf.numeroPatrimonialItem}" data-descricao="${transf.descricaoItem}"><i class="bi bi-box-arrow-in-left"></i></button>`
-                : '';
-
-            const incumbencia = transf.incumbenciaDestino || '';
-            const isBaixaDefinitiva = ["000", "001", "002"].some(prefix => incumbencia.startsWith(prefix));
-            const incumbenciaHtml = isBaixaDefinitiva ? `<span class="badge rounded-pill text-bg-danger">${incumbencia}</span>` : `<span class="badge rounded-pill text-bg-warning">${incumbencia}</span>`;
-
-            const observacao = transf.observacao || '';
-            const observacaoHtml = observacao ? `<button class="btn btn-xs btn-secondary btn-ver-obs" data-obs="${observacao}" title="Clique para visualizar observações"><i class="bi bi-eye-fill"></i></button>` : '';
-
-            const rowHtml = `
-                <tr>
-                    <td>${formatarData(transf.dataTransferencia)}</td>
-                    <td>${transf.numeroPatrimonialItem || 'N/A'}</td>
-                    <td><span class="truncate-text" title="${transf.descricaoItem || 'N/A'}">${transf.descricaoItem || 'N/A'}</span></td>
-                    <td>${incumbenciaHtml}</td>
-                    <td>${observacaoHtml}</td>
-                    <td>${transf.usuario ? transf.usuario.nome : 'Usuário desconhecido'}</td>
-                    <td>${botaoDevolverHtml}</td>
-                </tr>
-                `;
-            $tabelaHistoricoBody.append(rowHtml);
-        });
-    };
+    dataTable.on('draw.dt', function () {
+        $('.dt-buttons').removeClass('btn-group').addClass('btn-group-sm');
+    });
 
     // --- MANIPULADORES DE EVENTOS ---
-    $btnLogout.on('click', function() {
-        localStorage.removeItem('jwt_token');
-        window.location.href = '/login.html';
-    });
-
-    $('body').on('click', '.btn-ver-obs', function() {
-        const observacaoTexto = $(this).data('obs');
-        $('#modalObservacoesLabel').text('Observação da Transferência');
-        $('#modalObservacoesBody').text(observacaoTexto);
-        modalObservacoes.show();
-    });
-
-    $cabecalhoTabelaHistorico.on('click', 'th[data-sortable]', function() {
-        const columnKey = $(this).data('column');
-        if (!columnKey) return;
-        const direction = (currentSort.column === columnKey && currentSort.direction === 'asc') ? 'desc' : 'asc';
-        currentSort = { column: columnKey, direction: direction };
-        $cabecalhoTabelaHistorico.find('i.sort-icon').remove();
-        const iconClass = direction === 'asc' ? 'bi-arrow-up-short' : 'bi-arrow-down-short';
-        $(this).append(` <i class="bi ${iconClass} sort-icon text-warning"></i>`);
-        performSearch(currentPage);
-    });
-
     $formBusca.on('submit', (e) => {
         e.preventDefault();
-        performSearch(0);
+        dataTable.ajax.reload();
     });
 
     $btnLimparBusca.on('click', () => {
         $formBusca[0].reset();
-        performSearch(0);
+        dataTable.ajax.reload();
     });
 
-    $paginationNav.on('click', 'a.page-link', function(e) {
-        e.preventDefault();
-        if ($(this).parent().hasClass('disabled') || $(this).parent().hasClass('active')) { return; }
-        const page = $(this).data('page');
-        performSearch(page);
-    });
-
-    $pageSizeSelect.on('change', function() {
-        performSearch(0);
-    });
-
-    $('body').on('click', '.btn-devolver', function() {
-        const patrimonio = $(this).data('patrimonio');
-        const descricao = $(this).data('descricao');
-        $('#devolucao-patrimonio').val(patrimonio);
-        $('#devolucao-item-descricao').text(`${descricao} (NumPAT: ${patrimonio})`);
-        modalDevolucao.show();
+    $('#datatable-historico tbody').on('click', 'button', function() {
+        const $button = $(this);
+        if ($button.hasClass('btn-ver-obs')) {
+            const observacaoTexto = $button.data('obs');
+            $('#modalObservacoesLabel').text('Observação da Transferência');
+            $('#modalObservacoesBody').text(observacaoTexto);
+            modalObservacoes.show();
+        } else if ($button.hasClass('btn-devolver')) {
+            const patrimonio = $button.data('patrimonio');
+            const descricao = $button.data('descricao');
+            $('#devolucao-patrimonio').val(patrimonio);
+            $('#devolucao-item-descricao').text(`${descricao} (NumPAT: ${patrimonio})`);
+            modalDevolucao.show();
+        }
     });
 
     $formDevolucao.on('submit', function(e) {
         e.preventDefault();
-
+        const $submitButton = $(this).find('button[type="submit"]');
         const data = {
             numeroPatrimonial: $('#devolucao-patrimonio').val(),
             localizacao: $('#devolucao-localizacao').val(),
@@ -258,19 +223,24 @@ $(function() {
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(data),
+            beforeSend: function() {
+                $submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Devolvendo...');
+            },
             success: function() {
                 modalDevolucao.hide();
                 $formDevolucao[0].reset();
-                showAlert('Devolução registrada com sucesso! O item está disponível no inventário.', 'success');
-                performSearch(currentPage);
+                showAlert('Devolução registada com sucesso! O item está de volta no Inventário', 'success');
+                dataTable.ajax.reload();
             },
             error: function(xhr) {
                 showAlert(xhr.responseJSON?.message || "Erro ao registar devolução.", 'danger');
+            },
+            complete: function() {
+                $submitButton.prop('disabled', false).text('Confirmar Devolução');
             }
         });
     });
 
     // --- INICIALIZAÇÃO ---
-    performSearch();
     popularCompartimentosDevolucao();
 });

@@ -15,9 +15,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -193,5 +194,38 @@ public class ItemService {
         } else {
             salvarItem(itemCadastroDTO, usuarioLogado);
         }
+    }
+
+    public Page<ItemAtivoDTO> buscarItensParaDataTable(ItemBuscaDTO itemBuscaDTO, String globalSearchValue, Pageable pageable) {
+        Specification<Item> specFromAdvancedSearch = itemSpecification.getSpecifications(itemBuscaDTO);
+        Specification<Item> specFromGlobalSearch = itemSpecification.hasGlobalSearch(globalSearchValue);
+        Specification<Item> specBase = (root, query, cb) -> cb.notEqual(root.get("status"), StatusItem.EXCLUIDO);
+
+        Specification<Item> finalSpec = specBase.and(specFromAdvancedSearch)
+                .and(specFromGlobalSearch);
+
+        Page<Item> itensPaginados = itemRepository.findAll(finalSpec, pageable);
+
+        List<Integer> idsDosItensTransferidos = itensPaginados.getContent().stream()
+                .filter(item -> item.getStatus() == StatusItem.TRANSFERIDO)
+                .map(Item::getId)
+                .collect(Collectors.toList());
+
+        Map<Integer, Transferencia> ultimasTransferenciasPorItemId =
+                transferenciaRepository.findLatestTransferenciaForItens(idsDosItensTransferidos)
+                        .stream()
+                        .collect(Collectors.toMap(t -> t.getItem().getId(), Function.identity()));
+
+        return itensPaginados.map(item -> {
+            boolean isPermanente = false;
+            if (item.getStatus() == StatusItem.TRANSFERIDO) {
+                Transferencia ultimaTransferencia = ultimasTransferenciasPorItemId.get(item.getId());
+                if (ultimaTransferencia != null) {
+                    String destino = ultimaTransferencia.getIncumbenciaDestino();
+                    isPermanente = destino.startsWith("000") || destino.startsWith("001") || destino.startsWith("002");
+                }
+            }
+            return new ItemAtivoDTO(item, isPermanente);
+        });
     }
 }

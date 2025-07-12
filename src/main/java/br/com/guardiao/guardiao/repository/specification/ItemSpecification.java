@@ -62,4 +62,17 @@ public class ItemSpecification {
             return null;
         }
     }
+
+    public Specification<Item> hasGlobalSearch(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        String searchTerm = "%" + value.toLowerCase() + "%";
+        return (root, query, cb) -> cb.or(
+                cb.like(cb.lower(root.get("numeroPatrimonial")), searchTerm),
+                cb.like(cb.lower(root.get("descricao")), searchTerm),
+                cb.like(cb.lower(root.get("marca")), searchTerm),
+                cb.like(cb.lower(root.get("numeroDeSerie")), searchTerm)
+        );
+    }
 }

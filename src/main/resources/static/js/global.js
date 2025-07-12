@@ -151,6 +151,11 @@ $(function() {
 
     $("#footer-placeholder").load("footer.html");
 
+    $('#btn-logout').on('click', function() {
+        localStorage.removeItem('jwt_token');
+        window.location.href = '/login.html';
+    });
+
     const $scrollToTopButton = $('#btn-scroll-to-top');
     $scrollToTopButton.on('click', function() {
         $('html, body').animate({ scrollTop: 0 }, 'smooth');
