@@ -187,7 +187,7 @@ $(document).on('global-setup-complete', function() {
         dom: "<'row mb-3'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 d-flex justify-content-md-end align-items-center'<'#buttons-title-placeholder'>B>>" +
             "<'row my-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-md-end'p>>" +
             "<'row'<'col-sm-12'tr>>" +
-            "<'row my-3'<'col-sm-12 col-md-5'i><'data-pagination col-sm-12 col-md-7 d-flex justify-content-md-end'p>>",
+            "<'row my-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7 d-flex justify-content-md-end'p>>",
         buttonsTitle: 'Ações',
         buttons: [
             {

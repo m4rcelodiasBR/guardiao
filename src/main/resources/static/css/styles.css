@@ -301,6 +301,28 @@ footer {
     color: #fff;
 }
 
+.navbar-nav .nav-link {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.navbar-nav .nav-link i {
+    font-size: 1.6rem;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.navbar-nav .nav-link span {
+    font-size: 0.9rem;
+    line-height: 1;
+}
+
+.navbar-dark .navbar-nav .nav-link.active,
+.navbar-dark .navbar-nav .show > .nav-link {
+    color: var(--bs-warning);
+    border-radius: 0.375rem;
+}
+
 .dropdown-menu {
     background-color: var(--bg-color);
 }

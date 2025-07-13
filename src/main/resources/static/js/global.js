@@ -135,8 +135,10 @@ $(function() {
         if (currentPath.endsWith('/')) {
             currentPath = '/index.html';
         }
+
         $('#main-nav .nav-link').each(function() {
-            if ($(this).attr('href') === '.' + currentPath) {
+            const linkHref = $(this).attr('href');
+            if (linkHref === currentPath) {
                 $(this).addClass('active');
             }
         });
