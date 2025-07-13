@@ -1,4 +1,4 @@
-$(function() {
+$(document).on('global-setup-complete', function() {
 
     if (userRole !== 'ADMIN') {
         alert('Acesso negado. Você não tem permissão para visualizar esta página.');

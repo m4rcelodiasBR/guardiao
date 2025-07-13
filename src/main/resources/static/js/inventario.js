@@ -1,4 +1,4 @@
-$(function() {
+$(document).on('global-setup-complete', function() {
 
     const $formBuscaAvancada = $('#form-busca-avancada');
     const $btnLimparBusca = $('#btn-limpar-busca');
@@ -138,12 +138,12 @@ $(function() {
             {
                 data: 'item.status',
                 render: function(data, type, row) {
-                    if (data === 'DISPONIVEL') return '<span class="badge rounded-pill text-bg-success">Disponível</span>';
+                    if (data === 'DISPONIVEL') return '<span class="badge rounded-pill text-bg-success" title="Disponível" style="cursor: pointer;">D</span>';
                     if (data === 'TRANSFERIDO') {
-                        const link = `<a href="/historico.html?patrimonio=${row.item.numeroPatrimonial}" target="_blank" title="Clique para ver o histórico">`;
+                        const link = `<a href="/historico.html?patrimonio=${row.item.numeroPatrimonial}" target="_blank" title="Transferido. Clique para ver o histórico">`;
                         const badge = row.transferenciaPermanente
-                            ? '<span class="badge rounded-pill text-bg-danger">Transferido</span>'
-                            : '<span class="badge rounded-pill text-bg-warning">Transferido</span>';
+                            ? '<span class="badge rounded-pill text-bg-danger">T</span>'
+                            : '<span class="badge rounded-pill text-bg-warning">T</span>';
                         return `${link}${badge}</a>`;
                     }
                     return data;
@@ -154,7 +154,16 @@ $(function() {
             { data: 'item.marca', defaultContent: '' },
             { data: 'item.numeroDeSerie', defaultContent: '' },
             { data: 'item.localizacao', defaultContent: '' },
-            { data: 'item.compartimento.codigo', defaultContent: '' },
+            {
+                data: 'item.compartimento.codigo', defaultContent: '',
+                render: function(data, type, row) {
+                    const compartimento = row.item.compartimento;
+                    if (compartimento && compartimento.descricao) {
+                        return `<span title="${compartimento.descricao}" style="cursor: pointer;">${data}</span>`;
+                    }
+                    return data;
+                }
+            },
             {
                 data: null, orderable: false, searchable: false,
                 render: function(data, type, row) {
@@ -196,7 +205,7 @@ $(function() {
                 exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
             },
             {
-                 extend: 'copy',
+                extend: 'copy',
                 text: '<i class="bi bi-filetype-xlsx"></i>',
                 titleAttr: 'Exportar para Excel',
                 className: 'btn btn-sm btn-success',
@@ -237,7 +246,12 @@ $(function() {
                 className: 'btn btn-sm btn-info',
                 exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
             }
-        ]
+        ],
+        lengthMenu: [
+            [5, 10, 25, 50, 100],
+            ['5', '10', '25', '50', '100']
+        ],
+        pageLength: 5
     });
 
     dataTable.on('init.dt', function() {

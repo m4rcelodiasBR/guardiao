@@ -28,21 +28,21 @@
                     </div>
                     <div class="card-body">
                         <form id="form-meus-dados">
-                            <div class="mb-3">
-                                <label class="form-label">Login (Nome de Usuário)</label>
+                            <div class="form-floating mb-3">
                                 <input type="text" class="form-control" id="perfil-login" disabled>
+                                <label class="form-label">Login (Somente ADMINS podem alterar)</label>
                             </div>
-                            <div class="mb-3">
-                                <label for="perfil-nome" class="form-label">Nome Completo</label>
+                            <div class="form-floating mb-3">
                                 <input type="text" class="form-control" id="perfil-nome" name="nome" required>
+                                <label for="perfil-nome" class="form-label">Nome Completo</label>
                             </div>
-                            <div class="mb-3">
-                                <label for="perfil-email" class="form-label">E-mail</label>
+                            <div class="form-floating mb-3">
                                 <input type="email" class="form-control" id="perfil-email" name="email" required>
+                                <label for="perfil-email" class="form-label">E-mail</label>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Perfil de Acesso</label>
+                            <div class="form-floating mb-3">
                                 <input type="text" class="form-control" id="perfil-perfil" disabled>
+                                <label class="form-label">Perfil de Acesso (Somente Admins podem alterar)</label>
                             </div>
                             <button type="submit" class="btn btn-primary btn-sm">Salvar Alterações</button>
                         </form>
@@ -58,13 +58,15 @@
                     </div>
                     <div class="card-body">
                         <form id="form-alterar-senha">
-                            <div class="mb-3">
-                                <label for="senha-atual" class="form-label">Senha Atual</label>
-                                <input type="password" class="form-control" id="senha-atual" required>
+                            <div class="mb-3 form-floating">
+                                <input type="password" class="form-control" id="senha-atual" placeholder="Senha Atual" required>
+                                <label for="senha-atual">Senha Atual</label>
+                                <i class="bi bi-eye-slash-fill password-toggle-icon" id="toggle-senha-atual"></i>
                             </div>
-                            <div class="mb-3">
-                                <label for="nova-senha" class="form-label">Nova Senha</label>
-                                <input type="password" class="form-control" id="nova-senha" required>
+                            <div class="mb-3 form-floating">
+                                <input type="password" class="form-control" id="nova-senha" placeholder="Nova Senha" required>
+                                <label for="nova-senha">Nova Senha</label>
+                                <i class="bi bi-eye-slash-fill password-toggle-icon" id="toggle-nova-senha-perfil"></i>
                             </div>
                             <ul class="list-unstyled password-rules" id="password-rules">
                                 <li id="rule-length">
@@ -83,11 +85,12 @@
                                     <i class="bi bi-x"></i> Um caractere especial (@#$%^&+=!)
                                 </li>
                             </ul>
-                            <div class="mb-3">
-                                <label for="confirmar-nova-senha" class="form-label">Confirmar Nova Senha</label>
-                                <input type="password" class="form-control" id="confirmar-nova-senha" required>
-                                <div class="invalid-feedback" id="password-match-error" style="display: none;">As senhas não coincidem.</div>
+                            <div class="mb-2 form-floating">
+                                <input type="password" class="form-control" id="confirmar-nova-senha" placeholder="Confirmar Nova Senha" required>
+                                <label for="confirmar-nova-senha">Confirmar Nova Senha</label>
+                                <i class="bi bi-eye-slash-fill password-toggle-icon" id="toggle-confirmar-senha-perfil"></i>
                             </div>
+                            <div class="mb-2 invalid-feedback" id="password-match-error" style="display: none;">As senhas não coincidem.</div>
                             <button type="submit" class="btn btn-primary btn-sm" id="btn-alterar-senha" disabled>Alterar Senha</button>
                         </form>
                     </div>
@@ -99,7 +102,7 @@
 
     <!-- MODAL GENÉRICO -->
     <div class="modal fade" id="modal-conteudo-dinamico" tabindex="-1" aria-labelledby="modalConteudoDinamicoLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modal-conteudo-dinamico-title"></h5>

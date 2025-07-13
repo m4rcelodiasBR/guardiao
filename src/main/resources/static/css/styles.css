@@ -272,6 +272,10 @@ footer {
     padding-right: 1.5rem;
 }
 
+.navbar-brand {
+    text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.8);
+}
+
 .navbar-brand-title {
     font-family: 'Octin College', serif;
     font-size: 2rem;
@@ -352,6 +356,29 @@ footer {
 
 th[datatable]:hover {
     cursor: pointer;
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-toggle-icon {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6c757d;
+}
+
+.form-floating > .password-toggle-icon {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6c757d;
+    z-index: 100;
 }
 
 .password-rules {

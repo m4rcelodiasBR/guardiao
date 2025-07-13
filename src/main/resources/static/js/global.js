@@ -97,25 +97,27 @@ const updateThemeIcon = (theme) => {
     }
 };
 
-const setupGlobalUI = (role) => {
-    if (role === 'ADMIN') {
-        $('#link-gestao-usuarios').show();
-    } else {
-        $('#link-gestao-usuarios').hide();
+function loadLayout() {
+    // Verifica se os placeholders existem antes de tentar carregar.
+    if ($("#navbar-placeholder").length === 0 || $("#footer-placeholder").length === 0) {
+        // Se não houver placeholders (ex: página de login), resolve a promise imediatamente.
+        return $.Deferred().resolve().promise();
     }
-};
 
-(function() {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-bs-theme', savedTheme);
-})();
+    const navbarRequest = $.get("navbar.html");
+    const footerRequest = $.get("footer.html");
+
+    return $.when(navbarRequest, footerRequest).done(function(navbarData, footerData) {
+        $("#navbar-placeholder").html(navbarData[0]);
+        $("#footer-placeholder").html(footerData[0]);
+    });
+}
 
 // --- EVENTOS GLOBAIS ---
 $(function() {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-bs-theme', savedTheme);
 
-    $("#navbar-placeholder").load("navbar.html", function() {
+    loadLayout().then(function() {
+
         $('#btn-logout').on('click', function() {
             localStorage.removeItem('jwt_token');
             window.location.href = '/login.html';
@@ -130,30 +132,30 @@ $(function() {
         });
 
         let currentPath = window.location.pathname;
-        if(currentPath.endsWith('/')) {
-            currentPath += 'index.html';
+        if (currentPath.endsWith('/')) {
+            currentPath = '/index.html';
         }
         $('#main-nav .nav-link').each(function() {
-            if ($(this).attr('href').endsWith(currentPath)) {
+            if ($(this).attr('href') === '.' + currentPath) {
                 $(this).addClass('active');
             }
         });
 
-        if(loggedInUserName) {
+        if (loggedInUserName) {
             $('#username-display').text(loggedInUserName);
         }
 
-        const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-bs-theme', currentTheme);
         updateThemeIcon(currentTheme);
 
-        setupGlobalUI(userRole);
-    });
+        if (userRole === 'ADMIN') {
+            $('#link-gestao-usuarios').show();
+        } else {
+            $('#link-gestao-usuarios').hide();
+        }
 
-    $("#footer-placeholder").load("footer.html");
-
-    $('#btn-logout').on('click', function() {
-        localStorage.removeItem('jwt_token');
-        window.location.href = '/login.html';
+        $(document).trigger('global-setup-complete');
     });
 
     const $scrollToTopButton = $('#btn-scroll-to-top');

@@ -125,3 +125,20 @@ $(function() {
         });
     });
 });
+
+function togglePasswordVisibility(buttonSelector, inputSelector) {
+    $(buttonSelector).on('click', function() {
+        const passwordField = $(inputSelector);
+        const fieldType = passwordField.attr('type');
+        if (fieldType === 'password') {
+            passwordField.attr('type', 'text');
+            $(this).removeClass('bi-eye-slash-fill').addClass('bi-eye-fill');
+        } else {
+            passwordField.attr('type', 'password');
+            $(this).removeClass('bi-eye-fill').addClass('bi-eye-slash-fill');
+        }
+    });
+}
+
+togglePasswordVisibility('#toggle-nova-senha', '#nova-senha');
+togglePasswordVisibility('#toggle-confirmar-senha', '#confirmar-nova-senha');

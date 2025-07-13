@@ -1,4 +1,10 @@
-$(function() {
+$(document).on('global-setup-complete', function() {
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const patrimonioFromUrl = urlParams.get('patrimonio');
+    if (patrimonioFromUrl) {
+        $('#busca-patrimonio').val(patrimonioFromUrl);
+    }
 
     // --- SELETORES ---
     const $formBusca = $('#form-busca-historico-avancada');
@@ -170,7 +176,12 @@ $(function() {
                 className: 'btn btn-sm btn-info',
                 exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
             }
-        ]
+        ],
+        lengthMenu: [
+            [5, 10, 25, 50, 100],
+            ['5', '10', '25', '50', '100']
+        ],
+        pageLength: 5
     });
 
     dataTable.on('init.dt', function() {

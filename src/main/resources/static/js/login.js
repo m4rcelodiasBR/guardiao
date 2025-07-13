@@ -2,7 +2,6 @@ $(function() {
     const $formLogin = $('#form-login');
     const $loginAlert = $('#login-alert');
 
-    // Manipulador de submissão do formulário
     $formLogin.on('submit', function(e) {
         e.preventDefault();
 
@@ -34,4 +33,17 @@ $(function() {
             }
         });
     });
+});
+
+$('#toggle-senha').on('click', function() {
+    const passwordField = $('#senha');
+    const fieldType = passwordField.attr('type');
+
+    if (fieldType === 'password') {
+        passwordField.attr('type', 'text');
+        $(this).removeClass('bi-eye-slash-fill').addClass('bi-eye-fill');
+    } else {
+        passwordField.attr('type', 'password');
+        $(this).removeClass('bi-eye-fill').addClass('bi-eye-slash-fill');
+    }
 });

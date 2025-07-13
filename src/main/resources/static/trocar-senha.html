@@ -17,8 +17,8 @@
     </script>
 </head>
 <body>
-    <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
-    <main class="form-signin text-center">
+    <div class="mt-5 toast-container position-fixed bottom-0 end-0 p-3"></div>
+    <main class="mt-5 form-signin text-center">
         <div class="d-flex flex-column mb-3">
             <img src="/images/sagat_logo.png" alt="Logotipo SAGAT" width="250" class="mx-auto my-4">
             <span class="navbar-brand-uptitle mb-2">Sistema de Apoio à Gestão de Ativos Tangíveis</span>
@@ -30,6 +30,7 @@
             <div class="form-floating">
                 <input type="password" class="form-control" id="nova-senha" required>
                 <label for="nova-senha">Nova Senha</label>
+                <i class="bi bi-eye-slash-fill password-toggle-icon" id="toggle-nova-senha"></i>
             </div>
             <ul class="list-unstyled password-rules mt-3" id="password-rules">
                 <li id="rule-length">
@@ -51,10 +52,11 @@
             <div class="form-floating mt-3">
                 <input type="password" class="form-control" id="confirmar-nova-senha" required>
                 <label for="confirmar-nova-senha">Confirmar Nova Senha</label>
+                <i class="bi bi-eye-slash-fill password-toggle-icon" id="toggle-confirmar-senha"></i>
                 <div class="invalid-feedback" id="password-match-error" style="display: none;">As senhas não coincidem.</div>
             </div>
             <button class="w-100 btn btn-primary mt-3" type="submit" id="btn-trocar-senha" disabled>Definir Nova Senha</button>
-            <p class="mt-5 mb-3 text-muted">&copy; 2024</p>
+            <p class="mt-5 mb-3 text-muted">&copy; Copyright 2025 - Todos os direitos reservados</p>
         </form>
     </main>
     <script src="/js/jquery-3.7.1.min.js"></script>
