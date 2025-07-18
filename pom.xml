@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>br.com.guardiao</groupId>
-	<artifactId>guardiao</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>Guardiao</name>
+	<artifactId>sagat</artifactId>
+	<version>1.0.0</version>
+	<name>Sagat</name>
 	<description>Sistema auxiliar de gestão de material de incumbências.</description>
 	<url/>
 	<licenses>
@@ -92,5 +92,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

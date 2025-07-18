@@ -297,6 +297,12 @@ footer {
     color: var(--amarelo-color);
 }
 
+[data-bs-theme="light"] .navbar-brand-uptitle,
+.navbar-brand-subtitle {
+    color: var(--amarelo-color);
+    text-shadow: .5px .5px 1px rgba(0, 0, 0, 0.9);
+}
+
 .navbar-brand-uptitle {
     color: #fff;
 }
