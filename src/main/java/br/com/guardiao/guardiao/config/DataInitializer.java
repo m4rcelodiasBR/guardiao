@@ -20,14 +20,14 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (usuarioRepository.findByLogin("admin").isEmpty()) {
+        if (usuarioRepository.findByLogin("administrador").isEmpty()) {
 
-            System.out.println("Nenhum usuário 'admin' encontrado, criando usuário padrão...");
+            System.out.println("Nenhum usuário 'administrador' encontrado, criando usuário administrador padrão...");
 
             Usuario admin = new Usuario();
-            admin.setNome("Administrador Padrão");
-            admin.setLogin("admin");
-            admin.setEmail("admin@guardiao.com");
+            admin.setNome("Administrador do Sagat");
+            admin.setLogin("administrador");
+            admin.setEmail("administrador@guardiao.mb");
             admin.setSenha(passwordEncoder.encode("guardiao"));
             admin.setPerfil(Perfil.ADMIN);
             admin.setStatus(StatusUsuario.ATIVO);
@@ -35,9 +35,9 @@ public class DataInitializer implements CommandLineRunner {
 
             usuarioRepository.save(admin);
 
-            System.out.println("Usuário 'admin' criado com sucesso com a senha padrão 'guardiao'.");
+            System.out.println("Usuário 'administrador' criado com sucesso com a senha padrão 'guardiao'.");
         } else {
-            System.out.println("Usuário 'admin' já existe no banco de dados. Nenhuma ação necessária.");
+            System.out.println("Usuário 'administrador' já existe no banco de dados. Nenhuma ação necessária.");
         }
     }
 }
