@@ -280,7 +280,7 @@ footer {
     font-family: 'Octin College', serif;
     font-size: 2rem;
     font-weight: 600;
-    line-height: 1.5;
+    line-height: normal;
     color: #fff;
 }
 
@@ -289,7 +289,7 @@ footer {
     font-family: 'Octin College', serif;
     font-size: .9rem;
     font-weight: 500;
-    line-height: 1;
+    line-height: normal;
     letter-spacing: 0.5px;
 }
 

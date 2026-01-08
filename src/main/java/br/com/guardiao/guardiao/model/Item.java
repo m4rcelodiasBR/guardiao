@@ -9,7 +9,7 @@ import java.time.OffsetDateTime;
 
 @Entity
 @Table(name = "itens")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "cadastradoPor", "atualizadoPor"})
 public class Item {
 
     @Id

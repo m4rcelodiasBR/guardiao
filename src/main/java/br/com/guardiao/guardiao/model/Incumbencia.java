@@ -1,8 +1,8 @@
 package br.com.guardiao.guardiao.model;
 
 public enum Incumbencia {
-    INCUMBENCIA_100("100 - Incumbência 1"),
-    INCUMBENCIA_200("200 - Secretário Adjunto"),
+    INCUMBENCIA_100("100 - Secretário da CPO"),
+    INCUMBENCIA_200("200 - Secretário-Adjunto"),
     INCUMBENCIA_212("212 - Subsecretaria de Seleção"),
     INCUMBENCIA_231("231 - Mestre da CPO"),
     INCUMBENCIA_232("232 - Paiol de Material"),
@@ -22,4 +22,3 @@ public enum Incumbencia {
         return descricao;
     }
 }
-    

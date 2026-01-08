@@ -51,7 +51,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/transferencias/**").hasAnyRole("ADMIN", "USUARIO")
                 .requestMatchers(HttpMethod.PUT, "/api/itens/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/itens/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/itens").hasAnyRole("ADMIN", "USUARIO")
+                .requestMatchers(HttpMethod.POST, "/api/itens/**").hasAnyRole("ADMIN", "USUARIO")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
