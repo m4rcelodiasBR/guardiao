@@ -15,6 +15,7 @@ $(document).on('global-setup-complete', function() {
     const $formNovoItem = $('#form-novo-item');
     const $formEditarItem = $('#form-editar-item');
     const $formEdicaoMassa = $('#form-edicao-massa');
+    const $btnGerarEmailMassa = $('#btn-gerar-email-massa');
     const $formTransferencia = $('#form-transferencia');
     const $btnConfirmarAcao = $('#btn-confirmar-acao');
     const $btnEditarSelecionados = $('#btn-editar-selecionados');
@@ -27,6 +28,7 @@ $(document).on('global-setup-complete', function() {
     const modalEdicaoMassa = new bootstrap.Modal(document.getElementById('modalEdicaoMassa'));
     const modalTransferencia = new bootstrap.Modal(document.getElementById('modalTransferencia'));
     const modalConfirmacao = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
+    const modalGerarEmail = new bootstrap.Modal(document.getElementById('modalGerarEmail'));
 
     // Variáveis de estado
     let acaoConfirmada = null;
@@ -78,6 +80,34 @@ $(document).on('global-setup-complete', function() {
         const totalCheckboxesNaPagina = $('.item-checkbox:not(:disabled)').length;
         const totalSelecionadosNaPagina = $('.item-checkbox:checked:not(:disabled)').length;
         $selectAllCheckbox.prop('checked', totalCheckboxesNaPagina > 0 && totalSelecionadosNaPagina === totalCheckboxesNaPagina);
+    };
+
+    const gerarTextoEmail = (itens) => {
+        if (!itens || itens.length === 0) return;
+
+        const qtd = itens.length;
+        const assunto = `Transferência de Material - ${qtd} item(ns)`;
+
+        let corpo = `Prezado(a),\n\n`;
+        corpo += `Seguem abaixo os dados detalhados do(s) material(is) transferido(s):\n`;
+        corpo += `--------------------------------------------------\n`;
+
+        itens.forEach((row, index) => {
+            const item = row.item;
+            corpo += `${index + 1}. ${item.descricao}\n`;
+            if(item.marca) corpo += `   Marca: ${item.marca}\n`;
+            corpo += `   Patrimônio: ${item.numeroPatrimonial}\n`;
+            if(item.numeroDeSerie) corpo += `   N/S: ${item.numeroDeSerie}\n`;
+            corpo += `--------------------------------------------------\n`;
+        });
+
+        corpo += `\nRespeitosamente/Atenciosamente,\n`;
+        corpo += `${loggedInUserName || 'Administrador'}\n`;
+        corpo += `Sistema SAGAT`;
+
+        $('#email-assunto').val(assunto);
+        $('#email-corpo').val(corpo);
+        modalGerarEmail.show();
     };
 
     const dataTable = $('#datatable-inventario').DataTable({
@@ -169,6 +199,12 @@ $(document).on('global-setup-complete', function() {
                 render: function(data, type, row) {
                     let acoesHtml = '';
                     const isDisponivel = row.item.status === 'DISPONIVEL';
+                    const isTransferido = row.item.status === 'TRANSFERIDO';
+
+                    if (isTransferido) {
+                        acoesHtml += `<button class="btn btn-xs btn-info text-white btn-email me-1" title="Gerar E-mail"><i class="bi bi-envelope-at-fill"></i></button>`;
+                    }
+
                     if (userRole === 'ADMIN' && isDisponivel) {
                         acoesHtml = `
                             <button class="btn btn-xs btn-primary btn-editar" title="Editar"><i class="bi bi-pencil-fill"></i></button>
@@ -275,32 +311,6 @@ $(document).on('global-setup-complete', function() {
 
     $filtrosStatus.on('change', 'input[name="status-filter"]', () => dataTable.ajax.reload());
 
-    $('#datatable-inventario tbody').on('click', 'button', function() {
-        const rowData = dataTable.row($(this).parents('tr')).data();
-        if (!rowData) return;
-
-        if ($(this).hasClass('btn-editar')) {
-            $('#edit-numeroPatrimonial-original').val(rowData.item.numeroPatrimonial);
-            $('#edit-numeroPatrimonial').val(rowData.item.numeroPatrimonial);
-            $('#edit-descricao').val(rowData.item.descricao);
-            $('#edit-marca').val(rowData.item.marca);
-            $('#edit-numeroDeSerie').val(rowData.item.numeroDeSerie);
-            $('#edit-localizacao').val(rowData.item.localizacao);
-            const compartimentoAtual = rowData.item.compartimento ? rowData.item.compartimento.codigo : null;
-            popularCompartimentos('#edit-compartimento', 'Selecione...', compartimentoAtual);
-            modalEditarItem.show();
-        } else if ($(this).hasClass('btn-excluir')) {
-            $('#confirm-title').text('Confirmar Exclusão');
-            $('#confirm-body').text(`Tem certeza que deseja excluir o item: ${rowData.item.descricao}?`);
-            acaoConfirmada = () => handleDelete(rowData.item.numeroPatrimonial);
-            modalConfirmacao.show();
-        } else if ($(this).hasClass('btn-transferir')) {
-            $('#item-a-transferir-descricao').text(rowData.item.descricao);
-            $('#transfer-patrimonio').val(rowData.item.numeroPatrimonial);
-            modalTransferencia.show();
-        }
-    });
-
     $selectIncumbencia.on('change', function() {
         const selectedOption = $(this).val();
         if (selectedOption === 'OUTRA_OM') {
@@ -321,16 +331,6 @@ $(document).on('global-setup-complete', function() {
     $selectAllCheckbox.on('change', function() {
         const isChecked = $(this).is(':checked');
         $('.item-checkbox:not(:disabled)').prop('checked', isChecked).trigger('change');
-    });
-
-    $('#datatable-inventario tbody').on('change', '.item-checkbox', function() {
-        const patrimonio = $(this).val();
-        if ($(this).is(':checked')) {
-            selectedItems.add(patrimonio);
-        } else {
-            selectedItems.delete(patrimonio);
-        }
-        updateBulkActionUI();
     });
 
     $btnEditarSelecionados.on('click', function() {
@@ -358,6 +358,80 @@ $(document).on('global-setup-complete', function() {
 
     $btnConfirmarAcao.on('click', function() {
         if (typeof acaoConfirmada === 'function') acaoConfirmada();
+    });
+
+    $btnGerarEmailMassa.on('click', function() {
+        if (selectedItems.size === 0) return;
+
+        const itensSelecionados = [];
+        dataTable.rows().every(function() {
+            const data = this.data();
+            if (selectedItems.has(data.item.numeroPatrimonial) && data.item.status === 'TRANSFERIDO') {
+                itensSelecionados.push(data);
+            }
+        });
+
+        if (itensSelecionados.length === 0) {
+            showAlert('Nenhum item transferido selecionado.', 'warning');
+            return;
+        }
+
+        gerarTextoEmail(itensSelecionados);
+    });
+
+    $('#datatable-inventario tbody').on('change', '.item-checkbox', function() {
+        const patrimonio = $(this).val();
+        if ($(this).is(':checked')) {
+            selectedItems.add(patrimonio);
+        } else {
+            selectedItems.delete(patrimonio);
+        }
+        updateBulkActionUI();
+    });
+
+    $('#datatable-inventario tbody').on('click', 'button', function() {
+        const rowData = dataTable.row($(this).parents('tr')).data();
+        if (!rowData) return;
+
+        if ($(this).hasClass('btn-editar')) {
+            $('#edit-numeroPatrimonial-original').val(rowData.item.numeroPatrimonial);
+            $('#edit-numeroPatrimonial').val(rowData.item.numeroPatrimonial);
+            $('#edit-descricao').val(rowData.item.descricao);
+            $('#edit-marca').val(rowData.item.marca);
+            $('#edit-numeroDeSerie').val(rowData.item.numeroDeSerie);
+            $('#edit-localizacao').val(rowData.item.localizacao);
+            const compartimentoAtual = rowData.item.compartimento ? rowData.item.compartimento.codigo : null;
+            popularCompartimentos('#edit-compartimento', 'Selecione...', compartimentoAtual);
+            modalEditarItem.show();
+        } else if ($(this).hasClass('btn-excluir')) {
+            $('#confirm-title').text('Confirmar Exclusão');
+            $('#confirm-body').text(`Tem certeza que deseja excluir o item: ${rowData.item.descricao}?`);
+            acaoConfirmada = () => handleDelete(rowData.item.numeroPatrimonial);
+            modalConfirmacao.show();
+        } else if ($(this).hasClass('btn-transferir')) {
+            $('#item-a-transferir-descricao').text(rowData.item.descricao);
+            $('#transfer-patrimonio').val(rowData.item.numeroPatrimonial);
+            modalTransferencia.show();
+        } else if ($(this).hasClass('btn-email')) {
+            gerarTextoEmail([rowData]);
+        }
+    });
+
+    $('.btn-copy').on('click', function() {
+        const targetSelector = $(this).data('target');
+        const $target = $(targetSelector);
+
+        $target.select();
+        navigator.clipboard.writeText($target.val()).then(() => {
+            const originalHtml = $(this).html();
+            $(this).html('<i class="bi bi-check-lg"></i> Copiado!');
+            $(this).removeClass('btn-outline-secondary btn-secondary').addClass('btn-success');
+
+            setTimeout(() => {
+                $(this).html(originalHtml);
+                $(this).removeClass('btn-success').addClass(targetSelector === '#email-corpo' ? 'btn-secondary' : 'btn-outline-secondary');
+            }, 2000);
+        });
     });
 
     // --- SUBMISSÃO DOS FORMULÁRIOS ---
