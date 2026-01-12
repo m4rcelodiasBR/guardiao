@@ -6,6 +6,7 @@ public class ItemAtivoDTO {
 
     private Item item;
     private boolean transferenciaPermanente;
+    private String ultimaIncumbencia;
 
     public ItemAtivoDTO(Item item, boolean transferenciaPermanente) {
         this.item = item;
@@ -18,6 +19,14 @@ public class ItemAtivoDTO {
     }
     public void setItem(Item item) {
         this.item = item;
+    }
+
+    public String getUltimaIncumbencia() {
+        return ultimaIncumbencia;
+    }
+
+    public void setUltimaIncumbencia(String ultimaIncumbencia) {
+        this.ultimaIncumbencia = ultimaIncumbencia;
     }
 
     public boolean isTransferenciaPermanente() {

@@ -36,6 +36,7 @@ public class SecurityConfig {
                         "/historico.html",
                         "/usuarios.html",
                         "/perfil.html",
+                        "/excluidos.html",
                         "/trocar-senha.html",
                         "/importacao.html",
                         "/ajuda.html",
@@ -52,6 +53,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/itens/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/itens/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/itens/**").hasAnyRole("ADMIN", "USUARIO")
+                .requestMatchers("/api/itens/*/restaurar").hasRole("ADMIN")
+                .requestMatchers("/api/itens/restaurar-massa").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

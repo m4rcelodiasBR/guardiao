@@ -140,4 +140,55 @@ public class ItemController {
 
         return ResponseEntity.ok(responseDTO);
     }
+
+    /**
+     * Endpoint para montar a tabela de itens excluídos do inventario com DataTables.
+     */
+    @PostMapping("/excluidos/datatable")
+    public ResponseEntity<DataTablesResponseDTO<ItemAtivoDTO>> listarItensExcluidos(
+            @RequestBody ItemBuscaDTO itemBuscaDTO,
+            @RequestParam("draw") int draw,
+            @RequestParam("start") int start,
+            @RequestParam("length") int length,
+            @RequestParam("search[value]") String globalSearchValue,
+            @RequestParam(name = "order[0][column]", required = false, defaultValue = "2") int orderColumnIndex,
+            @RequestParam(name = "order[0][dir]", required = false, defaultValue = "asc") String orderDirection) {
+
+        List<String> columnNames = List.of(
+                "checkbox", "status", "numeroPatrimonial", "descricao",
+                "marca", "numeroDeSerie", "localizacao", "compartimento", "acoes"
+        );
+
+        Sort sort = Sort.unsorted();
+        if (orderColumnIndex >= 0 && orderColumnIndex < columnNames.size()) {
+            String columnName = columnNames.get(orderColumnIndex);
+            if (!columnName.equals("checkbox") && !columnName.equals("acoes")) {
+                sort = Sort.by(Sort.Direction.fromString(orderDirection), columnName);
+            }
+        }
+
+        Pageable pageable = PageRequest.of(start / length, length, sort);
+        Page<ItemAtivoDTO> paginaDeItens = itemService.buscarItensExcluidosParaDataTable(itemBuscaDTO, globalSearchValue, pageable);
+        var responseDTO = new DataTablesResponseDTO<ItemAtivoDTO>();
+        responseDTO.setDraw(draw);
+        responseDTO.setRecordsTotal(paginaDeItens.getTotalElements());
+        responseDTO.setRecordsFiltered(paginaDeItens.getTotalElements());
+        responseDTO.setData(paginaDeItens.getContent());
+        return ResponseEntity.ok(responseDTO);
+    }
+
+
+    @PutMapping("/{numeroPatrimonial}/restaurar")
+    @ResponseStatus(HttpStatus.OK)
+    public void restaurarItem(@PathVariable String numeroPatrimonial, Authentication authentication) {
+        Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
+        itemService.restaurarItem(numeroPatrimonial, usuarioLogado);
+    }
+
+    @PutMapping("/restaurar-massa")
+    @ResponseStatus(HttpStatus.OK)
+    public void restaurarVariosItens(@RequestBody List<String> numerosPatrimoniais, Authentication authentication) {
+        Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
+        itemService.restaurarVariosItens(numerosPatrimoniais, usuarioLogado);
+    }
 }

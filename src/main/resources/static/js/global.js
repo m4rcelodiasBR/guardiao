@@ -13,8 +13,8 @@ const userData = parseJwt(token);
 const userRole = userData ? userData.role : null;
 const loggedInUserId = userData ? parseInt(userData.sub.split(',')[0], 10) : null;
 const loggedInUserName = userData ? userData.sub.split(',')[1] : null;
+const loggedInUserFullName = userData ? (userData.nome || loggedInUserName) : null;
 
-// Esta verificação é executada em todas as páginas que carregam este script
 if (!token) {
     if (window.location.pathname !== '/login.html') {
         window.location.href = '/login.html';

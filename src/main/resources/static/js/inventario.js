@@ -87,26 +87,46 @@ $(document).on('global-setup-complete', function() {
 
         const qtd = itens.length;
         const assunto = `Transferência de Material - ${qtd} item(ns)`;
+        $('#email-assunto').val(assunto);
 
-        let corpo = `Prezado(a),\n\n`;
-        corpo += `Seguem abaixo os dados detalhados do(s) material(is) transferido(s):\n`;
-        corpo += `--------------------------------------------------\n`;
+        const $container = $('#email-container');
+        $container.empty();
+
+        $container.append(`<p>Prezado(a),</p>`);
+        $container.append(`<p>Seguem abaixo os dados detalhados do(s) material(is) transferido(s):</p>`);
+        $container.append(`<p class="text-success fw-bold">Incumbência de Origem: 211 - Subsecretaria de Informática</p>`);
 
         itens.forEach((row, index) => {
             const item = row.item;
-            corpo += `${index + 1}. ${item.descricao}\n`;
-            if(item.marca) corpo += `   Marca: ${item.marca}\n`;
-            corpo += `   Patrimônio: ${item.numeroPatrimonial}\n`;
-            if(item.numeroDeSerie) corpo += `   N/S: ${item.numeroDeSerie}\n`;
-            corpo += `--------------------------------------------------\n`;
+            const incumbencia = row.ultimaIncumbencia || "Não informada";
+            let itemHtml = `
+                <div class="email-item mb-3 pb-3 border-bottom" data-index="${index}">
+                    <div class="fw-bold text-decoration-underline mb-1 text-info">Item ${index + 1}</div>                    
+                    <div class="ms-2">
+                        <div><strong>NumPAT:</strong> ${item.numeroPatrimonial}</div>
+                        <div><strong>Descrição:</strong> ${item.descricao}</div>
+                        <div class="fw-bold text-warning">Incumbência de Destino: ${incumbencia}</div>
+                    </div>                    
+                    <div class="mt-2 ms-2">
+                         <div class="input-group input-group-sm" style="max-width: 400px;">
+                            <span class="input-group-text bg-secondary">Observação:</span>
+                            <input type="text" class="form-control form-control-sm obs-input" placeholder="Ex: Detalhe sobre o destino, estado, etc." aria-label="Observação">
+                        </div>
+                    </div>
+                </div>
+            `;
+            $container.append(itemHtml);
         });
 
-        corpo += `\nRespeitosamente/Atenciosamente,\n`;
-        corpo += `${loggedInUserName || 'Administrador'}\n`;
-        corpo += `Sistema SAGAT`;
+        const assinatura = `
+            <div class="mt-4">
+                <p>Respeitosamente/Atenciosamente,</p>
+                <p class="fw-bold">${loggedInUserFullName || 'Administrador'}</p>
+                <p class="text-muted small">Gerado pelo Sistema SAGAT</p>
+            </div>
+        `;
 
-        $('#email-assunto').val(assunto);
-        $('#email-corpo').val(corpo);
+        $container.append(assinatura);
         modalGerarEmail.show();
     };
 
@@ -130,7 +150,7 @@ $(document).on('global-setup-complete', function() {
 
             if (data.order && data.order.length > 0) {
                 dtParams['order[0][column]'] = data.order[0].column;
-                dtParams['order[0][dir]'] = data.order[0].dir;
+                dtParams['order[0][dir]'] = data.order[0].dir0;
             }
 
             const url = '/api/itens/datatable?' + $.param(dtParams);
@@ -161,7 +181,9 @@ $(document).on('global-setup-complete', function() {
                 data: null, orderable: false, searchable: false, className: 'dt-body-center',
                 render: function (data, type, row) {
                     const isDisponivel = row.item.status === 'DISPONIVEL';
-                    const disabledAttr = !isDisponivel || userRole !== 'ADMIN' ? 'disabled' : '';
+                    const isTransferido = row.item.status === 'TRANSFERIDO';
+
+                    const disabledAttr = (!isDisponivel && !isTransferido) || userRole !== 'ADMIN' ? 'disabled' : '';
                     return `<input class="form-check-input item-checkbox" type="checkbox" value="${row.item.numeroPatrimonial}" ${disabledAttr}>`;
                 }
             },
@@ -202,7 +224,7 @@ $(document).on('global-setup-complete', function() {
                     const isTransferido = row.item.status === 'TRANSFERIDO';
 
                     if (isTransferido) {
-                        acoesHtml += `<button class="btn btn-xs btn-info text-white btn-email me-1" title="Gerar E-mail"><i class="bi bi-envelope-at-fill"></i></button>`;
+                        acoesHtml += `<button class="btn btn-xs btn-info btn-email me-1" title="Gerar E-mail"><i class="bi bi-envelope-at-fill"></i></button>`;
                     }
 
                     if (userRole === 'ADMIN' && isDisponivel) {
@@ -341,18 +363,57 @@ $(document).on('global-setup-complete', function() {
     });
 
     $btnExcluirSelecionados.on('click', function() {
+        if (selectedItems === 0) return;
+
+        const itensParaExcluir = [];
+
+        dataTable.rows().every(function() {
+            const data = this.data();
+            if (selectedItems.has(data.item.numeroPatrimonial) && data.item.status === 'DISPONIVEL') {
+                itensParaExcluir.push(data.item.numeroPatrimonial);
+            }
+        });
+
+        if (itensParaExcluir.length === 0) {
+            showAlert('Nenhum item selecionado pode ser excluído. Apenas itens Disponíveis no inventário.', 'warning');
+            return;
+        }
+
+        if (itensParaExcluir.length < selectedItems.size) {
+            const ignorados = selectedItems.size - itensParaExcluir.length;
+            showAlert(`Atenção: ${ignorados} item(ns) transferido(s) foi(ram) ignorado(s). Apenas os disponíveis serão excluídos.`, 'info');
+        }
+
         $('#confirm-title').text('Confirmar Exclusão em Massa');
-        $('#confirm-body').text(`Tem certeza que deseja excluir os ${selectedItems.size} itens selecionados? Esta ação não pode ser desfeita.`);
-        acaoConfirmada = () => handleBulkDelete();
+        $('#confirm-body').text(`Tem certeza que deseja excluir os ${itensParaExcluir.length} itens selecionados? Esta ação não pode ser desfeita.`);
+        acaoConfirmada = () => handleBulkDelete(itensParaExcluir);
         modalConfirmacao.show();
     });
 
     $btnTransferirSelecionados.on('click', function() {
         if (selectedItems.size === 0) return;
+        let countDisponiveis = 0;
+        const itensParaTransferir = [];
+        dataTable.rows().every(function() {
+            const data = this.data();
+            if (selectedItems.has(data.item.numeroPatrimonial) && data.item.status === 'DISPONIVEL') {
+                itensParaTransferir.push(data.item.numeroPatrimonial);
+            }
+        });
+
+        if (itensParaTransferir.length === 0) {
+            showAlert('Nenhum dos itens selecionados está disponível para transferência.', 'warning');
+            return;
+        }
+
+        if (itensParaTransferir.length < selectedItems.size) {
+            showAlert(`Atenção: Apenas ${itensParaTransferir.length} item(ns) disponível(is) será(ão) considerado(s).`, 'info');
+        }
+
         $formTransferencia[0].reset();
         $destinoExtraWrapper.hide();
         $inputDestinoExtra.prop('required', false).val('');
-        $('#item-a-transferir-descricao').text(`${selectedItems.size} itens selecionados`);
+        $('#item-a-transferir-descricao').text(`${itensParaTransferir.length} itens aptos selecionados`);
         modalTransferencia.show();
     });
 
@@ -417,19 +478,55 @@ $(document).on('global-setup-complete', function() {
         }
     });
 
-    $('.btn-copy').on('click', function() {
-        const targetSelector = $(this).data('target');
-        const $target = $(targetSelector);
-
+    $('.btn-copy-assunto').on('click', function() {
+        const $target = $('#email-assunto');
         $target.select();
         navigator.clipboard.writeText($target.val()).then(() => {
-            const originalHtml = $(this).html();
-            $(this).html('<i class="bi bi-check-lg"></i> Copiado!');
-            $(this).removeClass('btn-outline-secondary btn-secondary').addClass('btn-success');
-
+            const $btn = $(this);
+            const originalHtml = $btn.html();
+            $btn.html('<i class="bi bi-check-lg"></i>').addClass('btn-success').removeClass('btn-outline-secondary');
             setTimeout(() => {
-                $(this).html(originalHtml);
-                $(this).removeClass('btn-success').addClass(targetSelector === '#email-corpo' ? 'btn-secondary' : 'btn-outline-secondary');
+                $btn.html(originalHtml).removeClass('btn-success').addClass('btn-outline-secondary');
+            }, 2000);
+        });
+    });
+
+    $('.btn-copy-corpo').on('click', function() {
+        const $container = $('#email-container');
+        let textoFinal = "";
+
+        textoFinal += "Prezado(a),\n\n";
+        textoFinal += "Seguem abaixo os dados detalhados do(s) material(is) transferido(s):\n";
+        textoFinal += "Incumbencia de Origem: 211 - Subsecretaria de Informática.\n"
+        textoFinal += "--------------------------------------------------\n";
+
+        $container.find('.email-item').each(function() {
+            const $divsDados = $(this).find('.ms-2 > div');
+            textoFinal += $divsDados.eq(0).text().trim() + "\n";
+            textoFinal += $divsDados.eq(1).text().trim() + "\n";
+            if ($divsDados.eq(2).text().includes('Marca:')) textoFinal += $divsDados.eq(2).text().trim() + "\n";
+            $(this).find('.ms-2 > div').each(function(){
+                const t = $(this).text().trim();
+                if(t.startsWith('Incumbência')) textoFinal += t + "\n";
+            });
+
+            const obsValor = $(this).find('input.obs-input').val().trim();
+            if (obsValor) {
+                textoFinal += `Observação: ${obsValor}\n`;
+            }
+            textoFinal += "--------------------------------------------------\n";
+        });
+
+        textoFinal += "\nRespeitosamente/Atenciosamente,\n";
+        textoFinal += `${loggedInUserFullName || 'Administrador'}\n`;
+        textoFinal += "E-mail gerado pelo Sistema SAGAT";
+
+        navigator.clipboard.writeText(textoFinal).then(() => {
+            const $btn = $(this);
+            const originalHtml = $btn.html();
+            $btn.html('<i class="bi bi-check-lg"></i> Copiado!').removeClass('btn-primary').addClass('btn-success');
+            setTimeout(() => {
+                $btn.html(originalHtml).addClass('btn-primary').removeClass('btn-success');
             }, 2000);
         });
     });
@@ -565,7 +662,25 @@ $(document).on('global-setup-complete', function() {
             const data = { numeroPatrimonial: singlePatrimonio, incumbenciaDestino: destinoFinal, observacao: observacao };
             handleSingleTransfer(data, $submitButton);
         } else if (selectedItems.size > 0) {
-            const data = { numerosPatrimoniais: Array.from(selectedItems), incumbenciaDestino: destinoFinal, observacao: observacao };
+            const patrimonioDisponiveis = [];
+            dataTable.rows().every(function() {
+                const rowData = this.data();
+                if (selectedItems.has(rowData.item.numeroPatrimonial) && rowData.item.status === 'DISPONIVEL') {
+                    patrimonioDisponiveis.push(rowData.item.numeroPatrimonial);
+                }
+            });
+
+            if (patrimonioDisponiveis.length === 0) {
+                showAlert('Nenhum item válido para transferência selecionado (selecione itens com status DISPONÍVEL).', 'warning');
+                $submitButton.prop('disabled', false).text('Confirmar Transferência');
+                return;
+            }
+
+            const data = {
+                numerosPatrimoniais: patrimonioDisponiveis,
+                incumbenciaDestino: destinoFinal,
+                observacao: observacao
+            };
             handleBulkTransfer(data, $submitButton);
         } else {
             showAlert('Nenhum item válido para transferência.', 'warning');
@@ -594,15 +709,17 @@ $(document).on('global-setup-complete', function() {
         });
     };
 
-    const handleBulkDelete = () => {
+    const handleBulkDelete = (itensParaExcluir) => {
         $.ajax({
             url: '/api/itens',
             method: 'DELETE',
             contentType: 'application/json',
-            data: JSON.stringify(Array.from(selectedItems)),
+            data: JSON.stringify(itensParaExcluir),
             success: function() {
-                showAlert(`${selectedItems.size} itens excluídos com sucesso!`);
+                showAlert(`${itensParaExcluir.length} itens excluídos com sucesso!`);
                 modalConfirmacao.hide();
+                selectedItems.clear();
+                updateBulkActionUI();
                 dataTable.ajax.reload();
             },
             error: function() { showAlert('Erro ao excluir itens.', 'danger'); }

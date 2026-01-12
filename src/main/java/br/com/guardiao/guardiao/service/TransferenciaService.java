@@ -91,6 +91,7 @@ public class TransferenciaService {
         }
     }
 
+    @Transactional
     public Page<TransferenciaDetalheDTO> listarTransferenciasParaDataTable(TransferenciaBuscaDTO transferenciaBuscaDTO, Pageable pageable) {
         Specification<Transferencia> spec = transferenciaSpecification.getSpecifications(transferenciaBuscaDTO);
 

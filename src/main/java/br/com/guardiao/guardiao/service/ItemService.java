@@ -218,14 +218,60 @@ public class ItemService {
 
         return itensPaginados.map(item -> {
             boolean isPermanente = false;
+            String nomeIncumbencia = null;
+
             if (item.getStatus() == StatusItem.TRANSFERIDO) {
                 Transferencia ultimaTransferencia = ultimasTransferenciasPorItemId.get(item.getId());
                 if (ultimaTransferencia != null) {
                     String destino = ultimaTransferencia.getIncumbenciaDestino();
                     isPermanente = destino.startsWith("000") || destino.startsWith("001") || destino.startsWith("002");
+                    nomeIncumbencia = destino;
                 }
             }
-            return new ItemAtivoDTO(item, isPermanente);
+            ItemAtivoDTO dto = new ItemAtivoDTO(item, isPermanente);
+            dto.setUltimaIncumbencia(nomeIncumbencia);
+            return dto;
         });
+    }
+
+    public Page<ItemAtivoDTO> buscarItensExcluidosParaDataTable(ItemBuscaDTO itemBuscaDTO, String globalSearchValue, Pageable pageable) {
+        Specification<Item> specFromAdvancedSearch = itemSpecification.getSpecifications(itemBuscaDTO);
+        Specification<Item> specFromGlobalSearch = itemSpecification.hasGlobalSearch(globalSearchValue);
+        Specification<Item> specStatusExcluido = (root, query, cb) -> cb.equal(root.get("status"), StatusItem.EXCLUIDO);
+
+        Specification<Item> finalSpec = specStatusExcluido.and(specFromAdvancedSearch)
+                .and(specFromGlobalSearch);
+
+        Page<Item> itensPaginados = itemRepository.findAll(finalSpec, pageable);
+        return itensPaginados.map(item -> new ItemAtivoDTO(item, false));
+    }
+
+    @Transactional
+    public void restaurarItem(String numeroPatrimonial, Usuario usuarioLogado) {
+        Item item = buscarPorPatrimonio(numeroPatrimonial);
+        if (item.getStatus() != StatusItem.EXCLUIDO) {
+            throw new IllegalStateException("Apenas itens excluídos pode ser restaurados.");
+        }
+        item.setStatus(StatusItem.DISPONIVEL);
+        item.setAtualizadoPor(usuarioLogado);
+        itemRepository.save(item);
+    }
+
+    @Transactional
+    public void restaurarVariosItens(List<String> numerosPatrimoniais, Usuario usuarioLogado) {
+        if (numerosPatrimoniais == null || numerosPatrimoniais.isEmpty()) return;
+
+        List<Item> itensParaRestaurar = numerosPatrimoniais.stream()
+                .map(this::buscarPorPatrimonio)
+                .toList();
+
+        for (Item item : itensParaRestaurar) {
+            if (item.getStatus() != StatusItem.EXCLUIDO) {
+                continue;
+            }
+            item.setStatus(StatusItem.DISPONIVEL);
+            item.setAtualizadoPor(usuarioLogado);
+        }
+        itemRepository.saveAll(itensParaRestaurar);
     }
 }

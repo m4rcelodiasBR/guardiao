@@ -19,7 +19,7 @@ import java.util.function.Function;
 @Service
 public class TokenService {
 
-    @Value("${jwt.secret}")
+    @Value("sua-chave-secreta-super-longa-e-segura-para-o-sistema-sagat")
     private String secretKey;
 
     public String extractUsername(String token) {
@@ -36,6 +36,7 @@ public class TokenService {
         if (userDetails instanceof Usuario) {
             Usuario usuario = (Usuario) userDetails;
             claims.put("role", usuario.getPerfil());
+            claims.put("nome", usuario.getNome());
             String subject = String.format("%d,%s", usuario.getId(), usuario.getLogin());
             return generateTokenWithSubject(claims, subject);
         }

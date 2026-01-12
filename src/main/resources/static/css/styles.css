@@ -334,7 +334,7 @@ footer {
 }
 
 .barra-verde-amarelo {
-    height: .1rem;
+    height: .2rem;
     background-image: linear-gradient(to left, var(--amarelo-color), var(--verde-color));
 }
 
