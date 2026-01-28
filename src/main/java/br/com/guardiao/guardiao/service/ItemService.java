@@ -1,10 +1,7 @@
 package br.com.guardiao.guardiao.service;
 
 import br.com.guardiao.guardiao.controller.dto.*;
-import br.com.guardiao.guardiao.model.Item;
-import br.com.guardiao.guardiao.model.StatusItem;
-import br.com.guardiao.guardiao.model.Transferencia;
-import br.com.guardiao.guardiao.model.Usuario;
+import br.com.guardiao.guardiao.model.*;
 import br.com.guardiao.guardiao.repository.ItemRepository;
 import br.com.guardiao.guardiao.repository.TransferenciaRepository;
 import br.com.guardiao.guardiao.repository.specification.ItemSpecification;
@@ -15,6 +12,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -33,25 +32,8 @@ public class ItemService {
     @Autowired
     private ItemSpecification itemSpecification;
 
-    public PageDTO<ItemAtivoDTO> buscarItensAtivos(ItemBuscaDTO itemBuscaDTO, Pageable pageable) {
-        Specification<Item> specFromRequest = itemSpecification.getSpecifications(itemBuscaDTO);
-        Specification<Item> specBase = (root, query, cb) -> cb.notEqual(root.get("status"), StatusItem.EXCLUIDO);
-        Specification<Item> finalSpec = specBase.and(specFromRequest);
-        Page<Item> itensPaginados = itemRepository.findAll(finalSpec, pageable);
-        Page<ItemAtivoDTO> dtoPage = itensPaginados.map(item -> {
-            boolean isPermanente = false;
-            if (item.getStatus() == StatusItem.TRANSFERIDO) {
-                isPermanente = transferenciaRepository.findTopByItemIdOrderByIdDesc(item.getId())
-                        .map(t -> {
-                            String destino = t.getIncumbenciaDestino();
-                            return destino.startsWith("000") || destino.startsWith("001") || destino.startsWith("002");
-                        })
-                        .orElse(false);
-            }
-            return new ItemAtivoDTO(item, isPermanente);
-        });
-        return new PageDTO<>(dtoPage);
-    }
+    @Autowired
+    private AuditoriaService auditoriaService;
 
     @Transactional
     public Item salvarItem(ItemCadastroDTO itemDTO, Usuario usuarioLogado) {
@@ -60,6 +42,7 @@ public class ItemService {
                 throw new IllegalStateException("Número patrimonial já cadastrado.");
             });
         }
+
         Item novoItem = new Item();
         novoItem.setNumeroPatrimonial(itemDTO.getNumeroPatrimonial());
         novoItem.setDescricao(itemDTO.getDescricao());
@@ -70,6 +53,11 @@ public class ItemService {
         novoItem.setStatus(StatusItem.DISPONIVEL);
         novoItem.setCadastradoPor(usuarioLogado);
         novoItem.setAtualizadoPor(usuarioLogado);
+        auditoriaService.registrar(
+                usuarioLogado,
+                TipoAcao.CRIACAO_ITEM,
+                "NumPAT " + itemDTO.getNumeroPatrimonial(),
+                "Um item foi cadastrado. Descrição: " + itemDTO.getDescricao());
         return itemRepository.save(novoItem);
     }
 
@@ -86,6 +74,8 @@ public class ItemService {
                     });
         }
 
+        String dadosAlterados = detectarAlteracoesItem(itemExistente, dadosAtualizados);
+
         itemExistente.setDescricao(dadosAtualizados.getDescricao());
         itemExistente.setMarca(dadosAtualizados.getMarca());
 
@@ -97,13 +87,40 @@ public class ItemService {
         itemExistente.setLocalizacao(dadosAtualizados.getLocalizacao());
         itemExistente.setCompartimento(dadosAtualizados.getCompartimento());
         itemExistente.setAtualizadoPor(usuarioLogado);
-
+        auditoriaService.registrar(
+                usuarioLogado,
+                TipoAcao.EDICAO_ITEM,
+                "NumPAT: " + numeroPatrimonial,
+                "Um item foi atualizado." + dadosAlterados
+        );
         return itemRepository.save(itemExistente);
     }
 
-    public Item buscarPorPatrimonio(String numeroPatrimonial) {
-        return itemRepository.findByNumeroPatrimonial(numeroPatrimonial)
-                .orElseThrow(() -> new RuntimeException("Item com Património " + numeroPatrimonial + " não encontrado."));
+    @Transactional
+    public void atualizarVariosItens(ItemEdicaoMassaDTO edicaoMassaDTO, Usuario usuarioLogado) {
+        List<Item> itensParaAtualizar = edicaoMassaDTO.getNumerosPatrimoniais().stream()
+                .map(this::buscarPorPatrimonio)
+                .collect(Collectors.toList());
+        for (Item item : itensParaAtualizar) {
+            String dadosAlterados = detectarAlteracoesMassaItem(item, edicaoMassaDTO);
+            if (item.getStatus() != StatusItem.DISPONIVEL) {
+                throw new IllegalStateException("O item com patrimônio " + item.getNumeroPatrimonial() + " não está disponível para edição em massa.");
+            }
+            if (StringUtils.hasText(edicaoMassaDTO.getLocalizacao())) {
+                item.setLocalizacao(edicaoMassaDTO.getLocalizacao());
+            }
+            if (edicaoMassaDTO.getCompartimento() != null) {
+                item.setCompartimento(edicaoMassaDTO.getCompartimento());
+            }
+            item.setAtualizadoPor(usuarioLogado);
+            auditoriaService.registrar(
+                    usuarioLogado,
+                    TipoAcao.EDICAO_EM_MASSA_ITEM,
+                    "NumPAT: " + item.getNumeroPatrimonial(),
+                    "Um itens foram alterados." + dadosAlterados
+            );
+        }
+        itemRepository.saveAll(itensParaAtualizar);
     }
 
     @Transactional
@@ -113,7 +130,13 @@ public class ItemService {
             throw new IllegalStateException("Apenas itens com status DISPONIVEL podem ser excluídos.");
         }
         item.setStatus(StatusItem.EXCLUIDO);
-        item.setAtualizadoPor(usuarioLogado); // CORRIGIDO: Usa o usuário logado
+        item.setAtualizadoPor(usuarioLogado);
+        auditoriaService.registrar(
+                usuarioLogado,
+                TipoAcao.EXCLUSAO_ITEM,
+                "NumPAT: " + numeroPatrimonial,
+                "Um item excluído."
+        );
         itemRepository.save(item);
     }
 
@@ -132,6 +155,12 @@ public class ItemService {
             }
             item.setStatus(StatusItem.EXCLUIDO);
             item.setAtualizadoPor(usuarioLogado);
+            auditoriaService.registrar(
+                    usuarioLogado,
+                    TipoAcao.EXCLUSAO_EM_MASSA_ITEM,
+                    "NumPAT: " + item.getNumeroPatrimonial(),
+                    "Um item foi excluído."
+            );
         }
         itemRepository.saveAll(itensParaExcluir);
     }
@@ -155,28 +184,13 @@ public class ItemService {
         registroDevolucao.setNumeroPatrimonialItem(item.getNumeroPatrimonial());
         registroDevolucao.setDescricaoItem(item.getDescricao());
         transferenciaRepository.save(registroDevolucao);
-
+        auditoriaService.registrar(
+                usuarioLogado,
+                TipoAcao.DEVOLUCAO_ITEM,
+                "NumPAT: " + item.getNumeroPatrimonial(),
+                "Um item foi devolvido ao inventário. Obs: " + devolucaoDTO.getObservacao()
+        );
         return itemRepository.save(item);
-    }
-
-    @Transactional
-    public void atualizarVariosItens(ItemEdicaoMassaDTO edicaoMassaDTO, Usuario usuarioLogado) {
-        List<Item> itensParaAtualizar = edicaoMassaDTO.getNumerosPatrimoniais().stream()
-                .map(this::buscarPorPatrimonio)
-                .collect(Collectors.toList());
-        for (Item item : itensParaAtualizar) {
-            if (item.getStatus() != StatusItem.DISPONIVEL) {
-                throw new IllegalStateException("O item com patrimônio " + item.getNumeroPatrimonial() + " não está disponível para edição em massa.");
-            }
-            if (StringUtils.hasText(edicaoMassaDTO.getLocalizacao())) {
-                item.setLocalizacao(edicaoMassaDTO.getLocalizacao());
-            }
-            if (edicaoMassaDTO.getCompartimento() != null) {
-                item.setCompartimento(edicaoMassaDTO.getCompartimento());
-            }
-            item.setAtualizadoPor(usuarioLogado);
-        }
-        itemRepository.saveAll(itensParaAtualizar);
     }
 
     @Transactional
@@ -191,9 +205,81 @@ public class ItemService {
             itemParaReativar.setStatus(StatusItem.DISPONIVEL);
             itemParaReativar.setAtualizadoPor(usuarioLogado);
             itemRepository.save(itemParaReativar);
+            auditoriaService.registrar(
+                    usuarioLogado,
+                    TipoAcao.REATIVACAO_ITEM,
+                    "NumPAT: " + itemParaReativar.getNumeroPatrimonial(),
+                    "Um item reativado automaticamente via Importação XML."
+            );
         } else {
             salvarItem(itemCadastroDTO, usuarioLogado);
         }
+    }
+
+    @Transactional
+    public void restaurarItem(String numeroPatrimonial, Usuario usuarioLogado) {
+        Item item = buscarPorPatrimonio(numeroPatrimonial);
+        if (item.getStatus() != StatusItem.EXCLUIDO) {
+            throw new IllegalStateException("Apenas itens excluídos pode ser restaurados.");
+        }
+        item.setStatus(StatusItem.DISPONIVEL);
+        item.setAtualizadoPor(usuarioLogado);
+        auditoriaService.registrar(
+                usuarioLogado,
+                TipoAcao.RESTAURACAO_ITEM,
+                "NumPAT: " + numeroPatrimonial,
+                "Um item foi restaurado."
+        );
+        itemRepository.save(item);
+    }
+
+    @Transactional
+    public void restaurarVariosItens(List<String> numerosPatrimoniais, Usuario usuarioLogado) {
+        if (numerosPatrimoniais == null || numerosPatrimoniais.isEmpty()) return;
+
+        List<Item> itensParaRestaurar = numerosPatrimoniais.stream()
+                .map(this::buscarPorPatrimonio)
+                .toList();
+
+        for (Item item : itensParaRestaurar) {
+            if (item.getStatus() != StatusItem.EXCLUIDO) {
+                continue;
+            }
+            item.setStatus(StatusItem.DISPONIVEL);
+            item.setAtualizadoPor(usuarioLogado);
+            auditoriaService.registrar(
+                    usuarioLogado,
+                    TipoAcao.RESTAURACAO_EM_MASSA_ITEM,
+                    "NumPAT: " + item.getNumeroPatrimonial(),
+                    "Um item foi restaurado."
+            );
+        }
+        itemRepository.saveAll(itensParaRestaurar);
+    }
+
+    public PageDTO<ItemAtivoDTO> buscarItensAtivos(ItemBuscaDTO itemBuscaDTO, Pageable pageable) {
+        Specification<Item> specFromRequest = itemSpecification.getSpecifications(itemBuscaDTO);
+        Specification<Item> specBase = (root, query, cb) -> cb.notEqual(root.get("status"), StatusItem.EXCLUIDO);
+        Specification<Item> finalSpec = specBase.and(specFromRequest);
+        Page<Item> itensPaginados = itemRepository.findAll(finalSpec, pageable);
+        Page<ItemAtivoDTO> dtoPage = itensPaginados.map(item -> {
+            boolean isPermanente = false;
+            if (item.getStatus() == StatusItem.TRANSFERIDO) {
+                isPermanente = transferenciaRepository.findTopByItemIdOrderByIdDesc(item.getId())
+                        .map(t -> {
+                            String destino = t.getIncumbenciaDestino();
+                            return destino.startsWith("000") || destino.startsWith("001") || destino.startsWith("002");
+                        })
+                        .orElse(false);
+            }
+            return new ItemAtivoDTO(item, isPermanente);
+        });
+        return new PageDTO<>(dtoPage);
+    }
+
+    public Item buscarPorPatrimonio(String numeroPatrimonial) {
+        return itemRepository.findByNumeroPatrimonial(numeroPatrimonial)
+                .orElseThrow(() -> new RuntimeException("Item com Património " + numeroPatrimonial + " não encontrado."));
     }
 
     public Page<ItemAtivoDTO> buscarItensParaDataTable(ItemBuscaDTO itemBuscaDTO, String globalSearchValue, Pageable pageable) {
@@ -246,32 +332,59 @@ public class ItemService {
         return itensPaginados.map(item -> new ItemAtivoDTO(item, false));
     }
 
-    @Transactional
-    public void restaurarItem(String numeroPatrimonial, Usuario usuarioLogado) {
-        Item item = buscarPorPatrimonio(numeroPatrimonial);
-        if (item.getStatus() != StatusItem.EXCLUIDO) {
-            throw new IllegalStateException("Apenas itens excluídos pode ser restaurados.");
+    /**
+     * Metodo auxiliar para detectar alterações de dados cadastrais de itens do inventário
+     * para alimentar os logs do serviço de Auditoria do sistema.
+     */
+    private String detectarAlteracoesItem(Item dadosAntigosItem, ItemUpdateDTO dadosNovosItem) {
+        List<String> mudancas = new ArrayList<>();
+
+        if (!Objects.equals(dadosAntigosItem.getDescricao(), dadosNovosItem.getDescricao())) {
+            mudancas.add("Descrição; " + dadosAntigosItem.getDescricao() + " -> " + dadosNovosItem.getDescricao());
         }
-        item.setStatus(StatusItem.DISPONIVEL);
-        item.setAtualizadoPor(usuarioLogado);
-        itemRepository.save(item);
+
+        if (!Objects.equals(dadosAntigosItem.getMarca(), dadosNovosItem.getMarca())) {
+            mudancas.add("Marca: " + dadosAntigosItem.getMarca() + " -> " + dadosNovosItem.getMarca());
+        }
+
+        if (!Objects.equals(dadosAntigosItem.getNumeroDeSerie(), dadosNovosItem.getNumeroDeSerie())) {
+            mudancas.add("N/S: " + dadosAntigosItem.getNumeroDeSerie() + " -> " + dadosNovosItem.getNumeroDeSerie());
+        }
+
+        String compartimentoAntigo = dadosAntigosItem.getCompartimento() != null ? dadosAntigosItem.getCompartimento().getCodigo() : "N/A";
+        String compartimentoNovo = dadosNovosItem.getCompartimento() != null ? dadosNovosItem.getCompartimento().getCodigo() : "N/A";
+        if (!Objects.equals(compartimentoAntigo, compartimentoNovo)) {
+            mudancas.add("Compartimento: " + compartimentoAntigo + " -> " + compartimentoNovo);
+        }
+
+        if (!Objects.equals(dadosAntigosItem.getLocalizacao(), dadosNovosItem.getLocalizacao())) {
+            mudancas.add("Localização: " + dadosAntigosItem.getLocalizacao() + " -> " + dadosNovosItem.getLocalizacao());
+        }
+
+        return mudancas.isEmpty() ? "Edição sem mudanças de campos monitorados." : String.join("; ", mudancas);
     }
 
-    @Transactional
-    public void restaurarVariosItens(List<String> numerosPatrimoniais, Usuario usuarioLogado) {
-        if (numerosPatrimoniais == null || numerosPatrimoniais.isEmpty()) return;
+    /**
+     * Metodo auxiliar para detectar alterações de dados cadastrais de vários itens do inventário
+     * para alimentar os logs do serviço de Auditoria do sistema.
+     */
+    private String detectarAlteracoesMassaItem(Item dadosAntigosItem, ItemEdicaoMassaDTO dadosNovosItem) {
+        List<String> mudancas = new ArrayList<>();
 
-        List<Item> itensParaRestaurar = numerosPatrimoniais.stream()
-                .map(this::buscarPorPatrimonio)
-                .toList();
+        if (dadosNovosItem.getLocalizacao() != null && !Objects.equals(dadosAntigosItem.getLocalizacao(), dadosNovosItem.getLocalizacao())) {
+            mudancas.add("Localização: " + (dadosAntigosItem.getLocalizacao() != null ? dadosAntigosItem.getLocalizacao() : "Vazio")
+                    + " -> " + dadosNovosItem.getLocalizacao());
+        }
 
-        for (Item item : itensParaRestaurar) {
-            if (item.getStatus() != StatusItem.EXCLUIDO) {
-                continue;
+        if (dadosNovosItem.getCompartimento() != null) {
+            String compAntigo = dadosAntigosItem.getCompartimento() != null ? dadosAntigosItem.getCompartimento().getCodigo() : "N/A";
+            String compNovo = dadosNovosItem.getCompartimento().getCodigo();
+            if (!Objects.equals(compAntigo, compNovo)) {
+                mudancas.add("Compartimento: " + compAntigo + " -> " + compNovo);
             }
-            item.setStatus(StatusItem.DISPONIVEL);
-            item.setAtualizadoPor(usuarioLogado);
         }
-        itemRepository.saveAll(itensParaRestaurar);
+
+        return mudancas.isEmpty() ? "Item processado no lote (sem alterações efetivas)." : String.join("; ", mudancas);
     }
+
 }

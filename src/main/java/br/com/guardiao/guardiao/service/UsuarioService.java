@@ -2,6 +2,7 @@ package br.com.guardiao.guardiao.service;
 
 import br.com.guardiao.guardiao.controller.dto.*;
 import br.com.guardiao.guardiao.model.StatusUsuario;
+import br.com.guardiao.guardiao.model.TipoAcao;
 import br.com.guardiao.guardiao.model.Usuario;
 import br.com.guardiao.guardiao.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,9 +10,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class UsuarioService {
@@ -22,30 +27,44 @@ public class UsuarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AuditoriaService auditoriaService;
+
     private final String senhaPadrao = "guardiao";
+
+    private Usuario getUsuarioLogado() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof Usuario) {
+            return (Usuario) principal;
+        }
+        return null;
+    }
 
     @Transactional
     public Usuario registrarNovoUsuario(RegistroUsuarioDTO registroUsuarioDTO) {
         if (usuarioRepository.findByLogin(registroUsuarioDTO.getLogin()).isPresent()) {
-            throw new IllegalStateException("O nome de usuário (login) informado já está em uso.");
+            throw new IllegalStateException("O nome de usuário (login) informado já está em uso." +
+                    "Tente entrar no sistema com ele.");
         }
         if (usuarioRepository.findByEmail(registroUsuarioDTO.getEmail()).isPresent()) {
             throw new IllegalStateException("O e-mail informado já está cadastrado.");
         }
-        Usuario novoUsuario = new Usuario();
-        novoUsuario.setNome(registroUsuarioDTO.getNome());
-        novoUsuario.setLogin(registroUsuarioDTO.getLogin());
-        novoUsuario.setEmail(registroUsuarioDTO.getEmail());
-        novoUsuario.setSenha(passwordEncoder.encode(senhaPadrao));
-        novoUsuario.setSenhaExpirada(true);
-        novoUsuario.setPerfil(registroUsuarioDTO.getPerfil());
-        novoUsuario.setStatus(StatusUsuario.ATIVO);
-        return usuarioRepository.save(novoUsuario);
-    }
-
-    public Page<UsuarioDTO> listarUsuariosAtivos(Pageable pageable) {
-        Page<Usuario> usuariosPaginados = usuarioRepository.findAllByStatusNot(StatusUsuario.EXCLUIDO, pageable);
-        return usuariosPaginados.map(UsuarioDTO::new);
+        Usuario dadosNovoUsuario = new Usuario();
+        dadosNovoUsuario.setNome(registroUsuarioDTO.getNome());
+        dadosNovoUsuario.setLogin(registroUsuarioDTO.getLogin());
+        dadosNovoUsuario.setEmail(registroUsuarioDTO.getEmail());
+        dadosNovoUsuario.setSenha(passwordEncoder.encode(senhaPadrao));
+        dadosNovoUsuario.setSenhaExpirada(true);
+        dadosNovoUsuario.setPerfil(registroUsuarioDTO.getPerfil());
+        dadosNovoUsuario.setStatus(StatusUsuario.ATIVO);
+        Usuario novoUsuario = usuarioRepository.save(dadosNovoUsuario);
+        auditoriaService.registrar(
+                getUsuarioLogado(),
+                TipoAcao.CRIACAO_USUARIO,
+                "Usuário: " + dadosNovoUsuario.getLogin(),
+                "Novo usuário registrado no sistema."
+        );
+        return novoUsuario;
     }
 
     @Transactional
@@ -62,12 +81,21 @@ public class UsuarioService {
                 throw new IllegalStateException("O e-mail informado já está em uso por outro usuário.");
             }
         });
+
+        String dadosAlterados = detectarAlteracoesUsuario(usuario, dados);
+
         usuario.setNome(dados.getNome());
-        usuario.setLogin(dados.getLogin());
         usuario.setEmail(dados.getEmail());
         usuario.setPerfil(dados.getPerfil());
         usuario.setStatus(dados.getStatus());
-        return usuarioRepository.save(usuario);
+        Usuario usuarioAtualizado = usuarioRepository.save(usuario);
+        auditoriaService.registrar(
+                getUsuarioLogado(),
+                TipoAcao.EDICAO_USUARIO,
+                "Usuário: " + usuarioAtualizado.getLogin(),
+                dadosAlterados
+        );
+        return usuarioAtualizado;
     }
 
     @Transactional
@@ -76,6 +104,12 @@ public class UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
 
         usuario.setStatus(StatusUsuario.EXCLUIDO);
+        auditoriaService.registrar(
+                getUsuarioLogado(),
+                TipoAcao.EXCLUSAO_USUARIO,
+                "Usuário: " + usuario.getLogin(),
+                "Um usuário foi excluído do sistema."
+        );
         usuarioRepository.save(usuario);
     }
 
@@ -83,6 +117,12 @@ public class UsuarioService {
     public void definirNovaSenha(Usuario usuarioLogado, NovaSenhaDTO novaSenhaDTO) {
         usuarioLogado.setSenha(passwordEncoder.encode(novaSenhaDTO.getNovaSenha()));
         usuarioLogado.setSenhaExpirada(false);
+        auditoriaService.registrar(
+                usuarioLogado,
+                TipoAcao.ALTERACAO_SENHA_USUARIO,
+                "Primeiro acesso",
+                "Usuário definiu senha de acesso ao sistema."
+        );
         usuarioRepository.save(usuarioLogado);
     }
 
@@ -92,11 +132,17 @@ public class UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
         usuario.setSenha(passwordEncoder.encode(senhaPadrao));
         usuario.setSenhaExpirada(true);
+        auditoriaService.registrar(
+                getUsuarioLogado(),
+                TipoAcao.RESET_SENHA_USUARIO,
+                "Usuário: " + usuario.getLogin(),
+                "Senha do usuário resetada no sistema."
+        );
         usuarioRepository.save(usuario);
     }
 
     @Transactional
-    public Usuario atualizarProprioPerfil(Usuario usuarioLogado, PerfilUpdateDTO dados) {
+    public Usuario atualizarPerfil(Usuario usuarioLogado, PerfilUpdateDTO dados) {
         usuarioRepository.findByEmail(dados.getEmail()).ifPresent(u -> {
             if (!u.getId().equals(usuarioLogado.getId())) {
                 throw new IllegalStateException("O e-mail informado já está em uso por outro usuário.");
@@ -104,16 +150,34 @@ public class UsuarioService {
         });
         usuarioLogado.setNome(dados.getNome());
         usuarioLogado.setEmail(dados.getEmail());
-        return usuarioRepository.save(usuarioLogado);
+        Usuario usuarioAtualizado = usuarioRepository.save(usuarioLogado);
+        auditoriaService.registrar(
+                usuarioLogado,
+                TipoAcao.ALTERACAO_PERFIL_USUARIO,
+                "Usuário: " + usuarioAtualizado.getLogin(),
+                "Usuário atualizou seus dados cadastrais no sistema."
+        );
+        return usuarioAtualizado;
     }
 
     @Transactional
-    public void alterarPropriaSenha(Usuario usuarioLogado, SenhaUpdateDTO dados) {
+    public void alterarSenha(Usuario usuarioLogado, SenhaUpdateDTO dados) {
         if (!passwordEncoder.matches(dados.getSenhaAtual(), usuarioLogado.getPassword())) {
             throw new BadCredentialsException("A senha atual está incorreta.");
         }
         usuarioLogado.setSenha(passwordEncoder.encode(dados.getNovaSenha()));
+        auditoriaService.registrar(
+                usuarioLogado,
+                TipoAcao.ALTERACAO_SENHA_USUARIO,
+                "Usuário: " + usuarioLogado.getNome(),
+                "Usuário alterou sua própria senha."
+        );
         usuarioRepository.save(usuarioLogado);
+    }
+
+    public Page<UsuarioDTO> listarUsuariosAtivos(Pageable pageable) {
+        Page<Usuario> usuariosPaginados = usuarioRepository.findAllByStatusNot(StatusUsuario.EXCLUIDO, pageable);
+        return usuariosPaginados.map(UsuarioDTO::new);
     }
 
     public Page<UsuarioDTO> listarUsuariosParaDataTable(String termoBusca, Pageable pageable) {
@@ -135,5 +199,27 @@ public class UsuarioService {
         };
 
         return usuarioRepository.findAll(spec, pageable).map(UsuarioDTO::new);
+    }
+
+    /**
+     * Metodo auxiliar para detectar alterações de dados cadastrais de usuário
+     * para alimentar os logs do serviço de Auditoria do sistema.
+     */
+    private String detectarAlteracoesUsuario(Usuario dadosAntigosUsuario, UsuarioUpdateDTO dadosNovosUsuario) {
+        List<String> mudancas = new ArrayList<>();
+
+        if (!dadosAntigosUsuario.getNome().equals(dadosNovosUsuario.getNome())) {
+            mudancas.add("Nome: '" + dadosAntigosUsuario.getNome() + "' -> '" + dadosNovosUsuario.getNome() + "'");
+        }
+
+        if (!dadosAntigosUsuario.getPerfil().equals(dadosNovosUsuario.getPerfil())) {
+            mudancas.add("Perfil: " + dadosAntigosUsuario.getPerfil().name() + " -> " + dadosNovosUsuario.getPerfil().name());
+        }
+
+        if (!dadosAntigosUsuario.getStatus().equals(dadosNovosUsuario.getStatus())) {
+            mudancas.add("Status: " + dadosAntigosUsuario.getStatus() + " -> " + dadosNovosUsuario.getStatus());
+        }
+
+        return mudancas.isEmpty() ? "Nenhuma alteração detectada." : String.join("; ", mudancas);
     }
 }

@@ -40,6 +40,7 @@ public class SecurityConfig {
                         "/trocar-senha.html",
                         "/importacao.html",
                         "/ajuda.html",
+                        "/auditoria.html",
                         "/api/auth/**",
                         "/api/perfil/**",
                         "/api/util/**",
@@ -55,6 +56,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/itens/**").hasAnyRole("ADMIN", "USUARIO")
                 .requestMatchers("/api/itens/*/restaurar").hasRole("ADMIN")
                 .requestMatchers("/api/itens/restaurar-massa").hasRole("ADMIN")
+                .requestMatchers("/api/auditoria/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -6,6 +6,7 @@ import br.com.guardiao.guardiao.controller.dto.ItemValidadoDTO;
 import br.com.guardiao.guardiao.controller.dto.TabelaXmlWrapper;
 import br.com.guardiao.guardiao.model.Compartimento;
 import br.com.guardiao.guardiao.model.Item;
+import br.com.guardiao.guardiao.model.TipoAcao;
 import br.com.guardiao.guardiao.model.Usuario;
 import br.com.guardiao.guardiao.repository.ItemRepository;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -28,6 +29,9 @@ public class ImportacaoService {
     @Autowired
     @Lazy
     private ItemService itemService;
+
+    @Autowired
+    private AuditoriaService auditoriaService;
 
     private static final List<String> MARCAS_CONHECIDAS = List.of(
             "HP", "HPE", "DELL", "CISCO", "3COM", "APC", "SMS",
@@ -68,7 +72,13 @@ public class ImportacaoService {
     }
 
     @Transactional
-    public void importarItens(List<ItemCadastroDTO> itensParaImportar, Usuario usuarioLogado) {
+    public void importarItens(List<ItemCadastroDTO> itensParaImportar, String nomeArquivo, Usuario usuarioLogado) {
+        auditoriaService.registrar(
+                usuarioLogado,
+                TipoAcao.IMPORTACAO_XML_ITEM,
+                "Arquivo XML: " + nomeArquivo,
+                "Iniciada a importação de " + itensParaImportar.size() + " item(ns)."
+        );
         for (ItemCadastroDTO itemDTO : itensParaImportar) {
             itemService.salvarOuReativarItem(itemDTO, usuarioLogado);
         }

@@ -524,6 +524,7 @@ th[datatable]:hover {
 
 .dt-info,
 .dt-length,
-#buttons-title-placeholder {
+#buttons-title-placeholder,
+#buttons-title-placeholder-audit {
     font-size: 0.875rem;
 }

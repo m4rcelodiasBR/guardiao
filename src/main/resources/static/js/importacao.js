@@ -17,6 +17,7 @@ $(document).on('global-setup-complete', function() {
     const $btnConfirmarImportacao = $('.btn-confirmar-importacao');
 
     let itensValidosParaImportar = [];
+    let nomeArquivoXmlOriginal = "";
 
     // --- FUNÇÕES ---
     const renderValidationTable = (resultados) => {
@@ -84,6 +85,8 @@ $(document).on('global-setup-complete', function() {
             showAlert('Por favor, selecione um ficheiro XML.', 'warning');
             return;
         }
+
+        nomeArquivoXmlOriginal = file.name;
 
         const formData = new FormData();
         formData.append('file', file);
@@ -155,7 +158,7 @@ $(document).on('global-setup-complete', function() {
         $(this).prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Importando...');
 
         $.ajax({
-            url: '/api/importacao/confirmar',
+            url: '/api/importacao/confirmar?nomeArquivo=' + encodeURIComponent(nomeArquivoXmlOriginal),
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(itensSelecionados),

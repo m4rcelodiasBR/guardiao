@@ -48,7 +48,7 @@ $(document).on('global-setup-complete', function() {
                 url: '/api/itens/excluidos/datatable?' + $.param(dtParams),
                 type: 'POST',
                 contentType: 'application/json',
-                data: JSON.stringify({}), // Busca vazia (sem filtros avançados por enquanto)
+                data: JSON.stringify({}),
                 success: function(json) {
                     selectedItems.clear();
                     updateBulkActionUI();
@@ -69,7 +69,9 @@ $(document).on('global-setup-complete', function() {
             },
             {
                 data: 'item.status',
-                render: function() { return '<span class="badge rounded-pill bg-danger" title="Excluído" style="cursor: pointer;>E</span>'; }
+                render: function() {
+                    return '<span class="badge rounded-pill bg-danger" title="Excluído" style="cursor: pointer;">E</span>';
+                }
             },
             { data: 'item.numeroPatrimonial' },
             { data: 'item.descricao', render: $.fn.dataTable.render.ellipsis(80, true) },

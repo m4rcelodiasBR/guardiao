@@ -36,8 +36,6 @@ public class ImportacaoController {
             List<ItemValidadoDTO> resultadoValidacao = importacaoService.validarFicheiroXml(file);
             return ResponseEntity.ok(resultadoValidacao);
         } catch (IOException e) {
-            // Em caso de erro de leitura do ficheiro, retorna um erro genérico.
-            // Poderíamos criar um DTO de erro mais específico aqui.
             return ResponseEntity.badRequest().body(null);
         }
     }
@@ -50,12 +48,14 @@ public class ImportacaoController {
      * @return Uma resposta de sucesso com uma mensagem de resumo.
      */
     @PostMapping("/confirmar")
-    public ResponseEntity<Map<String, String>> confirmarImportacao(@RequestBody List<ItemCadastroDTO> itensParaImportar, Authentication authentication) {
+    public ResponseEntity<Map<String, String>> confirmarImportacao(@RequestBody List<ItemCadastroDTO> itensParaImportar,
+                                                                   @RequestParam(value = "nomeArquivo", defaultValue = "Arquivo Desconhecido") String nomeArquivo,
+                                                                   Authentication authentication) {
         if (itensParaImportar == null || itensParaImportar.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Nenhum item selecionado para importação."));
         }
         Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
-        importacaoService.importarItens(itensParaImportar, usuarioLogado);
+        importacaoService.importarItens(itensParaImportar, nomeArquivo, usuarioLogado);
         String mensagem = itensParaImportar.size() + " item(s) importado(s) com sucesso!";
         return ResponseEntity.ok(Map.of("message", mensagem));
     }

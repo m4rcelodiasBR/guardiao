@@ -1,9 +1,10 @@
 package br.com.guardiao.guardiao.controller;
 
 import br.com.guardiao.guardiao.controller.dto.AutenticacaoDTO;
-import br.com.guardiao.guardiao.controller.dto.TokenDTO;
+import br.com.guardiao.guardiao.model.TipoAcao;
 import br.com.guardiao.guardiao.model.Usuario;
 import br.com.guardiao.guardiao.repository.UsuarioRepository;
+import br.com.guardiao.guardiao.service.AuditoriaService;
 import br.com.guardiao.guardiao.service.TokenService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +33,12 @@ public class AutenticacaoController {
 
     @Autowired
     private TokenService tokenService;
+
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private AuditoriaService auditoriaService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody @Valid AutenticacaoDTO autenticacaoDTO) {
@@ -42,13 +47,24 @@ public class AutenticacaoController {
 
         try {
             Authentication auth = this.authenticationManager.authenticate(usernamePassword);
-            String token = tokenService.generateToken((Usuario) auth.getPrincipal());
+            Usuario usuario = (Usuario) auth.getPrincipal();
+            String token = tokenService.generateToken(usuario);
+            auditoriaService.registrar(
+                    usuario,
+                    TipoAcao.LOGIN_SUCESSO,
+                    "Acesso ao Sistema",
+                    "Login realizado com sucesso.");
             return ResponseEntity.ok(Map.of("token", token, "trocaSenhaObrigatoria", false));
 
         } catch (CredentialsExpiredException e) {
             Usuario usuario = usuarioRepository.findByLogin(autenticacaoDTO.getLogin())
                     .orElseThrow(() -> new BadCredentialsException("Usuário não encontrado durante a expiração da credencial."));
             String token = tokenService.generateToken(usuario);
+            auditoriaService.registrar(
+                    usuario,
+                    TipoAcao.LOGIN_SUCESSO,
+                    "Acesso ao Sistema. Login: " + autenticacaoDTO.getLogin(),
+                    "Acesso com senha expirada.");
             return ResponseEntity.ok(Map.of(
                     "message", "A senha expirou e precisa ser alterada.",
                     "token", token,
@@ -56,9 +72,19 @@ public class AutenticacaoController {
             ));
 
         } catch (DisabledException e) {
+            auditoriaService.registrar(
+                    null,
+                    TipoAcao.LOGIN_FALHA,
+                    "Acesso ao Sistema. Login: " + autenticacaoDTO.getLogin(),
+                    "Acesso com conta desativada.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário está inativo. Contate o administrador.");
 
         } catch (BadCredentialsException e) {
+            auditoriaService.registrar(
+                    null,
+                    TipoAcao.LOGIN_FALHA,
+                    "Acesso ao Sistema. Login: " + autenticacaoDTO.getLogin(),
+                    "Acesso com credenciais inválidas.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login ou senha inválidos.");
         }
     }

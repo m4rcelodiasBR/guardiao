@@ -1,10 +1,7 @@
 package br.com.guardiao.guardiao.service;
 
 import br.com.guardiao.guardiao.controller.dto.*;
-import br.com.guardiao.guardiao.model.Item;
-import br.com.guardiao.guardiao.model.StatusItem;
-import br.com.guardiao.guardiao.model.Transferencia;
-import br.com.guardiao.guardiao.model.Usuario;
+import br.com.guardiao.guardiao.model.*;
 import br.com.guardiao.guardiao.repository.ItemRepository;
 import br.com.guardiao.guardiao.repository.TransferenciaRepository;
 import br.com.guardiao.guardiao.repository.UsuarioRepository;
@@ -16,10 +13,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class TransferenciaService {
@@ -35,6 +28,9 @@ public class TransferenciaService {
 
     @Autowired
     private TransferenciaSpecification transferenciaSpecification;
+
+    @Autowired
+    private AuditoriaService auditoriaService;
 
     private Usuario getUsuarioLogado() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -56,14 +52,20 @@ public class TransferenciaService {
         item.setStatus(StatusItem.TRANSFERIDO);
         item.setAtualizadoPor(usuarioLogado);
         itemRepository.save(item);
-        Transferencia novaTransferencia = new Transferencia();
-        novaTransferencia.setItem(item);
-        novaTransferencia.setUsuario(usuarioLogado);
-        novaTransferencia.setIncumbenciaDestino(transferenciaDTO.getIncumbenciaDestino());
-        novaTransferencia.setObservacao(transferenciaDTO.getObservacao());
-        novaTransferencia.setNumeroPatrimonialItem(item.getNumeroPatrimonial());
-        novaTransferencia.setDescricaoItem(item.getDescricao());
-        return transferenciaRepository.save(novaTransferencia);
+        Transferencia transferencia = new Transferencia();
+        transferencia.setItem(item);
+        transferencia.setUsuario(usuarioLogado);
+        transferencia.setIncumbenciaDestino(transferenciaDTO.getIncumbenciaDestino());
+        transferencia.setObservacao(transferenciaDTO.getObservacao());
+        transferencia.setNumeroPatrimonialItem(item.getNumeroPatrimonial());
+        transferencia.setDescricaoItem(item.getDescricao());
+        auditoriaService.registrar(
+                usuarioLogado,
+                TipoAcao.TRANSFERENCIA_ITEM,
+                "NumPAT: " + item.getNumeroPatrimonial(),
+                "Um item foi transferido para " + transferenciaDTO.getIncumbenciaDestino()
+        );
+        return transferenciaRepository.save(transferencia);
     }
 
     @Transactional
@@ -87,6 +89,12 @@ public class TransferenciaService {
             transferencia.setObservacao(transferenciaMassaDTO.getObservacao());
             transferencia.setNumeroPatrimonialItem(item.getNumeroPatrimonial());
             transferencia.setDescricaoItem(item.getDescricao());
+            auditoriaService.registrar(
+                    usuarioLogado,
+                    TipoAcao.TRANSFERENCIA_EM_MASSA_ITEM,
+                    "NumPAT: " + item.getNumeroPatrimonial(),
+                    "Um item transferido para " + transferenciaMassaDTO.getIncumbenciaDestino()
+            );
             transferenciaRepository.save(transferencia);
         }
     }

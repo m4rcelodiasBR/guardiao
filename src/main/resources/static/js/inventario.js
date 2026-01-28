@@ -11,7 +11,6 @@ $(document).on('global-setup-complete', function() {
     const $labelDestinoExtra = $('#label-destino-extra');
     const bulkActionsCollapse = new bootstrap.Collapse($('#bulk-actions-collapse')[0], { toggle: false });
 
-    // Seletores de formulários e botões de ação em massa
     const $formNovoItem = $('#form-novo-item');
     const $formEditarItem = $('#form-editar-item');
     const $formEdicaoMassa = $('#form-edicao-massa');
@@ -22,7 +21,6 @@ $(document).on('global-setup-complete', function() {
     const $btnExcluirSelecionados = $('#btn-excluir-selecionados');
     const $btnTransferirSelecionados = $('#btn-transferir-selecionados');
 
-    // Instâncias dos Modais Bootstrap
     const modalNovoItem = new bootstrap.Modal(document.getElementById('modalNovoItem'));
     const modalEditarItem = new bootstrap.Modal(document.getElementById('modalEditarItem'));
     const modalEdicaoMassa = new bootstrap.Modal(document.getElementById('modalEdicaoMassa'));
@@ -30,7 +28,6 @@ $(document).on('global-setup-complete', function() {
     const modalConfirmacao = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
     const modalGerarEmail = new bootstrap.Modal(document.getElementById('modalGerarEmail'));
 
-    // Variáveis de estado
     let acaoConfirmada = null;
     let selectedItems = new Set();
 

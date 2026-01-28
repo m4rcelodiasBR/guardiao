@@ -28,7 +28,7 @@ public class PerfilController {
     @PutMapping("/meus-dados")
     public ResponseEntity<Usuario> atualizarMeusDados(Authentication authentication, @RequestBody @Valid PerfilUpdateDTO perfilUpdateDTO) {
         Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
-        Usuario usuarioAtualizado = usuarioService.atualizarProprioPerfil(usuarioLogado, perfilUpdateDTO);
+        Usuario usuarioAtualizado = usuarioService.atualizarPerfil(usuarioLogado, perfilUpdateDTO);
         usuarioAtualizado.setSenha(null);
         return ResponseEntity.ok(usuarioAtualizado);
     }
@@ -36,7 +36,7 @@ public class PerfilController {
     @PutMapping("/alterar-senha")
     public ResponseEntity<Void> alterarMinhaSenha(Authentication authentication, @RequestBody @Valid SenhaUpdateDTO senhaUpdateDTO) {
         Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
-        usuarioService.alterarPropriaSenha(usuarioLogado, senhaUpdateDTO);
+        usuarioService.alterarSenha(usuarioLogado, senhaUpdateDTO);
         return ResponseEntity.ok().build();
     }
 

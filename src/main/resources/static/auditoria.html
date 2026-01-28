@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Auditoria | SAGAT</title>
+    <link rel="icon" href="/images/sagat_favicon.png" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/datatables.css">
+    <link rel="stylesheet" href="/css/datatables.min.css">
+    <script>
+        (function() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+        })();
+    </script>
+</head>
+<body>
+<div id="navbar-placeholder"></div>
+<main class="container-fluid mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0"></i>Log de Auditoria</h2>
+        <div class="text-muted small">Monitoramento de Segurança e Ações</div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="datatable-auditoria" class="table table-striped table-hover m-0" style="width:100%;">
+                    <thead class="table-dark">
+                    <tr>
+                        <th style="width: 2%;">ID</th>
+                        <th style="width: 15%;">Data/Hora</th>
+                        <th style="width: 15%;">Responsável</th>
+                        <th style="width: 15%;">Ação</th>
+                        <th style="width: 15%;">Alvo</th>
+                        <th style="width: 23%;">Detalhes</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+<div id="footer-placeholder"></div>
+
+<script src="/js/jquery-3.7.1.min.js"></script>
+<script src="/js/bootstrap.bundle.min.js"></script>
+<script src="/js/global.js"></script>
+<script src="/js/auditoria.js"></script>
+<script src="/js/datatables.js"></script>
+<script src="/js/datatables.min.js"></script>
+<script src="/js/datatables-ellipsis.js"></script>
+
+<button id="btn-scroll-to-top" class="btn btn-primary" title="Voltar ao Topo">
+    <i class="bi bi-caret-up-fill"></i>
+</button>
+
+</body>
+</html>
