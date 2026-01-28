@@ -98,9 +98,7 @@ const updateThemeIcon = (theme) => {
 };
 
 function loadLayout() {
-    // Verifica se os placeholders existem antes de tentar carregar.
     if ($("#navbar-placeholder").length === 0 || $("#footer-placeholder").length === 0) {
-        // Se não houver placeholders (ex: página de login), resolve a promise imediatamente.
         return $.Deferred().resolve().promise();
     }
 
@@ -153,8 +151,12 @@ $(function() {
 
         if (userRole === 'ADMIN') {
             $('#link-gestao-usuarios').show();
+            $('#menu-auditoria').show();
+            $('#menu-excluidos').show();
         } else {
             $('#link-gestao-usuarios').hide();
+            $('#menu-auditoria').hide();
+            $('#menu-excluidos').hide();
         }
 
         $(document).trigger('global-setup-complete');

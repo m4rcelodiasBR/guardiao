@@ -77,7 +77,9 @@ public class AutenticacaoController {
                     TipoAcao.LOGIN_FALHA,
                     "Acesso ao Sistema. Login: " + autenticacaoDTO.getLogin(),
                     "Acesso com conta desativada.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário está inativo. Contate o administrador.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                            "message", "Usuário está inativo. Contate o administrador."));
 
         } catch (BadCredentialsException e) {
             auditoriaService.registrar(
@@ -85,7 +87,9 @@ public class AutenticacaoController {
                     TipoAcao.LOGIN_FALHA,
                     "Acesso ao Sistema. Login: " + autenticacaoDTO.getLogin(),
                     "Acesso com credenciais inválidas.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login ou senha inválidos.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                            "message", "Login ou senha inválidos. Tente novamente."));
         }
     }
 }

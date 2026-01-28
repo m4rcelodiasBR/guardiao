@@ -91,7 +91,7 @@ public class ItemService {
                 usuarioLogado,
                 TipoAcao.EDICAO_ITEM,
                 "NumPAT: " + numeroPatrimonial,
-                "Um item foi atualizado." + dadosAlterados
+                "Um item foi atualizado. " + dadosAlterados
         );
         return itemRepository.save(itemExistente);
     }
@@ -117,7 +117,7 @@ public class ItemService {
                     usuarioLogado,
                     TipoAcao.EDICAO_EM_MASSA_ITEM,
                     "NumPAT: " + item.getNumeroPatrimonial(),
-                    "Um itens foram alterados." + dadosAlterados
+                    "Um itens foram alterados. " + dadosAlterados
             );
         }
         itemRepository.saveAll(itensParaAtualizar);

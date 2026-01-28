@@ -28,6 +28,9 @@ $(document).on('global-setup-complete', function() {
             {
                 data: 'usuarioNome',
                 render: function(data, type, row) {
+                    if (type === 'export' || type === 'filter' || type === 'sort') {
+                        return (data || 'Sistema') + ' - ID: ' + (row.usuarioId || '-');
+                    }
                     return `<strong>${data || 'Sistema'}</strong><br><small class="text-muted">ID: ${row.usuarioId || '-'}</small>`;
                 }
             },
@@ -42,7 +45,7 @@ $(document).on('global-setup-complete', function() {
                         color = 'warning';
                         textColor = 'text-dark';
                     }
-                    return `<span class="badge bg-${color} ${textColor}">${data}</span>`;
+                    return `<span class="badge bg-${color} ${textColor}" style="font-size: .8rem;">${data}</span>`;
                 }
             },
             { data: 'objetoAfetado' },
@@ -65,27 +68,6 @@ $(document).on('global-setup-complete', function() {
         buttonsTitle: 'Ações',
         buttons: [
             {
-                extend: 'copy',
-                text: '<i class="bi bi-copy"></i>',
-                titleAttr: 'Copiar linhas visíveis',
-                className: 'btn btn-sm btn-secondary',
-                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
-            },
-            {
-                extend: 'csv',
-                text: '<i class="bi bi-filetype-csv"></i>',
-                titleAttr: 'Exportar para CSV',
-                className: 'btn btn-sm btn-success',
-                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
-            },
-            {
-                extend: 'copy',
-                text: '<i class="bi bi-filetype-xlsx"></i>',
-                titleAttr: 'Exportar para Excel',
-                className: 'btn btn-sm btn-success',
-                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
-            },
-            {
                 extend: 'collection',
                 text: '<i class="bi bi-filetype-pdf"></i>',
                 titleAttr: 'Exportar para PDF',
@@ -96,9 +78,13 @@ $(document).on('global-setup-complete', function() {
                         text: 'Retrato',
                         orientation: 'portrait',
                         pageSize: 'A4',
-                        exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'},
+                        exportOptions: {
+                            columns: ':visible:not(:first-child)',
+                            orthogonal: 'export'
+                        },
                         customize: function (doc) {
-                            doc.defaultStyle.fontSize = 10;
+                            doc.defaultStyle.fontSize = 9;
+                            doc.styles.tableHeader.alignment = 'left';
                         }
                     },
                     {
@@ -106,19 +92,57 @@ $(document).on('global-setup-complete', function() {
                         text: 'Paisagem',
                         orientation: 'landscape',
                         pageSize: 'A4',
-                        exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'},
+                        exportOptions: {
+                            columns: ':visible:not(:first-child)',
+                            orthogonal: 'export'
+                        },
                         customize: function (doc) {
-                            doc.defaultStyle.fontSize = 10;
+                            doc.defaultStyle.fontSize = 9;
+                            doc.styles.tableHeader.alignment = 'left';
                         }
                     }
                 ]
+            },
+            {
+                extend: 'copy',
+                text: '<i class="bi bi-copy"></i>',
+                titleAttr: 'Copiar linhas visíveis',
+                className: 'btn btn-sm btn-secondary',
+                exportOptions: { columns: ':visible' }
+            },
+            {
+                extend: 'csv',
+                text: '<i class="bi bi-filetype-csv"></i>',
+                titleAttr: 'Exportar para CSV',
+                className: 'btn btn-sm btn-success',
+                exportOptions: { columns: ':visible' }
+            },
+            {
+                extend: 'excelHtml5',
+                text: '<i class="bi bi-filetype-xlsx"></i>',
+                titleAttr: 'Exportar para Excel',
+                className: 'btn btn-sm btn-success',
+                exportOptions: {
+                    columns: ':visible',
+                    orthogonal: 'export'
+                }
             },
             {
                 extend: 'print',
                 text: '<i class="bi bi-printer"></i>',
                 titleAttr: 'Imprimir',
                 className: 'btn btn-sm btn-info',
-                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
+                exportOptions: {
+                    columns: ':visible',
+                    orthogonal: 'export'
+                },
+                customize: function (win) {
+                    $(win.document.body).find('table')
+                        .addClass('compact')
+                        .css('font-size', '9pt')
+                        .css('width', '100%');
+                    $(win.document.body).css('margin', '10px');
+                }
             }
         ],
         lengthMenu: [

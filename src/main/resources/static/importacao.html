@@ -69,20 +69,6 @@
                 </table>
             </div>
 
-            <!-- MODAL GENÉRICO -->
-            <div class="modal fade" id="modal-conteudo-dinamico" tabindex="-1" aria-labelledby="modalConteudoDinamicoLabel" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="modal-conteudo-dinamico-title"></h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="barra-verde-amarelo"></div>
-                        <div class="modal-body" id="modal-conteudo-dinamico-body"></div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Botão de Confirmação Final -->
             <div class="text-end my-3">
                 <button class="btn btn-primary btn-confirmar-importacao" disabled>
@@ -100,6 +86,21 @@
     <button id="btn-scroll-to-top" class="btn btn-primary" title="Voltar ao Topo">
         <i class="bi bi-caret-up-fill"></i>
     </button>
+
+    <!-- MODAL GENÉRICO -->
+    <div class="modal fade" id="modal-conteudo-dinamico" tabindex="-1" aria-labelledby="modalConteudoDinamicoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-conteudo-dinamico-title"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="barra-verde-amarelo"></div>
+                <div class="modal-body" id="modal-conteudo-dinamico-body">
+                </div>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

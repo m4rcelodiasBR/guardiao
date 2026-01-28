@@ -86,7 +86,7 @@ $(document).on('global-setup-complete', function() {
                     if (!data) return '';
                     const isBaixaDefinitiva = ["000", "001", "002"].some(prefix => data.startsWith(prefix));
                     const badgeClass = isBaixaDefinitiva ? 'text-bg-danger' : 'text-bg-warning';
-                    return `<span class="badge rounded-pill ${badgeClass}">${data}</span>`;
+                    return `<span class="badge rounded-pill ${badgeClass}" style="font-size: .8rem;">${data}</span>`;
                 }
             },
             {
@@ -123,27 +123,6 @@ $(document).on('global-setup-complete', function() {
         buttonsTitle: 'Ações',
         buttons: [
             {
-                extend: 'copy',
-                text: '<i class="bi bi-copy"></i>',
-                titleAttr: 'Copiar linhas visíveis',
-                className: 'btn btn-sm btn-secondary',
-                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
-            },
-            {
-                extend: 'csv',
-                text: '<i class="bi bi-filetype-csv"></i>',
-                titleAttr: 'Exportar para CSV',
-                className: 'btn btn-sm btn-success',
-                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
-            },
-            {
-                 extend: 'copy',
-                text: '<i class="bi bi-filetype-xlsx"></i>',
-                titleAttr: 'Exportar para Excel',
-                className: 'btn btn-sm btn-success',
-                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
-            },
-            {
                 extend: 'collection',
                 text: '<i class="bi bi-filetype-pdf"></i>',
                 titleAttr: 'Exportar para PDF',
@@ -154,9 +133,12 @@ $(document).on('global-setup-complete', function() {
                         text: 'Retrato',
                         orientation: 'portrait',
                         pageSize: 'A4',
-                        exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'},
+                        exportOptions: { columns: [0, 1, 2, 3, 5] },
                         customize: function (doc) {
-                            doc.defaultStyle.fontSize = 10;
+                            doc.defaultStyle.fontSize = 9;
+                            let colCount = doc.content[1].table.body[0].length;
+                            doc.content[1].table.widths = Array(colCount).fill('*')
+                            doc.styles.tableHeader.alignment = 'left';
                         }
                     },
                     {
@@ -164,19 +146,50 @@ $(document).on('global-setup-complete', function() {
                         text: 'Paisagem',
                         orientation: 'landscape',
                         pageSize: 'A4',
-                        exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'},
+                        exportOptions: { columns: [0, 1, 2, 3, 5] },
                         customize: function (doc) {
-                            doc.defaultStyle.fontSize = 10;
+                            doc.defaultStyle.fontSize = 9;
+                            let colCount = doc.content[1].table.body[0].length;
+                            doc.content[1].table.widths = Array(colCount).fill('*')
+                            doc.styles.tableHeader.alignment = 'left';
                         }
                     }
                 ]
+            },
+            {
+                extend: 'copy',
+                text: '<i class="bi bi-copy"></i>',
+                titleAttr: 'Copiar linhas visíveis',
+                className: 'btn btn-sm btn-secondary',
+                exportOptions: { columns: [0, 1, 2, 3, 5] }
+            },
+            {
+                extend: 'csv',
+                text: '<i class="bi bi-filetype-csv"></i>',
+                titleAttr: 'Exportar para CSV',
+                className: 'btn btn-sm btn-success',
+                exportOptions: { columns: [0, 1, 2, 3, 5] }
+            },
+            {
+                 extend: 'copy',
+                text: '<i class="bi bi-filetype-xlsx"></i>',
+                titleAttr: 'Exportar para Excel',
+                className: 'btn btn-sm btn-success',
+                exportOptions: { columns: [0, 1, 2, 3, 5] }
             },
             {
                 extend: 'print',
                 text: '<i class="bi bi-printer"></i>',
                 titleAttr: 'Imprimir',
                 className: 'btn btn-sm btn-info',
-                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
+                exportOptions: { columns: [0, 1, 2, 3, 5] },
+                customize: function (win) {
+                    $(win.document.body).find('table')
+                        .addClass('compact')
+                        .css('font-size', '9pt')
+                        .css('width', '100%');
+                    $(win.document.body).css('margin', '10px');
+                }
             }
         ],
         lengthMenu: [

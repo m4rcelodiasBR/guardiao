@@ -68,7 +68,7 @@ $(document).on('global-setup-complete', function() {
 
     const updateBulkActionUI = () => {
         const count = selectedItems.size;
-        if (count > 1 && userRole === 'ADMIN') {
+        if (count > 1) {
             $selectionCounter.text(`${count} item(s) selecionado(s)`);
             bulkActionsCollapse.show();
         } else {
@@ -127,6 +127,11 @@ $(document).on('global-setup-complete', function() {
         modalGerarEmail.show();
     };
 
+    if (userRole !== 'ADMIN') {
+        $('#btn-excluir-selecionados').hide();
+        $('#btn-editar-selecionados').hide();
+    }
+
     const dataTable = $('#datatable-inventario').DataTable({
         serverSide: true,
         responsive: true,
@@ -180,26 +185,28 @@ $(document).on('global-setup-complete', function() {
                     const isDisponivel = row.item.status === 'DISPONIVEL';
                     const isTransferido = row.item.status === 'TRANSFERIDO';
 
-                    const disabledAttr = (!isDisponivel && !isTransferido) || userRole !== 'ADMIN' ? 'disabled' : '';
+                    const disabledAttr = (!isDisponivel && !isTransferido) ? 'disabled' : '';
                     return `<input class="form-check-input item-checkbox" type="checkbox" value="${row.item.numeroPatrimonial}" ${disabledAttr}>`;
                 }
             },
             {
                 data: 'item.status',
                 render: function(data, type, row) {
-                    if (data === 'DISPONIVEL') return '<span class="badge rounded-pill text-bg-success" title="Disponível" style="cursor: pointer;">D</span>';
+                    if (data === 'DISPONIVEL') return '<span class="badge rounded-pill text-bg-success" title="Disponível" style="cursor: pointer; font-size: .7rem;">D</span>';
                     if (data === 'TRANSFERIDO') {
                         const link = `<a href="/historico.html?patrimonio=${row.item.numeroPatrimonial}" target="_blank" title="Transferido. Clique para ver o histórico">`;
                         const badge = row.transferenciaPermanente
-                            ? '<span class="badge rounded-pill text-bg-danger">T</span>'
-                            : '<span class="badge rounded-pill text-bg-warning">T</span>';
+                            ? '<span class="badge rounded-pill text-bg-danger" style="font-size: .7rem;">T</span>'
+                            : '<span class="badge rounded-pill text-bg-warning" style="font-size: .7rem;">T</span>';
                         return `${link}${badge}</a>`;
                     }
                     return data;
                 }
             },
             { data: 'item.numeroPatrimonial', defaultContent: '' },
-            { data: 'item.descricao', render: $.fn.dataTable.render.ellipsis(80, true) },
+            { data: 'item.descricao',
+                render: $.fn.dataTable.render.ellipsis(80, true)
+            },
             { data: 'item.marca', defaultContent: '' },
             { data: 'item.numeroDeSerie', defaultContent: '' },
             { data: 'item.localizacao', defaultContent: '' },
@@ -246,6 +253,40 @@ $(document).on('global-setup-complete', function() {
         buttonsTitle: 'Ações',
         buttons: [
             {
+                extend: 'collection',
+                text: '<i class="bi bi-filetype-pdf"></i>',
+                titleAttr: 'Exportar para PDF',
+                className: 'btn btn-sm btn-danger',
+                buttons: [
+                    {
+                        extend: 'pdfHtml5',
+                        text: 'Retrato',
+                        orientation: 'portrait',
+                        pageSize: 'A4',
+                        exportOptions: { columns: ':visible:not(:last-child):not(:first-child)' },
+                        customize: function (doc) {
+                            doc.defaultStyle.fontSize = 9;
+                            let colCount = doc.content[1].table.body[0].length;
+                            doc.content[1].table.widths = Array(colCount).fill('*')
+                            doc.styles.tableHeader.alignment = 'left';
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: 'Paisagem',
+                        orientation: 'landscape',
+                        pageSize: 'A4',
+                        exportOptions: { columns: ':visible:not(:last-child):not(:first-child)' },
+                        customize: function (doc) {
+                            doc.defaultStyle.fontSize = 9;
+                            let colCount = doc.content[1].table.body[0].length;
+                            doc.content[1].table.widths = Array(colCount).fill('*')
+                            doc.styles.tableHeader.alignment = 'left';
+                        }
+                    }
+                ]
+            },
+            {
                 extend: 'copy',
                 text: '<i class="bi bi-copy"></i>',
                 titleAttr: 'Copiar linhas visíveis',
@@ -260,46 +301,25 @@ $(document).on('global-setup-complete', function() {
                 exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
             },
             {
-                extend: 'copy',
+                extend: 'excelHtml5',
                 text: '<i class="bi bi-filetype-xlsx"></i>',
                 titleAttr: 'Exportar para Excel',
                 className: 'btn btn-sm btn-success',
                 exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
             },
             {
-                extend: 'collection',
-                text: '<i class="bi bi-filetype-pdf"></i>',
-                titleAttr: 'Exportar para PDF',
-                className: 'btn btn-sm btn-danger',
-                buttons: [
-                    {
-                        extend: 'pdfHtml5',
-                        text: 'Retrato',
-                        orientation: 'portrait',
-                        pageSize: 'A4',
-                        exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'},
-                        customize: function (doc) {
-                            doc.defaultStyle.fontSize = 10;
-                        }
-                    },
-                    {
-                        extend: 'pdfHtml5',
-                        text: 'Paisagem',
-                        orientation: 'landscape',
-                        pageSize: 'A4',
-                        exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'},
-                        customize: function (doc) {
-                            doc.defaultStyle.fontSize = 10;
-                        }
-                    }
-                ]
-            },
-            {
                 extend: 'print',
                 text: '<i class="bi bi-printer"></i>',
                 titleAttr: 'Imprimir',
                 className: 'btn btn-sm btn-info',
-                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
+                exportOptions: { columns: ':visible:not(:last-child):not(:first-child)' },
+                customize: function (win) {
+                    $(win.document.body).find('table')
+                        .addClass('compact')
+                        .css('font-size', '9pt')
+                        .css('width', '100%');
+                    $(win.document.body).css('margin', '10px');
+                }
             }
         ],
         lengthMenu: [

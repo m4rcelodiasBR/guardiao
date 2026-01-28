@@ -169,7 +169,7 @@ public class UsuarioService {
         auditoriaService.registrar(
                 usuarioLogado,
                 TipoAcao.ALTERACAO_SENHA_USUARIO,
-                "Usuário: " + usuarioLogado.getNome(),
+                "Usuário: " + usuarioLogado.getLogin(),
                 "Usuário alterou sua própria senha."
         );
         usuarioRepository.save(usuarioLogado);

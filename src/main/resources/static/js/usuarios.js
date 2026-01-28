@@ -1,8 +1,8 @@
 $(document).on('global-setup-complete', function() {
 
     if (userRole !== 'ADMIN') {
-        alert('Acesso negado. Você não tem permissão para visualizar esta página.');
-        window.location.href = '/index.html';
+        showAlert('Acesso negado. Redirecionando...', 'danger');
+        setTimeout(() => window.location.href = '/index.html', 1500);
         return;
     }
 
@@ -36,15 +36,15 @@ $(document).on('global-setup-complete', function() {
             { data: 'perfil',
                 render: function (data) {
                     return data === 'ADMIN'
-                        ? '<span class="badge rounded-pill text-bg-primary">Administrador</span>'
-                        : '<span class="badge rounded-pill text-bg-info">Usuário</span>';
+                        ? '<span class="badge rounded-pill text-bg-primary" style="font-size: .8rem;">Administrador</span>'
+                        : '<span class="badge rounded-pill text-bg-info" style="font-size: .8rem;">Usuário</span>';
                 }
             },
             { data: 'status',
                 render: function (data) {
                     return data === 'ATIVO'
-                        ? '<span class="badge rounded-pill text-bg-success">Ativo</span>'
-                        : '<span class="badge rounded-pill text-bg-secondary">Inativo</span>';
+                        ? '<span class="badge rounded-pill text-bg-success" style="font-size: .8rem;">Ativo</span>'
+                        : '<span class="badge rounded-pill text-bg-secondary" style="font-size: .8rem;">Inativo</span>';
                 }
             },
             { data: null,
@@ -70,27 +70,6 @@ $(document).on('global-setup-complete', function() {
         buttonsTitle: 'Ações',
         buttons: [
             {
-                extend: 'copy',
-                text: '<i class="bi bi-copy"></i>',
-                titleAttr: 'Copiar linhas visíveis',
-                className: 'btn btn-sm btn-secondary',
-                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
-            },
-            {
-                extend: 'csv',
-                text: '<i class="bi bi-filetype-csv"></i>',
-                titleAttr: 'Exportar para CSV',
-                className: 'btn btn-sm btn-success',
-                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
-            },
-            {
-                extend: 'copy',
-                text: '<i class="bi bi-filetype-xlsx"></i>',
-                titleAttr: 'Exportar para Excel',
-                className: 'btn btn-sm btn-success',
-                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
-            },
-            {
                 extend: 'collection',
                 text: '<i class="bi bi-filetype-pdf"></i>',
                 titleAttr: 'Exportar para PDF',
@@ -101,9 +80,12 @@ $(document).on('global-setup-complete', function() {
                         text: 'Retrato',
                         orientation: 'portrait',
                         pageSize: 'A4',
-                        exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'},
+                        exportOptions: { columns: ':visible:not(:last-child)' },
                         customize: function (doc) {
-                            doc.defaultStyle.fontSize = 10;
+                            doc.defaultStyle.fontSize = 9;
+                            let colCount = doc.content[1].table.body[0].length;
+                            doc.content[1].table.widths = Array(colCount).fill('*')
+                            doc.styles.tableHeader.alignment = 'left';
                         }
                     },
                     {
@@ -111,19 +93,50 @@ $(document).on('global-setup-complete', function() {
                         text: 'Paisagem',
                         orientation: 'landscape',
                         pageSize: 'A4',
-                        exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'},
+                        exportOptions: { columns: ':visible:not(:last-child)' },
                         customize: function (doc) {
-                            doc.defaultStyle.fontSize = 10;
+                            doc.defaultStyle.fontSize = 9;
+                            let colCount = doc.content[1].table.body[0].length;
+                            doc.content[1].table.widths = Array(colCount).fill('*')
+                            doc.styles.tableHeader.alignment = 'left';
                         }
                     }
                 ]
+            },
+            {
+                extend: 'copy',
+                text: '<i class="bi bi-copy"></i>',
+                titleAttr: 'Copiar linhas visíveis',
+                className: 'btn btn-sm btn-secondary',
+                exportOptions: { columns: ':visible:not(:last-child)' }
+            },
+            {
+                extend: 'csv',
+                text: '<i class="bi bi-filetype-csv"></i>',
+                titleAttr: 'Exportar para CSV',
+                className: 'btn btn-sm btn-success',
+                exportOptions: { columns: ':visible:not(:last-child)' }
+            },
+            {
+                extend: 'copy',
+                text: '<i class="bi bi-filetype-xlsx"></i>',
+                titleAttr: 'Exportar para Excel',
+                className: 'btn btn-sm btn-success',
+                exportOptions: { columns: ':visible:not(:last-child)' }
             },
             {
                 extend: 'print',
                 text: '<i class="bi bi-printer"></i>',
                 titleAttr: 'Imprimir',
                 className: 'btn btn-sm btn-info',
-                exportOptions: {columns: ':visible:not(:last-child):not(:first-child)'}
+                exportOptions: { columns: ':visible:not(:last-child)' },
+                customize: function (win) {
+                    $(win.document.body).find('table')
+                        .addClass('compact')
+                        .css('font-size', '9pt')
+                        .css('width', '100%');
+                    $(win.document.body).css('margin', '10px');
+                }
             }
         ],
         lengthMenu: [
