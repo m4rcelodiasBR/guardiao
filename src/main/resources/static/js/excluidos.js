@@ -32,7 +32,7 @@ $(document).on('global-setup-complete', function() {
         serverSide: true,
         responsive: true,
         processing: true,
-        ajax: function (data, callback, settings) {
+        ajax: function (data, callback) {
             const dtParams = {
                 draw: data.draw,
                 start: data.start,
@@ -81,7 +81,7 @@ $(document).on('global-setup-complete', function() {
             { data: 'item.compartimento.codigo', defaultContent: '' },
             {
                 data: null, orderable: false, searchable: false,
-                render: function(data, type, row) {
+                render: function() {
                     return `<button class="btn btn-xs btn-success btn-restaurar" title="Restaurar este item"><i class="bi bi-recycle"></i></button>`;
                 }
             }
