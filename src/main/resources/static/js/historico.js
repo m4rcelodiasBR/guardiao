@@ -42,7 +42,7 @@ $(document).on('global-setup-complete', function() {
         serverSide: true,
         responsive: true,
         processing: true,
-        ajax: function (data, callback, settings) {
+        ajax: function (data, callback) {
             const formDataArray = $formBusca.serializeArray();
             let buscaAvancada = {};
             formDataArray.forEach(item => { if (item.value) { buscaAvancada[item.name] = item.value; } });
@@ -136,9 +136,53 @@ $(document).on('global-setup-complete', function() {
                         exportOptions: { columns: [0, 1, 2, 3, 5] },
                         customize: function (doc) {
                             doc.defaultStyle.fontSize = 9;
-                            let colCount = doc.content[1].table.body[0].length;
-                            doc.content[1].table.widths = Array(colCount).fill('*')
                             doc.styles.tableHeader.alignment = 'left';
+                            doc.pageMargins = [40, 50, 40, 50]
+                            doc['header'] = function() {
+                                return {
+                                    columns: [
+                                        {
+                                            text: 'Relatório de transferências do Sistema',
+                                            fontSize: 8,
+                                            bold: true,
+                                            alignment: 'left',
+                                            margin: [40, 20, 0, 0]
+                                        },
+                                        {
+                                            text: 'Gerado em: ' + new Date().toLocaleDateString('pt-BR'),
+                                            fontSize: 8,
+                                            alignment: 'right',
+                                            margin: [0, 20, 40, 0]
+                                        }
+                                    ]
+                                }
+                            }
+                            doc['footer'] = function(currentPage, pageCount) {
+                                let usuarioGerador = loggedInUserFullName || 'Sistema';
+                                return {
+                                    columns: [
+                                        {
+                                            text: 'Sistema de Apoio à Gestão de Ativos Tangíveis',
+                                            alignment: 'left',
+                                            fontSize: 8,
+                                            margin: [40, 0, 0, 20]
+                                        },
+                                        {
+                                            text: 'Página ' + currentPage.toString() + ' de ' + pageCount,
+                                            alignment: 'center',
+                                            fontSize: 8,
+                                            margin: [0, 0, 0, 20]
+                                        },
+                                        {
+                                            text: 'Gerado por: ' + usuarioGerador,
+                                            fontSize: 8,
+                                            alignment: 'right',
+                                            margin: [0, 0, 40, 20]
+                                        }
+                                    ],
+                                    margin: [0, 10]
+                                }
+                            }
                         }
                     },
                     {
@@ -149,9 +193,53 @@ $(document).on('global-setup-complete', function() {
                         exportOptions: { columns: [0, 1, 2, 3, 5] },
                         customize: function (doc) {
                             doc.defaultStyle.fontSize = 9;
-                            let colCount = doc.content[1].table.body[0].length;
-                            doc.content[1].table.widths = Array(colCount).fill('*')
                             doc.styles.tableHeader.alignment = 'left';
+                            doc.pageMargins = [40, 50, 40, 50]
+                            doc['header'] = function() {
+                                return {
+                                    columns: [
+                                        {
+                                            text: 'Relatório de transferências do Sistema',
+                                            fontSize: 8,
+                                            bold: true,
+                                            alignment: 'left',
+                                            margin: [40, 20, 0, 0]
+                                        },
+                                        {
+                                            text: 'Gerado em: ' + new Date().toLocaleDateString('pt-BR'),
+                                            fontSize: 8,
+                                            alignment: 'right',
+                                            margin: [0, 20, 40, 0]
+                                        }
+                                    ]
+                                }
+                            }
+                            doc['footer'] = function(currentPage, pageCount) {
+                                let usuarioGerador = loggedInUserFullName || 'Sistema';
+                                return {
+                                    columns: [
+                                        {
+                                            text: 'Sistema de Apoio à Gestão de Ativos Tangíveis',
+                                            alignment: 'left',
+                                            fontSize: 8,
+                                            margin: [40, 0, 0, 20]
+                                        },
+                                        {
+                                            text: 'Página ' + currentPage.toString() + ' de ' + pageCount,
+                                            alignment: 'center',
+                                            fontSize: 8,
+                                            margin: [0, 0, 0, 20]
+                                        },
+                                        {
+                                            text: 'Gerado por: ' + usuarioGerador,
+                                            fontSize: 8,
+                                            alignment: 'right',
+                                            margin: [0, 0, 40, 20]
+                                        }
+                                    ],
+                                    margin: [0, 10]
+                                }
+                            }
                         }
                     }
                 ]

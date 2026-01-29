@@ -70,7 +70,7 @@ $(document).on('global-setup-complete', function() {
             {
                 data: 'item.status',
                 render: function() {
-                    return '<span class="badge rounded-pill bg-danger" title="Excluído" style="cursor: pointer;">E</span>';
+                    return '<span class="badge rounded-pill bg-danger" title="Excluído" style="cursor: pointer; font-size: .7rem;">E</span>';
                 }
             },
             { data: 'item.numeroPatrimonial' },
