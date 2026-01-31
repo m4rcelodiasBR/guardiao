@@ -13,7 +13,6 @@ public class Auditoria {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataHora;
 
@@ -33,7 +32,6 @@ public class Auditoria {
     @Column(columnDefinition = "TEXT")
     private String detalhe;
 
-
     public Auditoria() {}
 
     public Auditoria(Usuario usuario, TipoAcao tipoAcao, String objetoAfetado, String detalhe) {
@@ -47,6 +45,13 @@ public class Auditoria {
         this.tipoAcao = tipoAcao;
         this.objetoAfetado = objetoAfetado;
         this.detalhe = detalhe;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.dataHora == null) {
+            this.dataHora = LocalDateTime.now();
+        }
     }
 
     public Long getId() {
@@ -63,6 +68,10 @@ public class Auditoria {
 
     public String getUsuarioNome() {
         return usuarioNome;
+    }
+
+    public void setUsuarioNome(String usuarioNome) {
+        this.usuarioNome = usuarioNome;
     }
 
     public TipoAcao getTipoAcao() {

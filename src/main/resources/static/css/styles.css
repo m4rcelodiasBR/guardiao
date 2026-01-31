@@ -190,6 +190,7 @@
     --verde-color: #009444;
     --header-color-1: #084298;
     --header-color-2: #031633;
+    --login-title: #084298;
 
     --bg-color: #F8F9FA;
     --surface-color: #FFFFFF;
@@ -205,6 +206,7 @@
     --primary-hover-color: #1f3823;
     --header-color-1: #084298;
     --header-color-2: #031633;
+    --login-title: #FAB932;
 
     --bg-color: #1A202C;
     --surface-color: #2D3748;
@@ -285,12 +287,21 @@ footer {
 }
 
 .navbar-brand-uptitle,
-.navbar-brand-subtitle {
+.navbar-brand-subtitle,
+.login-uptitle,
+.login-subtitle{
     font-family: 'Octin College', serif;
     font-size: .9rem;
     font-weight: 500;
     line-height: normal;
     letter-spacing: 0.5px;
+}
+
+.login-uptitle,
+.login-subtitle{
+    color: var(--login-title);
+    text-shadow: .5px .5px 1px rgba(0, 0, 0, 0.9);
+    font-size: 1rem;
 }
 
 .navbar-brand-subtitle {

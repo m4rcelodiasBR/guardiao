@@ -228,7 +228,7 @@ public class ItemService {
                 usuarioLogado,
                 TipoAcao.RESTAURACAO_ITEM,
                 "NumPAT: " + numeroPatrimonial,
-                "Um item foi restaurado."
+                "Um item foi restaurado e voltou ao inventário como DISPONÍVEL."
         );
         itemRepository.save(item);
     }
@@ -251,7 +251,7 @@ public class ItemService {
                     usuarioLogado,
                     TipoAcao.RESTAURACAO_EM_MASSA_ITEM,
                     "NumPAT: " + item.getNumeroPatrimonial(),
-                    "Um item foi restaurado."
+                    "Um item foi restaurado e voltou ao inventário como DISPONÍVEL."
             );
         }
         itemRepository.saveAll(itensParaRestaurar);

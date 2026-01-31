@@ -53,7 +53,7 @@ public class AutenticacaoController {
                     usuario,
                     TipoAcao.LOGIN_SUCESSO,
                     "Acesso ao Sistema",
-                    "Login realizado com sucesso.");
+                    "Um acesso foi efetuado no sistema.");
             return ResponseEntity.ok(Map.of("token", token, "trocaSenhaObrigatoria", false));
 
         } catch (CredentialsExpiredException e) {
@@ -64,7 +64,7 @@ public class AutenticacaoController {
                     usuario,
                     TipoAcao.LOGIN_SUCESSO,
                     "Acesso ao Sistema. Login: " + autenticacaoDTO.getLogin(),
-                    "Acesso com senha expirada.");
+                    "Uma tentativa de acesso com senha expirada foi efetuada no sistema.");
             return ResponseEntity.ok(Map.of(
                     "message", "A senha expirou e precisa ser alterada.",
                     "token", token,
@@ -76,7 +76,7 @@ public class AutenticacaoController {
                     null,
                     TipoAcao.LOGIN_FALHA,
                     "Acesso ao Sistema. Login: " + autenticacaoDTO.getLogin(),
-                    "Acesso com conta desativada.");
+                    "Uma tentativa de acesso com uma conta desativada foi efetuada no sistema.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of(
                             "message", "Usuário está inativo. Contate o administrador."));
@@ -86,7 +86,7 @@ public class AutenticacaoController {
                     null,
                     TipoAcao.LOGIN_FALHA,
                     "Acesso ao Sistema. Login: " + autenticacaoDTO.getLogin(),
-                    "Acesso com credenciais inválidas.");
+                    "Uma tentativa de acesso com credenciais inválidas foi efetuado no sistema.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of(
                             "message", "Login ou senha inválidos. Tente novamente."));
