@@ -58,7 +58,7 @@ public class UsuarioService {
         dadosNovoUsuario.setPerfil(registroUsuarioDTO.getPerfil());
         dadosNovoUsuario.setStatus(StatusUsuario.ATIVO);
         Usuario novoUsuario = usuarioRepository.save(dadosNovoUsuario);
-        auditoriaService.registrar(
+        auditoriaService.registrarLogAuditoria(
                 getUsuarioLogado(),
                 TipoAcao.CRIACAO_USUARIO,
                 "Usuário: " + dadosNovoUsuario.getLogin(),
@@ -89,7 +89,7 @@ public class UsuarioService {
         usuario.setPerfil(dados.getPerfil());
         usuario.setStatus(dados.getStatus());
         Usuario usuarioAtualizado = usuarioRepository.save(usuario);
-        auditoriaService.registrar(
+        auditoriaService.registrarLogAuditoria(
                 getUsuarioLogado(),
                 TipoAcao.EDICAO_USUARIO,
                 "Usuário: " + usuarioAtualizado.getLogin(),
@@ -104,7 +104,7 @@ public class UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
 
         usuario.setStatus(StatusUsuario.EXCLUIDO);
-        auditoriaService.registrar(
+        auditoriaService.registrarLogAuditoria(
                 getUsuarioLogado(),
                 TipoAcao.EXCLUSAO_USUARIO,
                 "Usuário: " + usuario.getLogin(),
@@ -117,7 +117,7 @@ public class UsuarioService {
     public void definirNovaSenha(Usuario usuarioLogado, NovaSenhaDTO novaSenhaDTO) {
         usuarioLogado.setSenha(passwordEncoder.encode(novaSenhaDTO.getNovaSenha()));
         usuarioLogado.setSenhaExpirada(false);
-        auditoriaService.registrar(
+        auditoriaService.registrarLogAuditoria(
                 usuarioLogado,
                 TipoAcao.ALTERACAO_SENHA_USUARIO,
                 "Primeiro acesso",
@@ -132,7 +132,7 @@ public class UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
         usuario.setSenha(passwordEncoder.encode(senhaPadrao));
         usuario.setSenhaExpirada(true);
-        auditoriaService.registrar(
+        auditoriaService.registrarLogAuditoria(
                 getUsuarioLogado(),
                 TipoAcao.RESET_SENHA_USUARIO,
                 "Usuário: " + usuario.getLogin(),
@@ -151,7 +151,7 @@ public class UsuarioService {
         usuarioLogado.setNome(dados.getNome());
         usuarioLogado.setEmail(dados.getEmail());
         Usuario usuarioAtualizado = usuarioRepository.save(usuarioLogado);
-        auditoriaService.registrar(
+        auditoriaService.registrarLogAuditoria(
                 usuarioLogado,
                 TipoAcao.ALTERACAO_PERFIL_USUARIO,
                 "Usuário: " + usuarioAtualizado.getLogin(),
@@ -166,7 +166,7 @@ public class UsuarioService {
             throw new BadCredentialsException("A senha atual está incorreta.");
         }
         usuarioLogado.setSenha(passwordEncoder.encode(dados.getNovaSenha()));
-        auditoriaService.registrar(
+        auditoriaService.registrarLogAuditoria(
                 usuarioLogado,
                 TipoAcao.ALTERACAO_SENHA_USUARIO,
                 "Usuário: " + usuarioLogado.getLogin(),

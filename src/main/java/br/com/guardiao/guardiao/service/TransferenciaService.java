@@ -59,7 +59,7 @@ public class TransferenciaService {
         transferencia.setObservacao(transferenciaDTO.getObservacao());
         transferencia.setNumeroPatrimonialItem(item.getNumeroPatrimonial());
         transferencia.setDescricaoItem(item.getDescricao());
-        auditoriaService.registrar(
+        auditoriaService.registrarLogAuditoria(
                 usuarioLogado,
                 TipoAcao.TRANSFERENCIA_ITEM,
                 "NumPAT: " + item.getNumeroPatrimonial(),
@@ -89,7 +89,7 @@ public class TransferenciaService {
             transferencia.setObservacao(transferenciaMassaDTO.getObservacao());
             transferencia.setNumeroPatrimonialItem(item.getNumeroPatrimonial());
             transferencia.setDescricaoItem(item.getDescricao());
-            auditoriaService.registrar(
+            auditoriaService.registrarLogAuditoria(
                     usuarioLogado,
                     TipoAcao.TRANSFERENCIA_EM_MASSA_ITEM,
                     "NumPAT: " + item.getNumeroPatrimonial(),

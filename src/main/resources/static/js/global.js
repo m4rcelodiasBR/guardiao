@@ -159,6 +159,21 @@ $(function() {
             $('#menu-excluidos').hide();
         }
 
+        $.ajax({
+            url: '/api/sistema/versao',
+            method: 'GET',
+            success: function(data) {
+                const textoVersao = data.display;
+                if ($('#sistema-versao').length) {
+                    $('#sistema-versao').text(textoVersao);
+                }
+            },
+            error: function() {
+                console.warn('Não foi possível carregar a versão do sistema.');
+                $('#sistema-versao').text('Sagat v1.0');
+            }
+        });
+
         $(document).trigger('global-setup-complete');
     });
 

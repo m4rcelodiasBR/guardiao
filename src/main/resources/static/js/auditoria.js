@@ -35,12 +35,16 @@ $(document).on('global-setup-complete', function() {
                 }
             },
             {
+                data: 'ip',
+                defaultContent: '-',
+            },
+            {
                 data: 'tipoAcao',
                 render: function(data) {
                     let color = 'primary';
                     let textColor = 'text-white';
                     if(data.includes('RESTAURACAO') || data.includes('LOGIN_SUCESSO')) color = 'success';
-                    if(data.includes('EXCLUSAO') || data.includes('LOGIN_FALHA')) color = 'danger';
+                    if(data.includes('EXCLUSAO') || data.includes('LOGIN_FALHA') || data.includes('BLOQUEIO_TEMPORARIO')) color = 'danger';
                     if(data.includes('TRANSFERENCIA') || data.includes('DEVOLUCAO')) {
                         color = 'warning';
                         textColor = 'text-dark';

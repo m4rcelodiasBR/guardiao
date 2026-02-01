@@ -53,7 +53,7 @@ public class ItemService {
         novoItem.setStatus(StatusItem.DISPONIVEL);
         novoItem.setCadastradoPor(usuarioLogado);
         novoItem.setAtualizadoPor(usuarioLogado);
-        auditoriaService.registrar(
+        auditoriaService.registrarLogAuditoria(
                 usuarioLogado,
                 TipoAcao.CRIACAO_ITEM,
                 "NumPAT " + itemDTO.getNumeroPatrimonial(),
@@ -87,7 +87,7 @@ public class ItemService {
         itemExistente.setLocalizacao(dadosAtualizados.getLocalizacao());
         itemExistente.setCompartimento(dadosAtualizados.getCompartimento());
         itemExistente.setAtualizadoPor(usuarioLogado);
-        auditoriaService.registrar(
+        auditoriaService.registrarLogAuditoria(
                 usuarioLogado,
                 TipoAcao.EDICAO_ITEM,
                 "NumPAT: " + numeroPatrimonial,
@@ -113,7 +113,7 @@ public class ItemService {
                 item.setCompartimento(edicaoMassaDTO.getCompartimento());
             }
             item.setAtualizadoPor(usuarioLogado);
-            auditoriaService.registrar(
+            auditoriaService.registrarLogAuditoria(
                     usuarioLogado,
                     TipoAcao.EDICAO_EM_MASSA_ITEM,
                     "NumPAT: " + item.getNumeroPatrimonial(),
@@ -131,7 +131,7 @@ public class ItemService {
         }
         item.setStatus(StatusItem.EXCLUIDO);
         item.setAtualizadoPor(usuarioLogado);
-        auditoriaService.registrar(
+        auditoriaService.registrarLogAuditoria(
                 usuarioLogado,
                 TipoAcao.EXCLUSAO_ITEM,
                 "NumPAT: " + numeroPatrimonial,
@@ -155,7 +155,7 @@ public class ItemService {
             }
             item.setStatus(StatusItem.EXCLUIDO);
             item.setAtualizadoPor(usuarioLogado);
-            auditoriaService.registrar(
+            auditoriaService.registrarLogAuditoria(
                     usuarioLogado,
                     TipoAcao.EXCLUSAO_EM_MASSA_ITEM,
                     "NumPAT: " + item.getNumeroPatrimonial(),
@@ -184,7 +184,7 @@ public class ItemService {
         registroDevolucao.setNumeroPatrimonialItem(item.getNumeroPatrimonial());
         registroDevolucao.setDescricaoItem(item.getDescricao());
         transferenciaRepository.save(registroDevolucao);
-        auditoriaService.registrar(
+        auditoriaService.registrarLogAuditoria(
                 usuarioLogado,
                 TipoAcao.DEVOLUCAO_ITEM,
                 "NumPAT: " + item.getNumeroPatrimonial(),
@@ -205,7 +205,7 @@ public class ItemService {
             itemParaReativar.setStatus(StatusItem.DISPONIVEL);
             itemParaReativar.setAtualizadoPor(usuarioLogado);
             itemRepository.save(itemParaReativar);
-            auditoriaService.registrar(
+            auditoriaService.registrarLogAuditoria(
                     usuarioLogado,
                     TipoAcao.REATIVACAO_ITEM,
                     "NumPAT: " + itemParaReativar.getNumeroPatrimonial(),
@@ -224,7 +224,7 @@ public class ItemService {
         }
         item.setStatus(StatusItem.DISPONIVEL);
         item.setAtualizadoPor(usuarioLogado);
-        auditoriaService.registrar(
+        auditoriaService.registrarLogAuditoria(
                 usuarioLogado,
                 TipoAcao.RESTAURACAO_ITEM,
                 "NumPAT: " + numeroPatrimonial,
@@ -247,7 +247,7 @@ public class ItemService {
             }
             item.setStatus(StatusItem.DISPONIVEL);
             item.setAtualizadoPor(usuarioLogado);
-            auditoriaService.registrar(
+            auditoriaService.registrarLogAuditoria(
                     usuarioLogado,
                     TipoAcao.RESTAURACAO_EM_MASSA_ITEM,
                     "NumPAT: " + item.getNumeroPatrimonial(),

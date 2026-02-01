@@ -1,7 +1,6 @@
 package br.com.guardiao.guardiao.model;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -21,6 +20,9 @@ public class Auditoria {
 
     @Column(nullable = false)
     private String usuarioNome;
+
+    @Column(length = 45)
+    private String ip;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -72,6 +74,14 @@ public class Auditoria {
 
     public void setUsuarioNome(String usuarioNome) {
         this.usuarioNome = usuarioNome;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
     }
 
     public TipoAcao getTipoAcao() {

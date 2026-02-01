@@ -30,6 +30,8 @@ $(function() {
             error: function(xhr) {
                 const errorMsg = xhr.responseJSON?.message || "Login ou senha inválidos. Tente novamente.";
                 $loginAlert.text(errorMsg).removeClass('d-none');
+                $('#senha').val('');
+                $('#senha').focus();
             }
         });
     });
@@ -46,4 +48,19 @@ $('#toggle-senha').on('click', function() {
         passwordField.attr('type', 'password');
         $(this).removeClass('bi-eye-fill').addClass('bi-eye-slash-fill');
     }
+});
+
+$(document).ready(function() {
+    $.ajax({
+        url: '/api/sistema/versao',
+        method: 'GET',
+        success: function(data) {
+            if ($('#sistema-versao').length) {
+                $('#sistema-versao').text(data.display);
+            }
+        },
+        error: function() {
+            $('#sistema-versao').text('Sagat (Versão não identificada)');
+        }
+    });
 });

@@ -73,7 +73,7 @@ public class ImportacaoService {
 
     @Transactional
     public void importarItens(List<ItemCadastroDTO> itensParaImportar, String nomeArquivo, Usuario usuarioLogado) {
-        auditoriaService.registrar(
+        auditoriaService.registrarLogAuditoria(
                 usuarioLogado,
                 TipoAcao.IMPORTACAO_XML_ITEM,
                 "Arquivo XML: " + nomeArquivo,
