@@ -117,14 +117,14 @@
                         <th style="width: 1%;">
                             <input class="form-check-input" type="checkbox" id="select-all-checkbox" title="Selecionar Todos">
                         </th>
-                        <th style="width: 1%;" title="Status">S</th>
+                        <th style="width: 5%;" title="Status/Avaria">S/A</th>
                         <th style="width: 5%;" title="Número Patrimonial">NumPAT</th>
                         <th style="width: 40%;">Descrição</th>
                         <th style="width: 8%;">Marca</th>
                         <th style="width: 8%;" title="Número de Série">N/S</th>
-                        <th style="width: 23%;">Localização</th>
+                        <th style="width: 20%;">Localização</th>
                         <th style="width: 4%;" title="Compartimento">CP</th>
-                        <th style="width: 10%;">Ações</th>
+                        <th style="width: 8%;">Ações</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -147,6 +147,12 @@
                 <div class="modal-body">
                     <form id="form-novo-item">
                         <div class="row">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="novo-avariado" name="avariado">
+                                <label class="form-check-label text-danger fw-bold" for="novo-avariado">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> Avariado/Defeito
+                                </label>
+                            </div>
                             <div class="col-md-6 mb-3">
                                 <label for="novo-numeroPatrimonial" class="form-label">Número Patrimonial <span class="text-danger">*</span></label></label>
                                 <input type="text" class="form-control" id="novo-numeroPatrimonial" name="numeroPatrimonial"
@@ -200,6 +206,12 @@
                 <div class="barra-verde-amarelo"></div>
                 <div class="modal-body">
                     <form id="form-editar-item">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="edit-avariado" name="avariado">
+                            <label class="form-check-label text-danger fw-bold" for="edit-avariado">
+                                <i class="bi bi-exclamation-triangle-fill"></i> Avariado/Defeito
+                            </label>
+                        </div>
                         <input type="hidden" id="edit-numeroPatrimonial-original">
                         <div class="row">
                             <div class="col-md-6 mb-3">
@@ -256,6 +268,14 @@
                     <p><small class="text-muted">Deixe um campo em branco para não alterar o seu valor.</small></p>
                     <hr>
                     <form id="form-edicao-massa">
+                        <div class="mb-3">
+                            <label for="massa-avariado" class="form-label">Marcar como Avariado?</label>
+                            <select class="form-select" id="massa-avariado" name="avariado">
+                                <option value="">Não alterar</option>
+                                <option value="true" class="text-avariado fw-bold">SIM</option>
+                                <option value="false" class="text-success fw-bold">NÃO</option>
+                            </select>
+                        </div>
                         <div class="mb-3">
                             <label for="massa-localizacao" class="form-label">Nova Localização</label>
                             <input type="text" class="form-control" id="massa-localizacao" name="localizacao">

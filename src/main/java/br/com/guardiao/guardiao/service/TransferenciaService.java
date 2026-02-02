@@ -46,6 +46,19 @@ public class TransferenciaService {
         Item item = itemRepository.findByNumeroPatrimonial(transferenciaDTO.getNumeroPatrimonial())
                 .orElseThrow(() -> new RuntimeException("Item com Patrimônio " + transferenciaDTO.getNumeroPatrimonial() + " não encontrado."));
 
+        if (item.isAvariado()) {
+            String destino = transferenciaDTO.getIncumbenciaDestino();
+            boolean destinoPermitido =
+                    destino.startsWith("999") ||
+                    destino.startsWith("000") ||
+                    destino.startsWith("001") ||
+                    destino.startsWith("002");
+
+            if (!destinoPermitido) {
+                throw new IllegalStateException("Item AVARIADO só pode ser transferido para Reparo (999), Baixa (000), Doação (001) ou Outra OM (002).");
+            }
+        }
+
         if (item.getStatus() != StatusItem.DISPONIVEL) {
             throw new IllegalStateException("O item não está disponível para transferência.");
         }
@@ -75,6 +88,19 @@ public class TransferenciaService {
         for (String patrimonio : transferenciaMassaDTO.getNumerosPatrimoniais()) {
             Item item = itemRepository.findByNumeroPatrimonial(patrimonio)
                     .orElseThrow(() -> new RuntimeException("Item com Patrimônio " + patrimonio + " não encontrado."));
+
+            if (item.isAvariado()) {
+                String destino = transferenciaMassaDTO.getIncumbenciaDestino();
+                boolean destinoPermitido =
+                        destino.startsWith("999") ||
+                        destino.startsWith("000") ||
+                        destino.startsWith("001") ||
+                        destino.startsWith("002");
+
+                if (!destinoPermitido) {
+                    throw new IllegalStateException("Itens AVARIADOS só podem ser transferidos para Reparo (999), Baixa (000), Doação (001) ou Outra OM (002).");
+                }
+            }
 
             if (item.getStatus() != StatusItem.DISPONIVEL) {
                 throw new IllegalStateException("O item " + patrimonio + " não está disponível para transferência.");

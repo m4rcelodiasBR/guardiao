@@ -56,6 +56,9 @@ public class Item {
     @Column(nullable = false)
     private StatusItem status;
 
+    @Column
+    private boolean avariado = false;
+
     public Integer getId() {
         return id;
     }
@@ -150,5 +153,13 @@ public class Item {
 
     public void setStatus(StatusItem status) {
         this.status = status;
+    }
+
+    public boolean isAvariado() {
+        return avariado;
+    }
+
+    public void setAvariado(boolean avariado) {
+        this.avariado = avariado;
     }
 }

@@ -539,3 +539,12 @@ th[datatable]:hover {
 #buttons-title-placeholder-audit {
     font-size: 0.875rem;
 }
+
+.badge-avariado {
+    background-color: #6610f2;
+    color: #fff;
+}
+
+.text-avariado {
+    color: #6610f2;
+}

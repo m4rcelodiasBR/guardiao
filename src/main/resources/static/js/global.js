@@ -174,6 +174,8 @@ $(function() {
             }
         });
 
+        $('.sistema-ano').text(new Date().getFullYear());
+
         $(document).trigger('global-setup-complete');
     });
 
@@ -205,6 +207,21 @@ $(function() {
             $(modalBody).load(url, function(response, status, xhr) {
                 if (status === "error") {
                     modalBody.innerHTML = `<div class="alert alert-danger">Erro ao carregar o conteúdo: ${xhr.status} ${xhr.statusText}</div>`;
+                } else {
+                    $(this).find('.sistema-ano').text(new Date().getFullYear());
+                    if (url.includes('sobre.html')) {
+                        $.ajax({
+                            url: '/api/sistema/versao',
+                            method: 'GET',
+                            success: function(data) {
+                                $('#modal-sistema-versao').text(data.display);
+                                $('#modal-sistema-versao').attr('title', 'Data Build: ' + data.raw_date);
+                            },
+                            error: function() {
+                                $('#modal-sistema-versao').text('Versão não identificada');
+                            }
+                        });
+                    }
                 }
             });
         });

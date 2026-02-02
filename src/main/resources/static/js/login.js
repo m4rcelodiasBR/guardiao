@@ -2,6 +2,8 @@ $(function() {
     const $formLogin = $('#form-login');
     const $loginAlert = $('#login-alert');
 
+    $('.sistema-ano').text(new Date().getFullYear());
+
     $formLogin.on('submit', function(e) {
         e.preventDefault();
 

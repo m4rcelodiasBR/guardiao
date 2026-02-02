@@ -8,6 +8,7 @@ public enum Incumbencia {
     INCUMBENCIA_232("232 - Paiol de Material"),
     INCUMBENCIA_233("233 - Departamento de Administração"),
     INCUMBENCIA_234("234 - Mestre D'Armas"),
+    AUSENTE_REPARO("999 - Ausente para Reparo"),
     BAIXA("000 - Baixa"),
     DOACAO("001 - Doação"),
     OUTRA_OM("002 - Outra OM");
@@ -21,4 +22,4 @@ public enum Incumbencia {
     public String getDescricao() {
         return descricao;
     }
-}
+} 

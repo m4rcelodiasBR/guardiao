@@ -16,6 +16,8 @@ public class ItemEdicaoMassaDTO {
 
     private Compartimento compartimento;
 
+    private Boolean avariado;
+
     public List<String> getNumerosPatrimoniais() {
         return numerosPatrimoniais;
     }
@@ -38,5 +40,13 @@ public class ItemEdicaoMassaDTO {
 
     public void setCompartimento(Compartimento compartimento) {
         this.compartimento = compartimento;
+    }
+
+    public Boolean getAvariado() {
+        return avariado;
+    }
+
+    public void setAvariado(Boolean avariado) {
+        this.avariado = avariado;
     }
 }

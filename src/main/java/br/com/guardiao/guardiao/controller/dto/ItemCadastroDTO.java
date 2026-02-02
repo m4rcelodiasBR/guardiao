@@ -19,6 +19,7 @@ public class ItemCadastroDTO {
     private String numeroDeSerie;
     private String localizacao;
     private Compartimento compartimento;
+    private boolean avariado;
 
     public String getNumeroPatrimonial() {
         return numeroPatrimonial;
@@ -66,5 +67,13 @@ public class ItemCadastroDTO {
 
     public void setCompartimento(Compartimento compartimento) {
         this.compartimento = compartimento;
+    }
+
+    public boolean isAvariado() {
+        return avariado;
+    }
+
+    public void setAvariado(boolean avariado) {
+        this.avariado = avariado;
     }
 }

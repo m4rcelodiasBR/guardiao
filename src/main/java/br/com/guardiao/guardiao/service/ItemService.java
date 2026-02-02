@@ -51,6 +51,7 @@ public class ItemService {
         novoItem.setLocalizacao(itemDTO.getLocalizacao());
         novoItem.setCompartimento(itemDTO.getCompartimento());
         novoItem.setStatus(StatusItem.DISPONIVEL);
+        novoItem.setAvariado(itemDTO.isAvariado());
         novoItem.setCadastradoPor(usuarioLogado);
         novoItem.setAtualizadoPor(usuarioLogado);
         auditoriaService.registrarLogAuditoria(
@@ -86,6 +87,7 @@ public class ItemService {
         }
         itemExistente.setLocalizacao(dadosAtualizados.getLocalizacao());
         itemExistente.setCompartimento(dadosAtualizados.getCompartimento());
+        itemExistente.setAvariado(dadosAtualizados.isAvariado());
         itemExistente.setAtualizadoPor(usuarioLogado);
         auditoriaService.registrarLogAuditoria(
                 usuarioLogado,
@@ -104,7 +106,11 @@ public class ItemService {
         for (Item item : itensParaAtualizar) {
             String dadosAlterados = detectarAlteracoesMassaItem(item, edicaoMassaDTO);
             if (item.getStatus() != StatusItem.DISPONIVEL) {
-                throw new IllegalStateException("O item com patrimônio " + item.getNumeroPatrimonial() + " não está disponível para edição em massa.");
+                throw new IllegalStateException("O item com patrimônio " + item.getNumeroPatrimonial() + " não está disponível para " +
+                        "edição em massa. Verifique se não tem itens TRANSFERIDOS selecionados.");
+            }
+            if (edicaoMassaDTO.getAvariado() != null) {
+                item.setAvariado(edicaoMassaDTO.getAvariado());
             }
             if (StringUtils.hasText(edicaoMassaDTO.getLocalizacao())) {
                 item.setLocalizacao(edicaoMassaDTO.getLocalizacao());
@@ -117,7 +123,7 @@ public class ItemService {
                     usuarioLogado,
                     TipoAcao.EDICAO_EM_MASSA_ITEM,
                     "NumPAT: " + item.getNumeroPatrimonial(),
-                    "Um itens foram alterados. " + dadosAlterados
+                    "Um item teve seus dados atualizados. " + dadosAlterados
             );
         }
         itemRepository.saveAll(itensParaAtualizar);
@@ -135,7 +141,7 @@ public class ItemService {
                 usuarioLogado,
                 TipoAcao.EXCLUSAO_ITEM,
                 "NumPAT: " + numeroPatrimonial,
-                "Um item excluído."
+                "Um item foi excluído."
         );
         itemRepository.save(item);
     }
@@ -172,6 +178,7 @@ public class ItemService {
             throw new IllegalStateException("Este item não está marcado como transferido e não pode ser devolvido.");
         }
         item.setStatus(StatusItem.DISPONIVEL);
+        item.setAvariado(false);
         item.setLocalizacao(devolucaoDTO.getLocalizacao());
         item.setCompartimento(devolucaoDTO.getCompartimento());
         item.setAtualizadoPor(usuarioLogado);
@@ -361,6 +368,10 @@ public class ItemService {
             mudancas.add("Localização: " + dadosAntigosItem.getLocalizacao() + " -> " + dadosNovosItem.getLocalizacao());
         }
 
+        if (!Objects.equals(dadosAntigosItem.isAvariado(), dadosNovosItem.isAvariado())) {
+            mudancas.add("Avariado: " + dadosAntigosItem.isAvariado() + " -> " + dadosNovosItem.isAvariado());
+        }
+
         return mudancas.isEmpty() ? "Edição sem mudanças de campos monitorados." : String.join("; ", mudancas);
     }
 
@@ -370,6 +381,10 @@ public class ItemService {
      */
     private String detectarAlteracoesMassaItem(Item dadosAntigosItem, ItemEdicaoMassaDTO dadosNovosItem) {
         List<String> mudancas = new ArrayList<>();
+
+        if (dadosNovosItem.getAvariado() != null && !Objects.equals(dadosAntigosItem.isAvariado(), dadosNovosItem.getAvariado())) {
+            mudancas.add("Avariado: " + dadosAntigosItem.isAvariado() + " -> " + dadosNovosItem.getAvariado());
+        }
 
         if (dadosNovosItem.getLocalizacao() != null && !Objects.equals(dadosAntigosItem.getLocalizacao(), dadosNovosItem.getLocalizacao())) {
             mudancas.add("Localização: " + (dadosAntigosItem.getLocalizacao() != null ? dadosAntigosItem.getLocalizacao() : "Vazio")

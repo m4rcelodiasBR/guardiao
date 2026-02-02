@@ -192,15 +192,26 @@ $(document).on('global-setup-complete', function() {
             {
                 data: 'item.status',
                 render: function(data, type, row) {
-                    if (data === 'DISPONIVEL') return '<span class="badge rounded-pill text-bg-success" title="Disponível" style="cursor: pointer; font-size: .7rem;">D</span>';
-                    if (data === 'TRANSFERIDO') {
+                    let htmlStatus = '';
+
+                    if (data === 'DISPONIVEL') {
+                        htmlStatus = '<span class="badge rounded-pill text-bg-success" title="Disponível" style="cursor: pointer; font-size: .7rem;">D</span>';
+                    } else if (data === 'TRANSFERIDO') {
                         const link = `<a href="/historico.html?patrimonio=${row.item.numeroPatrimonial}" target="_blank" title="Transferido. Clique para ver o histórico">`;
-                        const badge = row.transferenciaPermanente
+                        const badgeTipo = row.transferenciaPermanente
                             ? '<span class="badge rounded-pill text-bg-danger" style="font-size: .7rem;">T</span>'
                             : '<span class="badge rounded-pill text-bg-warning" style="font-size: .7rem;">T</span>';
-                        return `${link}${badge}</a>`;
+                        htmlStatus = `${link}${badgeTipo}</a>`;
+                    } else {
+                        htmlStatus = data;
                     }
-                    return data;
+
+                    let htmlAvariado = '';
+                    if (row.item.avariado) {
+                        htmlAvariado = '<span class="badge rounded-pill badge-avariado ms-1" title="Avariado/Defeito" style="cursor: help; font-size: .7rem;">A</span>';
+                    }
+
+                    return htmlStatus + htmlAvariado;
                 }
             },
             { data: 'item.numeroPatrimonial', defaultContent: '' },
@@ -565,6 +576,7 @@ $(document).on('global-setup-complete', function() {
             $('#edit-marca').val(rowData.item.marca);
             $('#edit-numeroDeSerie').val(rowData.item.numeroDeSerie);
             $('#edit-localizacao').val(rowData.item.localizacao);
+            $('#edit-avariado').prop('checked', rowData.item.avariado);
             const compartimentoAtual = rowData.item.compartimento ? rowData.item.compartimento.codigo : null;
             popularCompartimentos('#edit-compartimento', 'Selecione...', compartimentoAtual);
             modalEditarItem.show();
@@ -643,6 +655,7 @@ $(document).on('global-setup-complete', function() {
         const formDataArray = $form.serializeArray();
         let data = {};
         formDataArray.forEach(item => { if (item.value) { data[item.name] = item.value; } });
+        data.avariado = $('#novo-avariado').is(':checked');
 
         $.ajax({
             url: '/api/itens',
@@ -677,7 +690,8 @@ $(document).on('global-setup-complete', function() {
             marca: $('#edit-marca').val(),
             numeroDeSerie: $('#edit-numeroDeSerie').val(),
             localizacao: $('#edit-localizacao').val(),
-            compartimento: $('#edit-compartimento').val()
+            compartimento: $('#edit-compartimento').val(),
+            avariado: $('#edit-avariado').is(':checked')
         };
 
         $.ajax({
@@ -709,8 +723,9 @@ $(document).on('global-setup-complete', function() {
         const $submitButton = $form.closest('.modal-content').find('button[type="submit"]');
         const localizacao = $('#massa-localizacao').val();
         const compartimento = $('#massa-compartimento').val();
+        const avariado = $('#massa-avariado').val();
 
-        if (!localizacao && !compartimento) {
+        if (!localizacao && !compartimento && avariado === "") {
             showAlert('Preencha pelo menos um campo para atualizar.', 'warning');
             return;
         }
@@ -718,6 +733,11 @@ $(document).on('global-setup-complete', function() {
         const data = { numerosPatrimoniais: Array.from(selectedItems) };
         if (localizacao) { data.localizacao = localizacao; }
         if (compartimento) { data.compartimento = compartimento; }
+        if (avariado === "true") {
+            data.avariado = true;
+        } else if (avariado === "false") {
+            data.avariado = false;
+        }
 
         $.ajax({
             url: '/api/itens/massa',
@@ -841,8 +861,9 @@ $(document).on('global-setup-complete', function() {
                 modalTransferencia.hide();
                 dataTable.ajax.reload();
             },
-            error: function() {
-                showAlert('Erro ao transferir itens.', 'danger');
+            error: function(xhr) {
+                const errorMessage = xhr.responseJSON?.message || 'Erro ao transferir itens.';
+                showAlert(errorMessage, 'danger');
             },
             complete: function() {
                 $submitButton.prop('disabled', false).text('Confirmar Transferência');
@@ -861,8 +882,9 @@ $(document).on('global-setup-complete', function() {
                 modalTransferencia.hide();
                 dataTable.ajax.reload();
             },
-            error: function() {
-                showAlert('Erro ao registrar transferência.', 'danger');
+            error: function(xhr) {
+                const errorMessage = xhr.responseJSON?.message || 'Erro ao registrar transferência.';
+                showAlert(errorMessage, 'danger');
             },
             complete: function() {
                 $submitButton.prop('disabled', false).text('Confirmar Transferência');

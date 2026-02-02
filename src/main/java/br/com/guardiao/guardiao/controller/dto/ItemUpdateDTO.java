@@ -19,6 +19,8 @@ public class ItemUpdateDTO {
     @Size(max = 150, message = "A localização não pode exceder 150 caracteres.")
     private String localizacao;
 
+    private boolean avariado;
+
     private Compartimento compartimento;
 
     public String getDescricao() {
@@ -59,5 +61,13 @@ public class ItemUpdateDTO {
 
     public void setCompartimento(Compartimento compartimento) {
         this.compartimento = compartimento;
+    }
+
+    public boolean isAvariado() {
+        return avariado;
+    }
+
+    public void setAvariado(boolean avariado) {
+        this.avariado = avariado;
     }
 }
