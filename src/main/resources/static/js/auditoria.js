@@ -57,8 +57,16 @@ $(document).on('global-setup-complete', function() {
                 data: 'detalhe',
                 render: function(data) {
                     if (!data) return '';
-                    let formatado = data.replace(/; /g, '<br>• ');
-                    if(data.includes(';')) formatado = '• ' + formatado;
+
+                    let texto = data.replace(/\btrue\b/gi, 'SIM')
+                        .replace(/\bfalse\b/gi, 'NÃO');
+
+                    let formatado = texto.replace(/; /g, '<br>• ');
+
+                    if (texto.includes(';')) {
+                        formatado = '• ' + formatado;
+                    }
+
                     return `<span>${formatado}</span>`;
                 }
             }

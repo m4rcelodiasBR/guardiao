@@ -72,16 +72,20 @@ public class ImportacaoService {
     }
 
     @Transactional
-    public void importarItens(List<ItemCadastroDTO> itensParaImportar, String nomeArquivo, Usuario usuarioLogado) {
+    public int importarItens(List<ItemCadastroDTO> itensParaImportar, String nomeArquivo, Usuario usuarioLogado) {
         auditoriaService.registrarLogAuditoria(
                 usuarioLogado,
                 TipoAcao.IMPORTACAO_XML_ITEM,
                 "Arquivo XML: " + nomeArquivo,
                 "Iniciada a importação de " + itensParaImportar.size() + " item(ns)."
         );
+        int count = 0;
         for (ItemCadastroDTO itemDTO : itensParaImportar) {
             itemService.salvarOuReativarItem(itemDTO, usuarioLogado);
+            count++;
         }
+
+        return count;
     }
 
     private void extrairDadosDaDescricao(ItemCadastroDTO item) {

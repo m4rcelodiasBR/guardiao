@@ -15,6 +15,7 @@ $(document).on('global-setup-complete', function() {
     const $tabelaValidacaoBody = $('#tabela-validacao');
     const $selectAllValidCheckbox = $('#select-all-valid-checkbox');
     const $btnConfirmarImportacao = $('.btn-confirmar-importacao');
+    const $resumoValidacao = $('#resumo-validacao');
 
     let itensValidosParaImportar = [];
     let nomeArquivoXmlOriginal = "";
@@ -92,6 +93,7 @@ $(document).on('global-setup-complete', function() {
         formData.append('file', file);
 
         $btnValidar.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Validando...');
+        $resumoValidacao.hide();
         $areaResultados.slideDown();
 
         $.ajax({
@@ -112,6 +114,8 @@ $(document).on('global-setup-complete', function() {
             },
             success: function(resultados) {
                 $progressBar.addClass('bg-success').text('Validação Concluída');
+                const totalEncontrados = resultados ? resultados.length : 0;
+                $resumoValidacao.html(`<i class="bi bi-info-circle-fill me-2"></i> ${totalEncontrados} itens encontrados no arquivo XML.`).slideDown();
                 renderValidationTable(resultados);
                 updateConfirmButtonState();
             },

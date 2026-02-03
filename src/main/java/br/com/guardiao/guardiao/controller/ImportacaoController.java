@@ -55,8 +55,8 @@ public class ImportacaoController {
             return ResponseEntity.badRequest().body(Map.of("message", "Nenhum item selecionado para importação."));
         }
         Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
-        importacaoService.importarItens(itensParaImportar, nomeArquivo, usuarioLogado);
-        String mensagem = itensParaImportar.size() + " item(s) importado(s) com sucesso!";
+        int qtdImportada = importacaoService.importarItens(itensParaImportar, nomeArquivo, usuarioLogado);
+        String mensagem = qtdImportada + " item(s) importado(s) com sucesso!";
         return ResponseEntity.ok(Map.of("message", mensagem));
     }
 }

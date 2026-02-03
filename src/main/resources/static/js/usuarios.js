@@ -210,7 +210,7 @@ $(document).on('global-setup-complete', function() {
                 exportOptions: { columns: ':visible:not(:last-child)' }
             },
             {
-                extend: 'copy',
+                extend: 'excelHtml5',
                 text: '<i class="bi bi-filetype-xlsx"></i>',
                 titleAttr: 'Exportar para Excel',
                 className: 'btn btn-sm btn-success',

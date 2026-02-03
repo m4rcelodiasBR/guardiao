@@ -133,9 +133,14 @@ $(document).on('global-setup-complete', function() {
                         text: 'Retrato',
                         orientation: 'portrait',
                         pageSize: 'A4',
-                        exportOptions: { columns: [0, 1, 2, 3, 5] },
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 5],
+                            orthogonal: 'export'
+                        },
                         customize: function (doc) {
                             doc.defaultStyle.fontSize = 9;
+                            let colCount = doc.content[1].table.body[0].length;
+                            doc.content[1].table.widths = Array(colCount).fill('*');
                             doc.styles.tableHeader.alignment = 'left';
                             doc.pageMargins = [40, 50, 40, 50]
                             doc['header'] = function() {
@@ -190,9 +195,14 @@ $(document).on('global-setup-complete', function() {
                         text: 'Paisagem',
                         orientation: 'landscape',
                         pageSize: 'A4',
-                        exportOptions: { columns: [0, 1, 2, 3, 5] },
+                        exportOptions: {
+                            columns: [0, 1, 2, 3, 5],
+                            orthogonal: 'export'
+                        },
                         customize: function (doc) {
                             doc.defaultStyle.fontSize = 9;
+                            let colCount = doc.content[1].table.body[0].length;
+                            doc.content[1].table.widths = Array(colCount).fill('*');
                             doc.styles.tableHeader.alignment = 'left';
                             doc.pageMargins = [40, 50, 40, 50]
                             doc['header'] = function() {
@@ -259,7 +269,7 @@ $(document).on('global-setup-complete', function() {
                 exportOptions: { columns: [0, 1, 2, 3, 5] }
             },
             {
-                 extend: 'copy',
+                 extend: 'excelHtml5',
                 text: '<i class="bi bi-filetype-xlsx"></i>',
                 titleAttr: 'Exportar para Excel',
                 className: 'btn btn-sm btn-success',
