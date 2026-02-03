@@ -96,6 +96,7 @@ $(document).on('global-setup-complete', function() {
         itens.forEach((row, index) => {
             const item = row.item;
             const incumbencia = row.ultimaIncumbencia || "Não informada";
+            const observacaoTransferencia = row.ultimaObservacao || "";
             let itemHtml = `
                 <div class="email-item mb-3 pb-3 border-bottom" data-index="${index}">
                     <div class="fw-bold text-decoration-underline mb-1 text-info">Item ${index + 1}</div>                    
@@ -107,7 +108,11 @@ $(document).on('global-setup-complete', function() {
                     <div class="mt-2 ms-2">
                          <div class="input-group input-group-sm" style="max-width: 400px;">
                             <span class="input-group-text bg-secondary">Observação:</span>
-                            <input type="text" class="form-control form-control-sm obs-input" placeholder="Ex: Detalhe sobre o destino, estado, etc." aria-label="Observação">
+                            <input type="text" 
+                                   class="form-control form-control-sm obs-input" 
+                                   value="${observacaoTransferencia}" 
+                                   placeholder="Ex: Detalhe sobre o destino, estado, etc." 
+                                   aria-label="Observação">                                   
                         </div>
                     </div>
                 </div>

@@ -312,6 +312,7 @@ public class ItemService {
         return itensPaginados.map(item -> {
             boolean isPermanente = false;
             String nomeIncumbencia = null;
+            String obsTransferencia = null;
 
             if (item.getStatus() == StatusItem.TRANSFERIDO) {
                 Transferencia ultimaTransferencia = ultimasTransferenciasPorItemId.get(item.getId());
@@ -319,10 +320,12 @@ public class ItemService {
                     String destino = ultimaTransferencia.getIncumbenciaDestino();
                     isPermanente = destino.startsWith("000") || destino.startsWith("001") || destino.startsWith("002");
                     nomeIncumbencia = destino;
+                    obsTransferencia = ultimaTransferencia.getObservacao();
                 }
             }
             ItemAtivoDTO dto = new ItemAtivoDTO(item, isPermanente);
             dto.setUltimaIncumbencia(nomeIncumbencia);
+            dto.setUltimaObservacao(obsTransferencia);
             return dto;
         });
     }

@@ -76,6 +76,9 @@
 
                 <input type="radio" class="btn-check" name="status-filter" id="filter-transferido" value="TRANSFERIDO" autocomplete="off">
                 <label class="btn btn-outline-warning btn-xs" for="filter-transferido">Transferidos</label>
+
+                <input type="radio" class="btn-check" name="status-filter" id="filter-avariado" value="AVARIADO" autocomplete="off">
+                <label class="btn btn-outline-avariado btn-xs" for="filter-avariado" title="Exibir apenas itens avariados">Avariados</label>
             </div>
             <div>
                 <a href="/importacao.html" class="btn btn-primary btn-sm me-2">
@@ -208,8 +211,8 @@
                     <form id="form-editar-item">
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" id="edit-avariado" name="avariado">
-                            <label class="form-check-label text-danger fw-bold" for="edit-avariado">
-                                <i class="bi bi-exclamation-triangle-fill"></i> Avariado/Defeito
+                            <label class="form-check-label fw-bold" for="edit-avariado">
+                                <i class="text-avariado bi bi-exclamation-diamond-fill"></i> Avariado/Defeito
                             </label>
                         </div>
                         <input type="hidden" id="edit-numeroPatrimonial-original">
@@ -383,8 +386,12 @@
                 <div class="barra-verde-amarelo"></div>
                 <div class="modal-body">
                     <div class="alert alert-info py-1">
-                        <small>Confira o texto para cópia e os itens da lista. Para cada item, pode ser adicionado uma observação se houver necessidade. Clique em "Copiar Texto Final"
-                        para copiar todo o texto e as observações editadas para ser utilizado no seu cliente de e-mail. O campo "Assunto" pode ser copiado também.</small>
+                        <small>
+                        Utilize este recurso para gerar de forma rápida o texto que será enviado por e-mail formalizando a(s) transferência(s).
+                        Confira o texto para cópia e os itens da lista. Para cada item, pode ser editado uma observação se houver necessidade,
+                        pois é preenchido com os dados da última transferência. Clique em "Copiar Texto Final" para copiar todo o texto e as
+                        observações editadas para ser utilizado no seu cliente de e-mail. O campo "Assunto" pode ser copiado também.
+                        </small>
                     </div>
                     <label class="form-label fw-bold">Assunto:</label>
                     <div class="input-group mb-3">

@@ -55,6 +55,9 @@ public class ItemSpecification {
     }
 
     private Specification<Item> hasStatus(String statusString) {
+        if ("AVARIADO".equalsIgnoreCase(statusString)) {
+            return (root, query, cb) -> cb.isTrue(root.get("avariado"));
+        }
         try {
             StatusItem status = StatusItem.valueOf(statusString.toUpperCase());
             return (root, query, cb) -> cb.equal(root.get("status"), status);
